@@ -151,11 +151,13 @@ the nav reflects whether anyone is signed in.
       <a href="{% url 'teacher_home' %}">Dashboard</a>
       <a href="{% url 'create_exam' %}">Create Exam</a>
       <a href="{% url 'exams_list' %}">My Exams</a>
+      <a href="{% url 'analytics_dashboard' %}">Analytics</a>
     {% elif user.role == 'student' %}
       <a href="{% url 'student_home' %}">Dashboard</a>
       <a href="{% url 'student_home' %}">Available Exams</a>
     {% elif user.role == 'admin' %}
       <a href="/admin/">Admin Panel</a>
+      <a href="{% url 'analytics_dashboard' %}">Analytics</a>
     {% endif %}
   {% endif %}
   

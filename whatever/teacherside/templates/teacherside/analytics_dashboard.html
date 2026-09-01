@@ -1,0 +1,459 @@
+{% extends 'base.html' %}
+
+{% block title %}Suspicious Behavior Analytics Dashboard - MAKITEST{% endblock %}
+
+{% block content %}
+<style>
+    .analytics-header {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 1.5rem 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .analytics-title h2 {
+        font-size: 24px;
+        margin: 0 0 4px 0;
+        color: var(--text);
+    }
+    .analytics-title p {
+        color: var(--muted);
+        margin: 0;
+        font-size: 14px;
+    }
+    .model-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .model-badge.active {
+        background: rgba(62, 207, 142, 0.15);
+        color: var(--ok);
+        border: 1px solid var(--ok);
+    }
+    .model-badge.inactive {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid #f59e0b;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    .kpi-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1.25rem;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .kpi-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+    }
+    .kpi-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+    }
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+    .kpi-sub {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    /* Charts / Breakdown Grid */
+    .grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+        .grid-2col { grid-template-columns: 1fr; }
+    }
+    .analytics-panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+    .panel-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 1.25rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Progress bar visualization */
+    .bar-row {
+        margin-bottom: 1rem;
+    }
+    .bar-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 0.25rem;
+    }
+    .bar-bg {
+        height: 10px;
+        background: var(--bg);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    .bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.4s ease;
+    }
+    .bar-fill.high { background: var(--bad); }
+    .bar-fill.medium { background: #f59e0b; }
+    .bar-fill.low { background: var(--ok); }
+    .bar-fill.accent { background: var(--accent); }
+
+    /* Filter Bar */
+    .filter-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    .filter-form {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 180px;
+    }
+    .filter-group select, .filter-group input {
+        width: 100%;
+        padding: 8px 12px;
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    /* Attempts Table */
+    .table-container {
+        overflow-x: auto;
+    }
+    table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        text-align: left;
+    }
+    table.data-table th, table.data-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+    }
+    table.data-table th {
+        background: var(--bg);
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+    table.data-table tr:hover {
+        background: rgba(255,255,255,0.02);
+    }
+
+    .risk-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .risk-high { background: rgba(239, 75, 75, 0.2); color: var(--bad); border: 1px solid var(--bad); }
+    .risk-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+    .risk-low { background: rgba(62, 207, 142, 0.2); color: var(--ok); border: 1px solid var(--ok); }
+
+    .action-btn {
+        background: var(--accent);
+        color: #06202b;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 12px;
+        display: inline-block;
+        transition: transform 0.15s ease;
+    }
+    .action-btn:hover {
+        transform: scale(1.03);
+        color: #06202b;
+    }
+</style>
+
+<div class="container mt-4 mb-5" style="max-width: 1200px;">
+    <!-- Header -->
+    <div class="analytics-header">
+        <div class="analytics-title">
+            <h2>Suspicious Behavior Analytics Dashboard</h2>
+            <p>Comprehensive monitoring & model prediction insights across all exam attempts</p>
+        </div>
+        <div>
+            {% if model_loaded %}
+            <span class="model-badge active">
+                ● ML Model Active (Calibrated Random Forest: {{ feature_count }} Features)
+            </span>
+            {% else %}
+            <span class="model-badge inactive">
+                ▲ Rule-Based Heuristic Mode (model file missing or joblib uninstalled)
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">Total Exam Attempts</div>
+            <div class="kpi-value">{{ metrics.total_attempts }}</div>
+            <div class="kpi-sub">Processed proctoring sessions</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Suspicious Attempts</div>
+            <div class="kpi-value" style="color: var(--bad);">{{ metrics.suspicious_attempts_count }}</div>
+            <div class="kpi-sub">{{ metrics.suspicious_ratio }}% of total attempts</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Suspicion Score</div>
+            <div class="kpi-value" style="color: #f59e0b;">{{ metrics.avg_suspicion_score }}</div>
+            <div class="kpi-sub">Across all student sessions</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Total Violations Flagged</div>
+            <div class="kpi-value" style="color: var(--accent);">{{ metrics.total_violations_count }}</div>
+            <div class="kpi-sub">Behavioral & keypress alerts</div>
+        </div>
+    </div>
+
+    <!-- Visualizations / Breakdown -->
+    <div class="grid-2col">
+        <!-- Risk & Violation Distribution -->
+        <div class="analytics-panel">
+            <h3 class="panel-title">
+                Risk Level Distribution
+            </h3>
+            <div class="bar-row">
+                <div class="bar-label">
+                    <span>High Risk</span>
+                    <span><strong>{{ metrics.risk_distribution.High }}</strong> sessions</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill high" style="width: {% if metrics.total_attempts %}{% widthratio metrics.risk_distribution.High metrics.total_attempts 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">
+                    <span>Medium Risk</span>
+                    <span><strong>{{ metrics.risk_distribution.Medium }}</strong> sessions</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill medium" style="width: {% if metrics.total_attempts %}{% widthratio metrics.risk_distribution.Medium metrics.total_attempts 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">
+                    <span>Low Risk / Normal</span>
+                    <span><strong>{{ metrics.risk_distribution.Low }}</strong> sessions</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill low" style="width: {% if metrics.total_attempts %}{% widthratio metrics.risk_distribution.Low metrics.total_attempts 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+            <h3 class="panel-title mt-4">
+                Violation Breakdown by Type
+            </h3>
+            {% if metrics.violation_breakdown %}
+                {% for vtype, count in metrics.violation_breakdown.items %}
+                <div class="bar-row">
+                    <div class="bar-label">
+                        <span>{{ vtype }}</span>
+                        <span><strong>{{ count }}</strong> occurrences</span>
+                    </div>
+                    <div class="bar-bg">
+                        <div class="bar-fill high" style="width: {% if metrics.total_violations_count %}{% widthratio count metrics.total_violations_count 100 %}{% else %}0{% endif %}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--muted); font-size: 13px;">No violations recorded across current sessions.</p>
+            {% endif %}
+        </div>
+
+        <!-- Gaze Direction Breakdown -->
+        <div class="analytics-panel">
+            <h3 class="panel-title">
+                Overall Gaze Time Distribution (%)
+            </h3>
+            {% if metrics.gaze_distribution %}
+                {% for dir_name, pct in metrics.gaze_distribution.items %}
+                <div class="bar-row">
+                    <div class="bar-label">
+                        <span>Gaze Direction: <strong>{{ dir_name }}</strong></span>
+                        <span>{{ pct }}%</span>
+                    </div>
+                    <div class="bar-bg">
+                        <div class="bar-fill accent" style="width: {{ pct }}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--muted); font-size: 13px;">No gaze direction log data available yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="get" class="filter-form">
+            <div class="filter-group">
+                <label>Filter by Exam</label>
+                <select name="exam_id">
+                    <option value="">All Exams</option>
+                    {% for exam in exams %}
+                    <option value="{{ exam.exam_id }}" {% if selected_exam_id == exam.exam_id|stringformat:"s" %}selected{% endif %}>
+                        {{ exam.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Filter by Risk Level</label>
+                <select name="risk">
+                    <option value="">All Risk Levels</option>
+                    <option value="high" {% if selected_risk == 'high' %}selected{% endif %}>High Risk</option>
+                    <option value="medium" {% if selected_risk == 'medium' %}selected{% endif %}>Medium Risk</option>
+                    <option value="low" {% if selected_risk == 'low' %}selected{% endif %}>Low Risk</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Search Student / Exam</label>
+                <input type="text" name="search" placeholder="Student name or exam title..." value="{{ search_q }}">
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn primary">Apply Filters</button>
+                <a href="{% url 'analytics_dashboard' %}" class="btn ghost">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Student Exam Attempts Table -->
+    <div class="analytics-panel">
+        <h3 class="panel-title">
+            <span>Student Exam Attempt Analysis</span>
+            <span style="font-size: 13px; color: var(--muted);">Showing {{ attempt_list|length }} results</span>
+        </h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Exam</th>
+                        <th>Completed At</th>
+                        <th>Suspicion Score</th>
+                        <th>Violations</th>
+                        <th>ML Model Prediction</th>
+                        <th>Risk Level</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in attempt_list %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.attempt.student.first_name }} {{ item.attempt.student.last_name }}</strong>
+                            <div style="font-size: 12px; color: var(--muted);">@{{ item.attempt.student.username }}</div>
+                        </td>
+                        <td>{{ item.attempt.exam.title }}</td>
+                        <td>
+                            {% if item.attempt.completed_at %}
+                                {{ item.attempt.completed_at|date:"Y-m-d H:i" }}
+                            {% else %}
+                                In progress
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ item.attempt.suspicion_score|floatformat:1 }}</strong>
+                        </td>
+                        <td>
+                            {% if item.attempt.violation_count > 0 %}
+                                <span style="color: var(--bad); font-weight: 600;">{{ item.attempt.violation_count }}</span>
+                            {% else %}
+                                <span style="color: var(--ok);">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.prediction.is_suspicious %}
+                                <span style="color: var(--bad); font-weight: 600;">
+                                    Suspicious ({{ item.prediction.probability|floatformat:2 }})
+                                </span>
+                            {% else %}
+                                <span style="color: var(--ok); font-weight: 600;">
+                                    Normal ({{ item.prediction.probability|floatformat:2 }})
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.risk_level == 'High' %}
+                                <span class="risk-badge risk-high">High</span>
+                            {% elif item.risk_level == 'Medium' %}
+                                <span class="risk-badge risk-medium">Medium</span>
+                            {% else %}
+                                <span class="risk-badge risk-low">Low</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'attempt_analytics_detail' item.attempt.id %}" class="action-btn">
+                                Detailed Analytics →
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--muted); padding: 2rem;">
+                            No student exam attempts found matching the selected criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

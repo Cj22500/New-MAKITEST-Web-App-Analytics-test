@@ -11,6 +11,11 @@ urlpatterns = [
     path('students/', views.manage_students, name='manage_students'),
     path('student/<int:user_id>/update-class/', views.update_student_class, name='update_student_class'),
     
+    # Suspicious Behavior Analytics Views
+    path('analytics/', views.analytics_dashboard, name='analytics_dashboard'),
+    path('analytics/attempt/<int:attempt_id>/', views.attempt_analytics_detail, name='attempt_analytics_detail'),
+    path('analytics/attempt/<int:attempt_id>/run_inference/', views.run_model_inference_ajax, name='run_model_inference_ajax'),
+
     # Proctoring file views
     path('exam/<int:exam_id>/attempts/', views.exam_attempts_list, name='exam_attempts_list'),
     path('exam/<int:exam_id>/student/<int:student_id>/attempts/', views.student_attempt_detail, name='student_attempt_detail'),

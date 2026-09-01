@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+
+{% block title %}Attempt Analytics - {{ attempt.student.username }} - MAKITEST{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 1.5rem 2rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .back-btn {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    .back-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+    .grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) {
+        .grid-2col { grid-template-columns: 1fr; }
+    }
+    .card-panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+    .card-panel h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 1.25rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--line);
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--muted); }
+    .info-val { color: var(--text); font-weight: 600; }
+
+    .badge-suspicious {
+        background: rgba(239, 75, 75, 0.2);
+        color: var(--bad);
+        border: 1px solid var(--bad);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .badge-normal {
+        background: rgba(62, 207, 142, 0.2);
+        color: var(--ok);
+        border: 1px solid var(--ok);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* Heatmap Preview */
+    .heatmap-box {
+        text-align: center;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    .heatmap-box img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+    }
+
+    /* Time-Series Timeline */
+    .timeline {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .timeline-item {
+        position: relative;
+        padding-left: 24px;
+        padding-bottom: 1rem;
+        border-left: 2px solid var(--line);
+        margin-left: 10px;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 2px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+    }
+    .timeline-item.violation::before {
+        background: var(--bad);
+    }
+    .timeline-time {
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .timeline-content {
+        font-size: 14px;
+        margin-top: 2px;
+    }
+
+    .btn-run {
+        background: var(--accent);
+        color: #06202b;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .btn-run:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<div class="container mt-4 mb-5" style="max-width: 1100px;">
+    <a href="{% url 'analytics_dashboard' %}" class="back-btn mb-3">
+        ← Back to Analytics Dashboard
+    </a>
+
+    <!-- Page Header -->
+    <div class="page-header mt-2">
+        <div>
+            <h2 style="margin: 0; font-size: 22px;">{{ attempt.student.first_name }} {{ attempt.student.last_name }} (@{{ attempt.student.username }})</h2>
+            <div style="color: var(--muted); font-size: 14px; margin-top: 4px;">
+                Exam: <strong>{{ attempt.exam.title }}</strong> | Attempt #{{ attempt.attempt_number }}
+            </div>
+        </div>
+        <div>
+            <button id="runInferenceBtn" class="btn-run" onclick="triggerInference({{ attempt.id }})">
+                ⚡ Run ML Model Inference
+            </button>
+        </div>
+    </div>
+
+    <div class="grid-2col">
+        <!-- Session Overview -->
+        <div class="card-panel">
+            <h3>Session Overview</h3>
+            <div class="info-row">
+                <span class="info-label">Completed At</span>
+                <span class="info-val">
+                    {% if attempt.completed_at %}
+                        {{ attempt.completed_at|date:"Y-m-d H:i:s" }}
+                    {% else %}
+                        In Progress
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Exam Score</span>
+                <span class="info-val">
+                    {% if attempt.score %}{{ attempt.score|floatformat:1 }}%{% else %}N/A{% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Rule Suspicion Score</span>
+                <span class="info-val" style="color: #f59e0b;">{{ attempt.suspicion_score|floatformat:2 }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Violation Count</span>
+                <span class="info-val" style="color: var(--bad);">{{ attempt.violation_count }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Session ID</span>
+                <span class="info-val"><code style="color: var(--accent);">{{ attempt.proctoring_session_id }}</code></span>
+            </div>
+        </div>
+
+        <!-- ML Prediction -->
+        <div class="card-panel">
+            <h3>
+                <span>ML Model Suspicion Analysis</span>
+                {% if prediction.is_suspicious %}
+                    <span class="badge-suspicious">Suspicious</span>
+                {% else %}
+                    <span class="badge-normal">Normal</span>
+                {% endif %}
+            </h3>
+            <div class="info-row">
+                <span class="info-label">Predicted Classification</span>
+                <span class="info-val" id="predLabel">{{ prediction.prediction_label }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Suspicion Probability</span>
+                <span class="info-val" id="predProb" style="color: var(--accent);">
+                    {{ prediction.probability|floatformat:3 }}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Model Status</span>
+                <span class="info-val" id="predStatus" style="font-size: 12px; color: var(--muted);">
+                    {{ prediction.model_status }}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Total CSV Event Logs</span>
+                <span class="info-val">{{ prediction.event_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gaze Heatmap & Video Evidence Grid -->
+    <div class="grid-2col">
+        <!-- Heatmap Section -->
+        <div class="card-panel">
+            <h3>Gaze Heatmap Visualization</h3>
+            {% if session_files and session_files.heatmap_image %}
+                <div class="heatmap-box">
+                    <img src="{% url 'view_session_file' attempt.proctoring_session_id 'heatmap' %}" alt="Gaze Heatmap">
+                    <div style="margin-top: 0.5rem;">
+                        <a href="{% url 'download_session_file' attempt.proctoring_session_id 'heatmap' %}" class="back-btn" style="padding: 4px 10px; font-size: 12px;">
+                            Download Heatmap Image
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <p style="color: var(--muted); font-size: 13px; text-align: center; padding: 2rem;">
+                    No gaze heatmap available for this session.
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Violation Videos -->
+        <div class="card-panel">
+            <h3>Violation Video Evidence ({{ video_list|length }})</h3>
+            {% if video_list %}
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for vid in video_list %}
+                    <div style="background: var(--bg); border: 1px solid var(--line); padding: 0.75rem 1rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; word-break: break-all;">{{ vid.filename }}</span>
+                        <a href="{{ vid.download_url }}" class="btn-run" style="padding: 4px 10px; font-size: 12px; text-decoration: none;">
+                            Download MP4
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: var(--muted); font-size: 13px; text-align: center; padding: 2rem;">
+                    No violation video clips were triggered during this session.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Behavioral Time-Series Log -->
+    <div class="card-panel mt-3">
+        <h3>Behavioral Time-Series Event Log ({{ events|length }} events)</h3>
+        {% if events %}
+            <ul class="timeline mt-3">
+                {% for ev in events %}
+                <li class="timeline-item {% if ev.violation_label != 'normal' %}violation{% endif %}">
+                    <div class="timeline-time">{{ ev.start_time }} → {{ ev.finish_time }} (Duration: {{ ev.duration_s|floatformat:1 }}s)</div>
+                    <div class="timeline-content">
+                        Gaze: <strong>{{ ev.direction }}</strong> |
+                        Status:
+                        {% if ev.violation_label != 'normal' %}
+                            <strong style="color: var(--bad);">{{ ev.violation_label }}</strong> (Score: {{ ev.score }})
+                        {% else %}
+                            <span style="color: var(--ok);">Normal</span>
+                        {% endif %}
+                        {% if ev.video_file %}
+                            | Evidence File: <code>{{ ev.video_file }}</code>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: var(--muted); font-size: 13px; text-align: center; padding: 2rem;">
+                No event log records found in session CSV.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function triggerInference(attemptId) {
+    const btn = document.getElementById('runInferenceBtn');
+    btn.disabled = true;
+    btn.innerText = 'Running Inference...';
+
+    fetch(`/teacherside/analytics/attempt/${attemptId}/run_inference/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerText = '⚡ Run ML Model Inference';
+        if (data.status === 'success') {
+            const pred = data.prediction;
+            document.getElementById('predLabel').innerText = pred.prediction_label;
+            document.getElementById('predProb').innerText = pred.probability.toFixed(3);
+            document.getElementById('predStatus').innerText = pred.model_status;
+            alert(`Inference complete!\nPrediction: ${pred.prediction_label}\nProbability: ${pred.probability.toFixed(3)}`);
+        } else {
+            alert('Error running inference: ' + data.message);
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerText = '⚡ Run ML Model Inference';
+        alert('Failed to connect to inference server.');
+    });
+}
+</script>
+{% endblock %}

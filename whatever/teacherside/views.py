@@ -6,13 +6,27 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from homepage.models import CustomUser
 from django.db.models import Q, Count, Max, Avg
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from studentside.models import StudentExamAttempt, ProctoringSessionFiles
+from django.contrib.auth.decorators import login_required, user_passes_test
 import os
 import time
 import mimetypes
 import zipfile
+import json
 from io import BytesIO
+
+from .analytics_utils import (
+    compute_aggregate_analytics,
+    predict_suspicion_for_attempt,
+    parse_session_csv,
+    get_model_and_features
+)
+
+
+def is_teacher_or_admin(user):
+    return user.is_authenticated and (user.role in ['teacher', 'admin'] or user.is_staff or user.is_superuser)
+
 
 # Create your views here.
 def teacher_home(request):
@@ -124,7 +138,6 @@ def add_questions(request, exam_id):
                     
                     choice_num += 1
                 
-                import json
                 question.choices = json.dumps(choices)
                 
                 # Validate that a correct answer was selected
@@ -174,7 +187,6 @@ def modify_exam(request, exam_id):
     questions = Question.objects.filter(exam=exam).order_by('created_at')
     
     # Parse JSON choices for each MCQ question
-    import json
     for question in questions:
         if question.question_type == 'MCQ' and question.choices:
             try:
@@ -405,7 +417,162 @@ def download_all_session_files(request, session_id):
     
     # Prepare response
     zip_buffer.seek(0)
-    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response = HttpResponse(zip_buffer.getvalue(), content_type='attachment; filename="session_%s_files.zip"' % session_id)
     response['Content-Disposition'] = f'attachment; filename="session_{session_id}_files.zip"'
     
     return response
+
+
+# ==========================================
+# Comprehensive Suspicious Behavior Analytics Views
+# ==========================================
+
+@login_required
+@user_passes_test(is_teacher_or_admin)
+def analytics_dashboard(request):
+    """
+    Main Suspicious Behavior Analytics Dashboard page.
+    Provides high-level KPIs, risk distribution, violation breakdowns,
+    and filterable list of student exam attempts with ML model prediction results.
+    """
+    selected_exam_id = request.GET.get('exam_id')
+    selected_risk = request.GET.get('risk')
+    search_q = request.GET.get('search', '').strip()
+
+    exams = Exam.objects.all().order_by('-created_at')
+    attempts = StudentExamAttempt.objects.select_related('student', 'exam').order_by('-completed_at', '-id')
+
+    # Apply filters
+    if selected_exam_id:
+        attempts = attempts.filter(exam_id=selected_exam_id)
+
+    if search_q:
+        attempts = attempts.filter(
+            Q(student__username__icontains=search_q) |
+            Q(student__first_name__icontains=search_q) |
+            Q(student__last_name__icontains=search_q) |
+            Q(exam__title__icontains=search_q)
+        )
+
+    # Build SessionFiles mapping
+    session_ids = [a.proctoring_session_id for a in attempts if a.proctoring_session_id]
+    sfiles_list = ProctoringSessionFiles.objects.filter(session_id__in=session_ids)
+    session_files_map = {sf.session_id: sf for sf in sfiles_list}
+
+    # Attach predictions & files
+    attempt_list = []
+    for attempt in attempts:
+        sf = session_files_map.get(attempt.proctoring_session_id)
+        pred = predict_suspicion_for_attempt(attempt, sf)
+
+        # Risk level determination
+        score = attempt.suspicion_score or 0.0
+        if score >= 50.0 or attempt.violation_count >= 5 or pred['is_suspicious']:
+            risk_level = 'High'
+        elif score >= 20.0 or attempt.violation_count >= 2:
+            risk_level = 'Medium'
+        else:
+            risk_level = 'Low'
+
+        # Filter by risk level if selected
+        if selected_risk and risk_level.lower() != selected_risk.lower():
+            continue
+
+        attempt_list.append({
+            'attempt': attempt,
+            'prediction': pred,
+            'risk_level': risk_level,
+            'session_files': sf,
+        })
+
+    # Compute aggregate metrics
+    metrics = compute_aggregate_analytics(attempts, session_files_map)
+
+    model, feature_cols = get_model_and_features()
+
+    context = {
+        'exams': exams,
+        'selected_exam_id': selected_exam_id,
+        'selected_risk': selected_risk,
+        'search_q': search_q,
+        'attempt_list': attempt_list,
+        'metrics': metrics,
+        'model_loaded': model is not None,
+        'feature_count': len(feature_cols) if feature_cols else 0,
+    }
+
+    return render(request, 'teacherside/analytics_dashboard.html', context)
+
+
+@login_required
+@user_passes_test(is_teacher_or_admin)
+def attempt_analytics_detail(request, attempt_id):
+    """
+    Detailed analytics page for a specific student exam attempt.
+    Includes time-series event log, gaze heatmap, video evidence player,
+    and ML model feature breakdown.
+    """
+    attempt = get_object_or_404(StudentExamAttempt.objects.select_related('student', 'exam'), id=attempt_id)
+
+    session_files = None
+    events = []
+    if attempt.proctoring_session_id:
+        try:
+            session_files = ProctoringSessionFiles.objects.get(session_id=attempt.proctoring_session_id)
+            csv_paths = session_files.get_all_csv_paths()
+            for csv_p in csv_paths:
+                if csv_p and os.path.exists(csv_p):
+                    events.extend(parse_session_csv(csv_p))
+        except ProctoringSessionFiles.DoesNotExist:
+            session_files = None
+
+    prediction = predict_suspicion_for_attempt(attempt, session_files)
+
+    # Violation videos list
+    video_list = []
+    if session_files:
+        video_paths = session_files.get_all_video_paths()
+        for idx, vp in enumerate(video_paths):
+            if vp and os.path.exists(vp):
+                video_list.append({
+                    'index': idx,
+                    'filename': os.path.basename(vp),
+                    'download_url': f"/teacherside/session/{attempt.proctoring_session_id}/download/video/{idx}/",
+                    'view_url': f"/teacherside/session/{attempt.proctoring_session_id}/view/video/{idx}/",
+                })
+
+    context = {
+        'attempt': attempt,
+        'session_files': session_files,
+        'events': events,
+        'prediction': prediction,
+        'video_list': video_list,
+    }
+
+    return render(request, 'teacherside/attempt_analytics_detail.html', context)
+
+
+@login_required
+@user_passes_test(is_teacher_or_admin)
+def run_model_inference_ajax(request, attempt_id):
+    """
+    AJAX endpoint to trigger ML model inference on an attempt's session log files.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST method required'}, status=405)
+
+    attempt = get_object_or_404(StudentExamAttempt, id=attempt_id)
+    session_files = None
+    if attempt.proctoring_session_id:
+        try:
+            session_files = ProctoringSessionFiles.objects.get(session_id=attempt.proctoring_session_id)
+        except ProctoringSessionFiles.DoesNotExist:
+            pass
+
+    prediction = predict_suspicion_for_attempt(attempt, session_files)
+
+    return JsonResponse({
+        'status': 'success',
+        'attempt_id': attempt.id,
+        'prediction': prediction,
+    })
