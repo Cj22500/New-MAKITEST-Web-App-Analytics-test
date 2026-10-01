@@ -241,12 +241,6 @@
             $("m-fps").textContent = data.fps.toFixed(1);
           }
           
-          if (data.suspicion && data.suspicion.is_recording) {
-            const alert = $("alert");
-            alert.textContent = "⚠️ " + data.suspicion.current_violation;
-            alert.hidden = false;
-            setTimeout(() => alert.hidden = true, 5000);
-          }
         }
       };
       
