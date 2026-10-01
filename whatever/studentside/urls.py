@@ -9,4 +9,5 @@ urlpatterns = [
     path('save-tracking-thresholds/', views.save_tracking_thresholds, name='save_tracking_thresholds'),
     path('submit_exam/', views.submit_exam, name='submit_exam'),
     path('exam_results/<int:attempt_id>/', views.exam_results, name='exam_results'),
+    path('my_scores/', views.my_scores, name='my_scores'),
 ]

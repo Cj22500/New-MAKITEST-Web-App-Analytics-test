@@ -439,3 +439,35 @@ def exam_results(request, attempt_id):
         'exam_attempt': exam_attempt,
         'questions_with_answers': questions_with_answers,
     })
+
+
+@login_required
+def my_scores(request):
+    """Group the signed-in student's own exam attempts by exam, one directory per exam."""
+    attempts = StudentExamAttempt.objects.filter(
+        student=request.user
+    ).select_related('exam').order_by('-attempt_number', '-id')
+
+    exams = {}
+    for attempt in attempts:
+        exam = attempt.exam
+        if exam.exam_id not in exams:
+            exams[exam.exam_id] = {
+                'exam': exam,
+                'attempts': [],
+                'best_score': None,
+            }
+        group = exams[exam.exam_id]
+        group['attempts'].append(attempt)
+        if attempt.score is not None and (group['best_score'] is None or attempt.score > group['best_score']):
+            group['best_score'] = attempt.score
+
+    exam_groups = sorted(
+        exams.values(),
+        key=lambda group: group['attempts'][0].id,
+        reverse=True
+    )
+
+    return render(request, 'studentside/my_scores.html', {
+        'exam_groups': exam_groups,
+    })
