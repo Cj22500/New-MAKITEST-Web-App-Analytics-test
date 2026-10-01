@@ -462,9 +462,12 @@ def my_scores(request):
         if attempt.score is not None and (group['best_score'] is None or attempt.score > group['best_score']):
             group['best_score'] = attempt.score
 
+    def latest_attempt_id(group):
+        return group['attempts'][0].id
+
     exam_groups = sorted(
         exams.values(),
-        key=lambda group: group['attempts'][0].id,
+        key=latest_attempt_id,
         reverse=True
     )
 
