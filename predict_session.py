@@ -61,12 +61,14 @@ def predict_session(session_dir):
         [[features.get(col, 0.0) for col in feature_columns]],
         columns=feature_columns,
     )
+    predicted_class = model.predict(ordered_values)[0]
     probabilities = model.predict_proba(ordered_values)[0]
-    probability_non_cheating = probabilities[0]
-    probability_cheating = probabilities[1]
+    class_probabilities = dict(zip(model.classes_, probabilities))
+    probability_non_cheating = class_probabilities[0]
+    probability_cheating = class_probabilities[1]
 
-    label = "cheating" if probability_cheating >= 0.5 else "non_cheating"
-    confidence = probability_cheating if label == "cheating" else 1 - probability_cheating
+    label = "cheating" if predicted_class == 1 else "non_cheating"
+    confidence = class_probabilities[predicted_class]
     print(
         f"[Predictor] {os.path.basename(session_dir)} -> {label} "
         f"({confidence * 100:.1f}% confidence)"

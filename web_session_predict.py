@@ -41,11 +41,13 @@ def predict_session_files(heatmap_path, csv_path, session_directory=None):
         columns=feature_columns,
     )
     model = joblib.load(MODEL_PATH)
+    predicted_class = model.predict(ordered_values)[0]
     probabilities = model.predict_proba(ordered_values)[0]
-    probability_non_cheating = float(probabilities[0])
-    probability_cheating = float(probabilities[1])
-    label = "cheating" if probability_cheating >= 0.5 else "non_cheating"
-    confidence = probability_cheating if label == "cheating" else probability_non_cheating
+    class_probabilities = dict(zip(model.classes_, probabilities))
+    probability_non_cheating = float(class_probabilities[0])
+    probability_cheating = float(class_probabilities[1])
+    label = "cheating" if predicted_class == 1 else "non_cheating"
+    confidence = float(class_probabilities[predicted_class])
 
     result = {
         "predicted_label": label,
