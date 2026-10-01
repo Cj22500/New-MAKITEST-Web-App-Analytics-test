@@ -190,7 +190,7 @@
     
     const SESSION_ID = "{{ proctoring_session_id }}";
     const CAPTURE_W = 320, CAPTURE_H = 240;
-    const TARGET_FPS = 5;  // Lower FPS during exam
+    const TARGET_FPS = 10;  // Match calibration page fps
     const JPEG_QUALITY = 0.6;
     
     const $ = (id) => document.getElementById(id);
@@ -241,12 +241,6 @@
             $("m-fps").textContent = data.fps.toFixed(1);
           }
           
-          if (data.suspicion && data.suspicion.is_recording) {
-            const alert = $("alert");
-            alert.textContent = "⚠️ " + data.suspicion.current_violation;
-            alert.hidden = false;
-            setTimeout(() => alert.hidden = true, 5000);
-          }
         }
       };
       

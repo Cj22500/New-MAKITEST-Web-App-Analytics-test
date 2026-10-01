@@ -23,6 +23,7 @@ the nav reflects whether anyone is signed in.
     --bad: #ef4b4b;
   }
   * { box-sizing: border-box; }
+  .hidden { display: none !important; }
   body {
     margin: 0; min-height: 100vh;
     background: var(--bg); color: var(--text);
@@ -154,6 +155,7 @@ the nav reflects whether anyone is signed in.
     {% elif user.role == 'student' %}
       <a href="{% url 'student_home' %}">Dashboard</a>
       <a href="{% url 'student_home' %}">Available Exams</a>
+      <a href="{% url 'my_scores' %}">My Scores</a>
     {% elif user.role == 'admin' %}
       <a href="/admin/">Admin Panel</a>
     {% endif %}
