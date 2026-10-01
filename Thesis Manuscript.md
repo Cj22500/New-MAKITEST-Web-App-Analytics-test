@@ -463,6 +463,88 @@ The get_screen_position() method returns the final normalized gaze coordinates a
 ## Machine Learning Approach
 Random Forest Classifier is used as an exploratory session-level prediction model. It consumes the stored heatmap and event-log features and returns a predicted class through the model’s `predict()` method. The confidence level is the probability assigned by `predict_proba()` to that predicted class. This confidence is distinct from the rule-based 0-or-100 event score, and the available results should not be treated as independent deployment validation.
 
+### Heatmap Feature Extraction and Model Inputs
+Before prediction, each completed session is represented by two required artifacts: a saved gaze heatmap and a session CSV log. The heatmap feature extractor reconstructs an approximate intensity map from the saved JET-coloured heatmap. Brighter regions represent greater accumulated gaze density, while black regions represent areas with no recorded gaze density.
+
+From this intensity map, the extractor calculates eight global heatmap features: normalized gaze-centroid coordinates, horizontal and vertical spread, elongation ratio, entropy, peak ratio, and coverage ratio. The intensity map is also resized to an 8x8 spatial grid using area interpolation. The 64 normalized grid values are stored as `grid_cell_0` through `grid_cell_63`, ordered from the top-left cell to the bottom-right cell. Together, the global descriptors and grid values produce 72 heatmap features.
+
+The session CSV contributes seven behavioral features: frantic-eye-movement violation count, forbidden-key violation count, off-screen violation count, duration-violation count, total gaze-transition count, percentage of non-center gaze time, and overall violation rate. These features are combined with the 72 heatmap features to create 79 numeric predictors for each session. The `session_id` and binary `label` identify the session and training class but are excluded from the model predictors.
+
+Before inference, the predictors are arranged in the feature order stored in `feature_columns.json` and supplied to the calibrated Random Forest model as a named pandas DataFrame. The model’s `predict()` method supplies the session label, while `predict_proba()` supplies the probabilities for both classes. The reported confidence is the probability assigned to the class returned by `predict()`.
+
+### Heatmap Feature Calculations
+Let $I(x,y)$ denote the recovered heatmap intensity at pixel position $(x,y)$, where larger values indicate greater accumulated gaze density. The total intensity mass is calculated as:
+
+$$
+M = \sum_{x=1}^{w}\sum_{y=1}^{h} I(x,y)
+$$
+
+where $w$ and $h$ are the image width and height. If $M=0$, all heatmap features are set to zero because the image contains no recoverable gaze density. Otherwise, the weighted centroid is calculated from the image moments:
+
+$$
+x_c = \frac{m_{10}}{m_{00}}, \qquad y_c = \frac{m_{01}}{m_{00}}
+$$
+
+The centroid is normalized by the image dimensions to produce the first two features:
+
+$$
+\mathrm{centroid\_x\_norm}=\frac{x_c}{w}, \qquad
+\mathrm{centroid\_y\_norm}=\frac{y_c}{h}
+$$
+
+The horizontal and vertical weighted variances are obtained from the central moments. Their square roots are normalized to produce the spread features:
+
+$$
+\sigma_x = \sqrt{\frac{\mu_{20}}{m_{00}}}, \qquad
+\sigma_y = \sqrt{\frac{\mu_{02}}{m_{00}}}
+$$
+
+$$
+\mathrm{spread\_x}=\frac{\sigma_x}{w}, \qquad
+\mathrm{spread\_y}=\frac{\sigma_y}{h}
+$$
+
+The mixed central moment gives the covariance, $c_{xy}=\mu_{11}/m_{00}$. The covariance matrix is then:
+
+$$
+\mathbf{C}=\begin{bmatrix}
+\sigma_x^2 & c_{xy}\\
+c_{xy} & \sigma_y^2
+\end{bmatrix}
+$$
+
+If $\lambda_{\max}$ and $\lambda_{\min}$ are the largest and smallest eigenvalues of $\mathbf{C}$, the elongation feature is:
+
+$$
+\mathrm{elongation\_ratio}=\frac{\lambda_{\max}}{\lambda_{\min}}
+$$
+
+The intensity map is resized to an 8x8 grid. For each grid cell $i$, the normalized cell value is calculated as:
+
+$$
+p_i=\frac{g_i}{\sum_{j=0}^{63}g_j}, \qquad i=0,1,\ldots,63
+$$
+
+where $g_i$ is the area-interpolated intensity of cell $i$. These 64 probabilities are stored as `grid_cell_0` through `grid_cell_63`. The same probabilities are used to calculate spatial entropy, with zero-valued cells omitted from the sum:
+
+$$
+\mathrm{entropy}=-\sum_{i:p_i>0}p_i\log_2(p_i)
+$$
+
+The peak ratio measures concentration in the strongest heatmap pixels. The pixels are sorted by intensity, the brightest 5% are selected, and their combined intensity is divided by $M$:
+
+$$
+\mathrm{peak\_ratio}=\frac{\sum_{k\in\mathrm{top\ 5\%}}I_k}{M}
+$$
+
+Finally, coverage ratio measures the proportion of pixels whose recovered intensity exceeds 25:
+
+$$
+\mathrm{coverage\_ratio}=\frac{\#\{(x,y):I(x,y)>25\}}{w\times h}
+$$
+
+These calculations produce the eight global heatmap features and 64 grid-cell probabilities. The feature-count calculation is therefore $8+64=72$ heatmap features, and adding the seven CSV behavioral features gives $72+7=79$ numeric predictors for the Random Forest model.
+
 ## Web Application Framework and Architecture
 To create our Exam Delivery Application which will implement and integrate our suspicious behaviour detection system, we are using the Python Django framework. 
 Python Django is a high-level web framework which is known for its scalability, security and convenient maintenance. The framework uses the MVT Architecture which means Model, View and Template.
@@ -703,6 +785,8 @@ Label-1 sessions generally showed more active and dispersed gaze behavior than l
 
 Several heatmap features were strongly correlated. Entropy and coverage ratio had an approximate correlation of 0.94, entropy and peak ratio approximately -0.92, and coverage ratio and peak ratio approximately -0.91. Because these measures describe related aspects of gaze distribution, their redundancy may reduce independent information and complicate feature-importance interpretation.
 
+Entropy and coverage ratio are related but measure different properties of the heatmap. Entropy describes how evenly the normalized gaze intensity is distributed across the 8x8 grid: it increases when gaze density is spread among more grid cells and decreases when density is concentrated in fewer cells. Coverage ratio instead measures the fraction of image pixels whose recovered intensity exceeds the fixed threshold of 25. It therefore describes how much of the image contains sufficiently strong recorded density, not how evenly that density is distributed. A heatmap can have high entropy but modest coverage if its intensity is broadly distributed yet remains below the pixel threshold in much of the image; conversely, coverage can be high when many pixels exceed the threshold even if a few regions dominate the total intensity. Their observed correlation of approximately 0.94 indicates that they tended to increase together in this dataset, but they are not interchangeable. This distinction also means that coverage ratio depends on the selected intensity threshold, while entropy is based on normalized grid-cell proportions.
+
 Potential outliers included an elongation ratio of approximately 39.65, up to 1,547 gaze transitions, 16 forbidden-key violations, 30 off-screen violations, and 24 duration violations in individual sessions. These values should be interpreted as possible behavior, session-length, tracking, or data-processing effects rather than removed automatically.
 
 ## Prediction-Model Results
@@ -725,8 +809,42 @@ Table 16. VCS Observations
 Clip totals and per-session averages are not used as primary outcome measures because the source video files must first be matched to their session identifiers. In the system, clips are triggered by rule-based event activations such as irregular gaze, off-screen focus, or forbidden events reported by the monitoring path.
 ## Gaze Direction Duration Observations
 Table 17. Gaze Observations
- 
-Label-0 sessions maintained a more concentrated central gaze distribution, while label-1 sessions distributed gaze more evenly across multiple directions. These differences are descriptive associations within the available dataset; their statistical strength should be reported only with the corresponding session counts, raw observations, and uncertainty measures.
+
+The following summaries use all 93 sessions in each label class. Total duration is the summed duration for a gaze direction, normalized duration is the proportion of the class total, and average duration per session is the total direction duration divided by the 93 sessions in that class. These averages represent duration per session, not the length of an individual transition.
+
+### Label 0
+
+| Gaze direction | Total duration (seconds) | Normalized duration | Average duration per session (seconds) |
+|---|---:|---:|---:|
+| Center | 9114.97 | 0.5319 | 98.01 |
+| Down-Right | 265.09 | 0.0155 | 2.85 |
+| Center-Right | 680.70 | 0.0397 | 7.32 |
+| Down-Center | 2607.64 | 0.1522 | 28.04 |
+| Up-Center | 2836.47 | 0.1655 | 30.50 |
+| Up-Right | 372.22 | 0.0217 | 4.00 |
+| Up-Left | 677.19 | 0.0395 | 7.28 |
+| Center-Left | 424.00 | 0.0247 | 4.56 |
+| Down-Left | 158.86 | 0.0093 | 1.71 |
+| **Summary standard deviation** |  |  | **31.03** |
+| **Summary coefficient of variation** |  |  | **1.52** |
+
+### Label 1
+
+| Gaze direction | Total duration (seconds) | Normalized duration | Average duration per session (seconds) |
+|---|---:|---:|---:|
+| Center | 7481.27 | 0.2777 | 80.44 |
+| Down-Right | 1207.28 | 0.0448 | 12.98 |
+| Center-Right | 1798.47 | 0.0668 | 19.34 |
+| Down-Center | 5042.07 | 0.1872 | 54.22 |
+| Up-Center | 2899.42 | 0.1076 | 31.18 |
+| Up-Right | 1394.79 | 0.0518 | 15.00 |
+| Up-Left | 2800.20 | 0.1039 | 30.11 |
+| Center-Left | 3096.81 | 0.1150 | 33.30 |
+| Down-Left | 1219.12 | 0.0453 | 13.11 |
+| **Summary standard deviation** |  |  | **22.40** |
+| **Summary coefficient of variation** |  |  | **0.70** |
+
+Label-0 sessions concentrated approximately 53.19% of their total gaze duration in the center region, compared with 27.77% for label-1 sessions. Label-1 sessions showed greater duration across peripheral and directional regions, especially Down-Center, Center-Left, Up-Left, and Center-Right. The lower coefficient of variation for label 1 indicates a more even distribution across gaze directions, while label 0 showed a more concentrated central pattern. These are descriptive associations between the dataset labels and gaze-duration distributions, not independent proof of cheating.
 ## Overall System Performance
 Across the gaze-tracking, heatmap, event-logging, video-evidence, and prediction components, the system produced measurable differences between label-0 and label-1 sessions. Calibration differences were normalized through the documented calibration process and heatmap alignment, supporting comparison of the observed behavioral patterns. These results demonstrate prototype-level separation between the experimental labels, not definitive real-world cheating detection.
 ## Data Interpretation
