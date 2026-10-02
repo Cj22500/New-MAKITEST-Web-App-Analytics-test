@@ -454,9 +454,11 @@ transition run.
 python train_model.py
 ```
 
-Training uses a calibrated `RandomForestClassifier` with five-fold stratified
-cross-validation. It prints cross-validated accuracy, ROC-AUC, and a
-classification report, then saves:
+Training first searches a grid of `n_estimators` values (50, 100, 200, 400,
+800) and `max_depth` values (2, 4, 6, 8, 10, `None`) using stratified five-fold
+cross-validation. It then evaluates the winning configuration with the
+configured split counts (3, 5, and 10 by default), refits on all available
+sessions, and saves:
 
 | File | Description |
 |---|---|
@@ -466,22 +468,42 @@ classification report, then saves:
 Run training again whenever `features.csv` changes.
 
 The current trained artifact was produced from the dataset described above.
-Its stratified five-fold cross-validation results are:
+Grid search selected `n_estimators=100` and `max_depth=4`, with mean five-fold
+CV accuracy of 0.930. This configuration had the best mean accuracy among the
+tested candidates and was used for the split-count comparisons below:
 
-| Metric | Result |
-|---|---:|
-| Fold accuracies (1-5) | 0.895, 0.919, 1.000, 0.946, 0.892 |
-| Cross-validated accuracy | 0.930 |
-| Cross-validated ROC-AUC | 0.973 |
+| CV folds | Mean fold accuracy (std. dev.) | OOF accuracy | OOF ROC-AUC |
+|---:|---:|---:|---:|
+| 3 | 0.903 (0.013) | 0.903 | 0.965 |
+| 5 | 0.930 (0.040) | 0.930 | 0.973 |
+| 10 | 0.913 (0.051) | 0.914 | 0.972 |
+
+An additional five-fold comparison evaluated the model with and without the 64
+grid-cell features:
+
+| Feature set | OOF accuracy | ROC-AUC | Non-cheating precision / recall / F1 | Cheating precision / recall / F1 |
+|---|---:|---:|---|---|
+| Without grid cells | 0.919 | 0.975 | 0.91 / 0.92 / 0.92 | 0.92 / 0.91 / 0.92 |
+| With grid cells | 0.930 | 0.973 | 0.92 / 0.95 / 0.93 | 0.94 / 0.91 / 0.93 |
+
+Grid-cell inclusion increased accuracy by about 1.1 percentage points and
+slightly improved class-level precision and F1. Non-cheating recall rose by
+0.03, while cheating recall remained 0.91. ROC-AUC was nearly unchanged and
+was 0.002 higher without grid cells. These are comparisons on the same
+cross-validation dataset, not independent test results.
+
+The selected configuration's five-fold per-fold accuracies were 0.895, 0.919,
+1.000, 0.946, and 0.892. Its classification report was:
 
 | Class | Precision | Recall | F1-score | Support |
 |---|---:|---:|---:|---:|
 | Non-cheating | 0.92 | 0.95 | 0.93 | 93 |
 | Cheating | 0.94 | 0.91 | 0.93 | 93 |
 
-These are cross-validated estimates rather than results from an independent
-test set, so participant-level or future-session validation is still required
-before deployment.
+The fold-count comparisons are sensitivity checks on the same dataset, not
+independent test results. Hyperparameter selection and these CV estimates may
+be optimistic; participant-level or future-session validation is still
+required before deployment.
 
 ### Predict one session
 

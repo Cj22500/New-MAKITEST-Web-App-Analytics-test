@@ -88,23 +88,30 @@ These observations should be inspected to determine whether they represent genui
 
 The dataset is a suitable starting point for developing and testing a prototype prediction model. It has a clear target variable, a nearly balanced class distribution, consistent session-level features, and multiple feature groups that describe complementary aspects of gaze behavior.
 
-The current training approach is also a reasonable baseline. It uses a Random Forest classifier, stratified five-fold cross-validation, probability calibration, and a saved feature-column order for inference.
+The current training approach uses a calibrated Random Forest classifier, stratified cross-validation, and a saved feature-column order for inference. Hyperparameters are selected by a five-fold grid search before the chosen model is evaluated across several fold counts and refitted on the full dataset.
 
 Nevertheless, the dataset is small relative to the number of predictors. With 186 sessions and 79 predictors, the model may overfit, and cross-validation results may vary considerably depending on the sampled sessions. Therefore, the current dataset should be treated as an exploratory or proof-of-concept dataset rather than sufficient evidence for deployment.
 
 ## Model Trainer Results
 
-The model trainer was executed using the current complete dataset. It trained a calibrated Random Forest classifier using stratified five-fold cross-validation. The reported cross-validated results were:
+The model trainer was run on the complete 186-session dataset using the feature set with grid cells. `GridSearchCV` compared `n_estimators` values of 50, 100, 200, 400, and 800 with `max_depth` values of 2, 4, 6, 8, 10, and `None`, using stratified five-fold cross-validation and accuracy as the selection metric. The best tested configuration was 100 estimators and a maximum depth of 4, with a mean CV accuracy of 0.930. These winning values were then used for the split-count evaluation and the final model fit.
 
-| Metric | Result |
-|---|---:|
-| Fold 1 accuracy | 0.895 |
-| Fold 2 accuracy | 0.919 |
-| Fold 3 accuracy | 1.000 |
-| Fold 4 accuracy | 0.946 |
-| Fold 5 accuracy | 0.892 |
-| Cross-validated accuracy | 0.930 |
-| Cross-validated ROC-AUC | 0.973 |
+| CV folds | Per-fold accuracy | Mean fold accuracy (std. dev.) | OOF accuracy | OOF ROC-AUC |
+|---:|---|---:|---:|---:|
+| 3 | 0.903, 0.887, 0.919 | 0.903 (0.013) | 0.903 | 0.965 |
+| 5 | 0.895, 0.919, 1.000, 0.946, 0.892 | 0.930 (0.040) | 0.930 | 0.973 |
+| 10 | 0.895, 0.895, 0.947, 0.895, 1.000, 0.947, 0.833, 0.944, 0.944, 0.833 | 0.913 (0.051) | 0.914 | 0.972 |
+
+The 100-estimator, depth-4 configuration was retained because it achieved the highest mean accuracy among the tested grid-search candidates. Its five-fold evaluation also had the highest out-of-fold accuracy and ROC-AUC of the tested split counts. The 3- and 10-fold evaluations provide a sensitivity check, not independent confirmation; changing the number of folds changes the training and validation sample sizes.
+
+A separate five-fold comparison assessed whether retaining the 64 grid-cell predictors changed results. Accuracy differed by approximately 1.1 percentage points, while class-level precision, recall, and F1 were slightly higher overall with the grid cells. The ROC-AUC values were very close, with the no-grid model higher by 0.002.
+
+| Feature set | OOF accuracy | ROC-AUC | Non-cheating precision / recall / F1 | Cheating precision / recall / F1 |
+|---|---:|---:|---|---|
+| Without grid cells | 0.919 | 0.975 | 0.91 / 0.92 / 0.92 | 0.92 / 0.91 / 0.92 |
+| With grid cells | 0.930 | 0.973 | 0.92 / 0.95 / 0.93 | 0.94 / 0.91 / 0.93 |
+
+Including the grid cells increased non-cheating recall from 0.92 to 0.95 and left cheating recall unchanged at 0.91. It also increased precision and F1 for both classes by approximately 0.01 to 0.02. These small differences are descriptive and should not be interpreted as proof that the grid features will improve performance on new participants or sessions.
 
 The classification report was:
 
@@ -116,7 +123,7 @@ The classification report was:
 | Macro average | 0.93 | 0.93 | 0.93 | 186 |
 | Weighted average | 0.93 | 0.93 | 0.93 | 186 |
 
-The overall cross-validated accuracy was 0.930, with F1-scores of 0.93 for both classes. The ROC-AUC of 0.973 indicates strong ranking performance across classification thresholds. Fold accuracy ranged from 0.892 to 1.000, showing some variation across splits; these results should not be treated as deployment evidence.
+For the selected configuration's five-fold run, F1-scores were 0.93 for both classes. The ROC-AUC of 0.973 indicates strong ranking performance across classification thresholds. Fold accuracy ranged from 0.892 to 1.000, showing variation across splits; these results should not be treated as deployment evidence.
 
 These results should be interpreted cautiously. They are cross-validated estimates generated from 186 sessions, not results from a completely independent test set. They may therefore be optimistic if sessions from the same participant or recording conditions appear in both training and validation folds, or if any feature is closely related to the labeling procedure. Independent participant-level or future-session testing is still required.
 
