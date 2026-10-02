@@ -98,19 +98,25 @@ The model trainer was executed using the current complete dataset. It trained a 
 
 | Metric | Result |
 |---|---:|
-| Cross-validated accuracy | 0.909 |
-| Cross-validated ROC-AUC | 0.974 |
+| Fold 1 accuracy | 0.895 |
+| Fold 2 accuracy | 0.919 |
+| Fold 3 accuracy | 1.000 |
+| Fold 4 accuracy | 0.946 |
+| Fold 5 accuracy | 0.892 |
+| Cross-validated accuracy | 0.930 |
+| Cross-validated ROC-AUC | 0.973 |
 
 The classification report was:
 
 | Class | Precision | Recall | F1-score | Support |
 |---|---:|---:|---:|---:|
-| Non-cheating | 0.90 | 0.91 | 0.91 | 93 |
-| Cheating | 0.91 | 0.90 | 0.91 | 93 |
-| Macro average | 0.91 | 0.91 | 0.91 | 186 |
-| Weighted average | 0.91 | 0.91 | 0.91 | 186 |
+| Non-cheating | 0.92 | 0.95 | 0.93 | 93 |
+| Cheating | 0.94 | 0.91 | 0.93 | 93 |
+| Accuracy |  |  | 0.93 | 186 |
+| Macro average | 0.93 | 0.93 | 0.93 | 186 |
+| Weighted average | 0.93 | 0.93 | 0.93 | 186 |
 
-The overall cross-validated accuracy was 0.91, with similar precision, recall, and F1-scores for both classes. This indicates that the current feature set separates the two classes reasonably well within the cross-validation procedure. The ROC-AUC of 0.97 indicates strong ranking performance across classification thresholds, although the lower accuracy than the earlier run shows that the estimate is sensitive to the current dataset and should not be treated as deployment evidence.
+The overall cross-validated accuracy was 0.930, with F1-scores of 0.93 for both classes. The ROC-AUC of 0.973 indicates strong ranking performance across classification thresholds. Fold accuracy ranged from 0.892 to 1.000, showing some variation across splits; these results should not be treated as deployment evidence.
 
 These results should be interpreted cautiously. They are cross-validated estimates generated from 186 sessions, not results from a completely independent test set. They may therefore be optimistic if sessions from the same participant or recording conditions appear in both training and validation folds, or if any feature is closely related to the labeling procedure. Independent participant-level or future-session testing is still required.
 

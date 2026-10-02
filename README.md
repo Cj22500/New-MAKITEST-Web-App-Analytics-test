@@ -470,13 +470,18 @@ Its stratified five-fold cross-validation results are:
 
 | Metric | Result |
 |---|---:|
-| Cross-validated accuracy | 0.909 |
-| Cross-validated ROC-AUC | 0.974 |
+| Fold accuracies (1-5) | 0.895, 0.919, 1.000, 0.946, 0.892 |
+| Cross-validated accuracy | 0.930 |
+| Cross-validated ROC-AUC | 0.973 |
 
-The per-class precision, recall, and F1-scores are approximately 0.90 to
-0.91. These are cross-validated estimates rather than results from an
-independent test set, so participant-level or future-session validation is
-still required before deployment.
+| Class | Precision | Recall | F1-score | Support |
+|---|---:|---:|---:|---:|
+| Non-cheating | 0.92 | 0.95 | 0.93 | 93 |
+| Cheating | 0.94 | 0.91 | 0.93 | 93 |
+
+These are cross-validated estimates rather than results from an independent
+test set, so participant-level or future-session validation is still required
+before deployment.
 
 ### Predict one session
 
