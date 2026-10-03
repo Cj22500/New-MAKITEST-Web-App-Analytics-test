@@ -347,7 +347,11 @@
                         {% if csv_path %}
                             <a href="{% url 'download_session_file_indexed' attempt.proctoring_session_id 'csv' forloop.counter0 %}" 
                                class="file-btn d-block mb-2">
-                                CSV {{ forloop.counter }}
+                                {% if forloop.counter == 2 %}
+                                    Exam Session CSV
+                                {% else %}
+                                    Calibration CSV
+                                {% endif %}
                             </a>
                         {% endif %}
                         {% endfor %}
