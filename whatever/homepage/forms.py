@@ -8,7 +8,7 @@ class SignUpForm(UserCreationForm):
 
     email = forms.EmailField(
         required=True,
-        help_text='Use your university address.',
+        help_text='Use the email address you use for school.',
     )
 
     class Meta:

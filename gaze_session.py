@@ -23,6 +23,7 @@ Typical use from a Channels consumer:
 from __future__ import annotations
 
 import base64
+import inspect
 import os
 import time
 from datetime import datetime
@@ -106,6 +107,8 @@ class GazeSession:
             print(f"✓ Restored face axis offsets: yaw={face_yaw:.2f}, pitch={face_pitch:.2f}")
         
         self.gaze_processor = gdp.GazeDirectionProcessor()
+        blend = inspect.signature(self.gaze_processor.weighted_screen_position).parameters
+        self.blend_weights = [blend['weight_face'].default, blend['weight_eye'].default]
         self.screen_pos_processor = esp.EyeScreenPosProcessor(screen_width, screen_height)
         self.scoring_processor = ssp.SuspicionScoringProcessor(
             screen_width=screen_width,
@@ -157,6 +160,9 @@ class GazeSession:
         face_debug = None
         eye_debug = None
 
+        fresh_eye_data = None
+        fresh_face_direction = None
+
         # ---------------------------------------------------------- face pass
         # _draw_landmarks does the geometry as well as the drawing, so it is still
         # the call that produces avg_direction and the face centre. It is handed a
@@ -169,6 +175,7 @@ class GazeSession:
                 )
                 if avg_direction is not None and face_center is not None:
                     self.last_avg_direction = avg_direction
+                    fresh_face_direction = avg_direction
                     # Deliberately the *source* frame's dimensions: _draw_landmarks
                     # returns a 600x300 resize, but face_center is in original
                     # coordinates, so mixing the two would skew the anchor offset.
@@ -196,17 +203,20 @@ class GazeSession:
                 )
                 if raw_eye_data is not None:
                     self.last_raw_eye_data = raw_eye_data
+                    fresh_eye_data = raw_eye_data
                 if self.include_debug_frames:
                     eye_debug = self._encode(eye_frame)
             except Exception:
                 pass
 
-        face_detected = self.last_avg_direction is not None and face_results is not None
+        face_detected = fresh_face_direction is not None
+        self.current_face_detected = face_detected
+        self.current_eyes_detected = fresh_eye_data is not None
 
         # ------------------------------------------------- calibration sampling
         if self.is_collecting_samples:
-            if self.last_raw_eye_data is not None:
-                self.calibration_samples.append(self.last_raw_eye_data)
+            if fresh_eye_data is not None and face_detected:
+                self.calibration_samples.append(fresh_eye_data)
             if len(self.calibration_samples) >= self.eye_calibrator.sample_count:
                 self.eye_calibrator.calibrate(self.calibration_samples)
                 # Pass face axis offsets when completing calibration
@@ -246,11 +256,14 @@ class GazeSession:
             "frame": self.frame_count,
             "fps": round(self._fps, 1),
             "face_detected": bool(face_detected),
+            "eyes_detected": fresh_eye_data is not None,
             "yaw": self._num(yaw),
             "pitch": self._num(pitch),
             "face_screen_pos": self._pos(face_screenpos),
             "eye_screen_pos": self._pos(eye_screenpos),
             "weighted_screen_pos": self._pos(weighted),
+            "blend_weights": getattr(self, 'blend_weights', [0.4, 0.6]),
+            "screen_size": [self.screen_width, self.screen_height],
             "gaze_direction": list(directionsval) if directionsval else None,
             "calibration": self.calibration_status(),
             "suspicion": suspicion,
@@ -278,7 +291,7 @@ class GazeSession:
         if cal.calibration_stage == -1:
             # Needs a face on screen: the head pose baseline is taken from the
             # most recent frame, so this cannot run before tracking has started.
-            if self.last_avg_direction is None:
+            if not getattr(self, "current_face_detected", False):
                 return self.calibration_status(
                     ok=False, message="No face detected yet — cannot set the head pose baseline."
                 )
@@ -286,7 +299,7 @@ class GazeSession:
             cal.next_stage()
             return self.calibration_status(message=STAGE_PROMPTS.get(cal.calibration_stage, ""))
 
-        if self.last_raw_eye_data is None:
+        if not getattr(self, "current_eyes_detected", False):
             return self.calibration_status(ok=False, message="No eyes detected yet — hold still and retry.")
 
         self.calibration_samples = []
@@ -332,6 +345,12 @@ class GazeSession:
         if self._closed:
             return {"type": "session_closed", "session_id": self.session_id, "already_closed": True}
         self._closed = True
+
+        for processor, attribute in ((self.face_processor, 'face_landmarker'), (self.eye_processor, 'eye_landmarker')):
+            try:
+                getattr(processor, attribute).close()
+            except Exception:
+                pass
 
         try:
             self.scoring_processor.cleanup()
@@ -401,6 +420,8 @@ class GazeSession:
         self._last_frame_at = now
 
     def _error(self, message: str) -> dict:
+        self.current_face_detected = False
+        self.current_eyes_detected = False
         return {
             "type": "frame_result",
             "session_id": self.session_id,

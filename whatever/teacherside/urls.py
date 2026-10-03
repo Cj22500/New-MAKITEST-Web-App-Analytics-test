@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('exam/<int:exam_id>/question/<int:question_id>/edit/', views.add_questions, name='edit_question'),
+    path('session/<str:session_id>/diagnostics/', views.diagnostics, name='diagnostics'),
     path('', views.teacher_home, name='teacher_home'),
     path('exams/', views.exams_list, name='exams_list'),
     path('create_exam/', views.create_exam, name='create_exam'),

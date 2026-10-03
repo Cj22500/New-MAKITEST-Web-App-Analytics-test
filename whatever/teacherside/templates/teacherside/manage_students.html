@@ -1,325 +1,51 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<style>
-    .page-header {
-        margin-bottom: 24px;
-    }
-    .page-header h1 {
-        margin: 0 0 8px 0;
-        font-size: 28px;
-    }
-    .page-header .subtitle {
-        color: var(--muted);
-        font-size: 14px;
-        margin: 0;
-    }
-    .search-section {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .search-box {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-    .search-box input[type="text"] {
-        flex: 1;
-        padding: 10px 14px;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: var(--bg);
-        color: var(--fg);
-        font-size: 14px;
-    }
-    .search-box input[type="text"]:focus {
-        outline: none;
-        border-color: var(--accent, #007bff);
-    }
-    .search-box button {
-        padding: 10px 20px;
-        background: var(--accent, #007bff);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 600;
-    }
-    .search-box button:hover {
-        opacity: 0.9;
-    }
-    .search-box .clear-btn {
-        background: var(--panel);
-        color: var(--fg);
-        border: 1px solid var(--line);
-    }
-    .stats-bar {
-        display: flex;
-        gap: 20px;
-        margin-top: 12px;
-        font-size: 13px;
-        color: var(--muted);
-    }
-    .students-section {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 20px;
-    }
-    .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0 0 16px 0;
-    }
-    .students-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .students-table thead {
-        background: var(--bg);
-        border-bottom: 2px solid var(--line);
-    }
-    .students-table th {
-        text-align: left;
-        padding: 12px;
-        font-weight: 600;
-        font-size: 13px;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .students-table td {
-        padding: 14px 12px;
-        border-bottom: 1px solid var(--line);
-        font-size: 14px;
-    }
-    .students-table tr:last-child td {
-        border-bottom: none;
-    }
-    .students-table tbody tr:hover {
-        background: var(--bg);
-    }
-    .username-cell {
-        font-weight: 600;
-        color: var(--fg);
-    }
-    .email-cell {
-        color: var(--muted);
-        font-size: 13px;
-    }
-    .class-form {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-    .class-form input[type="text"] {
-        padding: 6px 10px;
-        border: 1px solid var(--line);
-        border-radius: 4px;
-        background: var(--bg);
-        color: var(--fg);
-        font-size: 13px;
-        min-width: 150px;
-    }
-    .class-form button {
-        padding: 6px 12px;
-        background: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    .class-form button:hover {
-        background: #45a049;
-    }
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: var(--muted);
-    }
-    .empty-state-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-        opacity: 0.5;
-    }
-    .role-badge {
-        display: inline-block;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        background: rgba(33, 150, 243, 0.2);
-        color: #2196f3;
-    }
-    .search-highlight {
-        background: rgba(255, 235, 59, 0.3);
-        padding: 1px 2px;
-        border-radius: 2px;
-    }
-    .info-banner {
-        background: rgba(33, 150, 243, 0.1);
-        border: 1px solid rgba(33, 150, 243, 0.3);
-        border-radius: 8px;
-        padding: 16px 20px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .info-banner-icon {
-        font-size: 24px;
-        flex-shrink: 0;
-    }
-    .info-banner-content {
-        flex: 1;
-    }
-    .info-banner-content strong {
-        display: block;
-        margin-bottom: 4px;
-        color: #2196f3;
-    }
-    .info-banner-content p {
-        margin: 0;
-        font-size: 14px;
-        color: var(--muted);
-    }
-</style>
-
-<div class="page-header">
-    <h1>👥 Manage Students</h1>
-    <p class="subtitle">View and update student class designations</p>
-</div>
-
-<!-- Info Banner -->
-<div class="info-banner">
-    <div class="info-banner-icon">ℹ️</div>
-    <div class="info-banner-content">
-        <strong>Class Designations for Exam Creation</strong>
-        <p>Set up class designations here before creating exams. When creating or modifying exams, you'll select from these existing classes.</p>
-    </div>
-</div>
-
-<!-- Search Section -->
-<div class="search-section">
-    <form method="GET" action="{% url 'manage_students' %}">
-        <div class="search-box">
-            <input 
-                type="text" 
-                name="search" 
-                placeholder="🔍 Search by username, name, email, or class designation..." 
-                value="{{ search_query }}"
-                autofocus
-            >
-            <button type="submit">Search</button>
-            {% if search_query %}
-            <a href="{% url 'manage_students' %}" class="clear-btn btn">Clear</a>
-            {% endif %}
-        </div>
-    </form>
-    <div class="stats-bar">
-        <span>Total Students: <strong>{{ total_count }}</strong></span>
-        {% if search_query %}
-        <span>🔎 Filtered Results: <strong>{{ filtered_count }}</strong></span>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Students List Section -->
-<div class="students-section">
-    <h2 class="section-title">Student Accounts</h2>
-    
-    {% if students %}
-    <table class="students-table">
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Username</th>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Class Designation</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in students %}
-            <tr>
-                <td>{{ student.id }}</td>
-                <td class="username-cell">
-                    {{ student.username }}
-                    <span class="role-badge">Student</span>
-                </td>
-                <td>
-                    {% if student.first_name or student.last_name %}
-                        {{ student.first_name }} {{ student.last_name }}
-                    {% else %}
-                        <span style="color: var(--muted); font-style: italic;">Not provided</span>
-                    {% endif %}
-                </td>
-                <td class="email-cell">
-                    {% if student.email %}
-                        {{ student.email }}
-                    {% else %}
-                        <span style="font-style: italic;">No email</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <form method="POST" action="{% url 'update_student_class' student.id %}" class="class-form">
-                        {% csrf_token %}
-                        <input 
-                            type="text" 
-                            name="class_designation" 
-                            value="{{ student.class_designation|default:'' }}"
-                            placeholder="e.g., Grade 10-A"
-                        >
-                        <button type="submit">Save</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-state-icon">🔍</div>
-        {% if search_query %}
-        <p><strong>No students found matching "{{ search_query }}"</strong></p>
-        <p>Try a different search term or <a href="{% url 'manage_students' %}">view all students</a></p>
-        {% else %}
-        <p><strong>No students registered yet</strong></p>
-        <p>Students will appear here once they create accounts</p>
-        {% endif %}
-    </div>
-    {% endif %}
-</div>
-
-<!-- Messages Display -->
-{% if messages %}
-<div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-    {% for message in messages %}
-    <div style="
-        background: {% if message.tags == 'success' %}#4caf50{% else %}#f44336{% endif %};
-        color: white;
-        padding: 12px 20px;
-        border-radius: 6px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        animation: slideIn 0.3s ease-out;
-    ">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-<style>
-    @keyframes slideIn {
-        from { transform: translateX(400px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-</style>
+<h1>Students</h1>
+<p class="sub">Assign students to classes in the shared research directory.</p>
+<section class="card">
+<form method="get">
+<label for="search">Search students by name, username, email, or class</label>
+<input id="search" name="search" value="{{ search_query }}">
+<div class="actions">
+<button class="primary">Search</button>
+{% if search_query %}
+<a href="{% url 'manage_students' %}">Clear search</a>
 {% endif %}
-
+</div>
+</form>
+<p class="foot">{{ filtered_count }} shown · {{ total_count }} total students</p>
+</section>
+<section class="card table-wrap">
+<table>
+<caption>Student class assignments</caption>
+<thead>
+<tr>
+<th scope="col">Student</th>
+<th scope="col">Email</th>
+<th scope="col">Class</th>
+</tr>
+</thead>
+<tbody>
+{% for student in students %}
+<tr>
+<td>{{ student.get_full_name|default:student.username }}<small>{{ student.username }}</small>
+</td>
+<td>{{ student.email }}</td>
+<td>
+<form method="post" action="{% url 'update_student_class' student.pk %}">
+{% csrf_token %}
+<label class="sr-only" for="class-{{ student.pk }}">Class for {{ student.username }}</label>
+<input id="class-{{ student.pk }}" name="class_designation" maxlength="100" value="{{ student.class_designation|default:'' }}" placeholder="e.g. Grade 10-A">
+<button class="btn ghost">Save class</button>
+</form>
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="3">No students found. Try another search or wait for students to register.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</section>
 {% endblock %}

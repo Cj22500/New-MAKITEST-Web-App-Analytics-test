@@ -1,85 +1,52 @@
-{% extends "base.html" %}
-
-{% block title %}Exam Results — MAKITEST{% endblock %}
-
+{% extends 'base.html' %}
 {% block content %}
-<div style="max-width: 900px; margin: 0 auto; padding: 20px;">
-  <div class="card" style="margin-bottom: 20px;">
-    <h1 style="margin-bottom: 20px;">Exam Results</h1>
-    
-    <div class="card" style="background: var(--panel); margin-bottom: 0;">
-      <h2 style="margin-bottom: 15px; color: var(--primary);">{{ exam_attempt.exam.title }}</h2>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
-        <div>
-          <p style="color: var(--muted); font-size: 14px; margin-bottom: 5px;">Attempt Number</p>
-          <p style="font-size: 18px; font-weight: 600;">{{ exam_attempt.attempt_number }}</p>
-        </div>
-        
-        <div>
-          <p style="color: var(--muted); font-size: 14px; margin-bottom: 5px;">Your Score</p>
-          <p style="font-size: 32px; font-weight: 700; color: {% if exam_attempt.score >= 75 %}var(--ok){% elif exam_attempt.score >= 50 %}var(--warn){% else %}var(--bad){% endif %};">
-            {{ exam_attempt.score|floatformat:2 }}%
-          </p>
-        </div>
-        
-        <div>
-          <p style="color: var(--muted); font-size: 14px; margin-bottom: 5px;">Completed</p>
-          <p style="font-size: 16px; font-weight: 500;">{{ exam_attempt.completed_at|date:"M d, Y" }}</p>
-          <p style="font-size: 14px; color: var(--muted);">{{ exam_attempt.completed_at|date:"H:i" }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="card">
-    <h3 style="margin-bottom: 20px;">Question Review</h3>
-    
-    {% for item in questions_with_answers %}
-    <div class="card" style="margin-bottom: 15px; background: var(--panel); border-left: 4px solid {% if item.is_correct %}var(--ok){% else %}var(--bad){% endif %};">
-      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-        <h4 style="margin: 0; flex: 1;">Question {{ forloop.counter }}</h4>
-        <span style="padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; {% if item.is_correct %}background: var(--ok); color: white;{% else %}background: var(--bad); color: white;{% endif %}">
-          {% if item.is_correct %}✓ Correct{% else %}✗ Incorrect{% endif %}
-        </span>
-      </div>
-      
-      <p style="margin-bottom: 15px; font-size: 16px; line-height: 1.6;">{{ item.question.question_text }}</p>
-      
-      {% if item.question.question_image %}
-      <div style="margin-bottom: 15px;">
-        <img src="{{ item.question.question_image.url }}" alt="Question" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      </div>
-      {% endif %}
-      
-      <div style="display: grid; gap: 10px;">
-        <div style="padding: 10px; border-radius: 6px; background: {% if item.is_correct %}rgba(46, 125, 50, 0.1){% else %}rgba(211, 47, 47, 0.1){% endif %};">
-          <p style="margin: 0; font-size: 14px; color: var(--muted); margin-bottom: 4px;">Your Answer</p>
-          <p style="margin: 0; font-size: 16px; font-weight: 500; color: {% if item.is_correct %}var(--ok){% else %}var(--bad){% endif %};">
-            {% if item.student_answer %}
-              {{ item.student_answer }}
-            {% else %}
-              <em>(Not answered)</em>
-            {% endif %}
-          </p>
-        </div>
-        
-        <div style="padding: 10px; border-radius: 6px; background: rgba(46, 125, 50, 0.1);">
-          <p style="margin: 0; font-size: 14px; color: var(--muted); margin-bottom: 4px;">Correct Answer</p>
-          <p style="margin: 0; font-size: 16px; font-weight: 500; color: var(--ok);">{{ item.question.correct_answer_text }}</p>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  
-  <div class="card" style="margin-top: 20px;">
-    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-      <a href="{% url 'student_home' %}" class="btn primary">Back to Home</a>
-      {% if exam_attempt.attempt_number < exam_attempt.exam.attempt_limit %}
-      <a href="{% url 'exam_details' %}?exam_id={{ exam_attempt.exam.exam_id }}" class="btn ghost">Retake Exam</a>
-      {% endif %}
-    </div>
-  </div>
+<p class="breadcrumbs">
+<a href="{% url 'my_scores' %}">My results</a> / {{ exam_attempt.exam.title }}</p>
+<h1>Your exam was submitted</h1>
+<p class="sub">Your answers have been received.</p>
+<section class="card">
+<h2>{{ exam_attempt.exam.title }}</h2>
+<div class="grid three">
+<div>
+<p class="muted">Your score</p>
+<p class="score">{{ exam_attempt.score|floatformat:1 }}%</p>
+</div>
+<div>
+<p class="muted">Attempt</p>
+<p>{{ exam_attempt.attempt_number }}</p>
+</div>
+<div>
+<p class="muted">Submitted</p>
+<p>{{ exam_attempt.completed_at|date:'M j, Y, g:i A' }} PHT</p>
+</div>
+</div>
+</section>
+<h2>Question review</h2>
+{% for item in questions_with_answers %}
+<section class="card">
+<div class="row-head">
+<h3>Question {{ forloop.counter }}</h3>
+<span class="badge {% if item.is_correct %}ok{% endif %}">
+{% if item.is_correct %}Correct{% elif not item.student_answer %}Unanswered{% else %}Incorrect{% endif %}
+</span>
+</div>
+<p class="question-text">{{ item.question.question_text }}</p>
+{% if item.question.question_image %}
+<button type="button" class="image-button" data-enlarge>
+<img class="question-image" src="{{ item.question.question_image.url }}" alt="{{ item.question.image_description|default:'Question illustration' }}">
+<small>Enlarge image</small>
+</button>
+{% endif %}
+<div class="review-answer">
+<strong>Your answer:</strong> {{ item.student_answer|default:'Not answered' }}</div>
+<div class="review-answer">
+<strong>Correct answer:</strong> {{ item.question.correct_answer_text }}</div>
+</section>
+{% endfor %}
+<div class="actions">
+<a class="btn" href="{% url 'student_home' %}">Back to my exams</a>
+{% if can_retake %}
+<a class="btn ghost" href="{% url 'exam_details' %}?exam_id={{ exam_attempt.exam.pk }}">View retake details</a>
+{% endif %}
 </div>
 {% endblock %}

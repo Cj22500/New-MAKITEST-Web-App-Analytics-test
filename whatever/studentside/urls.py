@@ -2,6 +2,10 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
+    path('start-exam/', views.start_exam, name='start_exam'),
+    path('reset-setup/', views.reset_preparation, name='reset_preparation'),
+    path('attempt/<int:attempt_id>/state/', views.attempt_state, name='attempt_state'),
+    path('attempt/<int:attempt_id>/answers/', views.save_exam_answers, name='save_exam_answers'),
     path('', views.student_home, name='student_home'),
     path('camera/', include('camera.urls')),
     path('exam_details/', views.exam_details, name='exam_details'),

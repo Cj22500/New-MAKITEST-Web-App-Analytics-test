@@ -1,54 +1,39 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<h1>Exams List</h1>
-<div class="card">
-  <h2 style="font-size:17px;margin:0 0 6px">Create Exam</h2>
-  <p class="sub" style="margin-bottom:14px">
-    Create a new exam for your students.
-  </p>
-  <p style="margin-bottom:0">
-    <a class="btn" href="{% url 'create_exam' %}">Create Exam</a>
-  </p>
+<div class="page-heading">
+<div>
+<h1>My exams</h1>
+<p class="sub">Exams you created.</p>
 </div>
-<div class="card">
-    <h2 style="font-size:17px;margin:0 0 6px">Existing Exams</h2>
-    <p class="sub" style="margin-bottom:14px">
-        View and manage your existing exams.
-    </p>
-    <ul class="exam-list">
-        {% for exam in exams %}
-        <li class="exam-item">
-            <div class="exam-info">
-                <strong>{{ exam.title }}</strong>
-                <p style="margin: 4px 0; color: var(--muted); font-size: 14px;">{{ exam.description|truncatewords:20 }}</p>
-                <p style="margin: 4px 0; font-size: 13px;">Deadline: {{ exam.deadline|date:"M d, Y H:i" }}</p>
-            </div>
-            <div class="exam-actions">
-                <a href="{% url 'modify_exam' exam.exam_id %}" class="btn">Modify Exam</a>
-                <a href="{% url 'exam_attempts_list' exam.exam_id %}" class="btn btn-info">
-                    View Student Attempts
-                </a>
-            </div>
-        </li>
-        {% empty %}
-        <li style="color: var(--muted);">No exams available.</li>
-        {% endfor %}
-    </ul>
-    <style>
-    .exam-list { list-style: none; padding: 0; }
-    .exam-item {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        padding: 16px;
-        margin-bottom: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-    }
-    .exam-info { flex: 1; }
-    .exam-actions { display: flex; gap: 8px; }
-    </style>
+<a class="btn" href="{% url 'create_exam' %}">Create exam</a>
 </div>
+<section class="card">
+<ul class="exam-list">
+{% for exam in exams %}
+<li class="exam-item">
+<div class="exam-info">
+<h2>{{ exam.title }}</h2>
+<p>{{ exam.description|truncatewords:20 }}</p>
+<div class="meta">
+<span>{{ exam.class_designation }}</span>
+<span>{{ exam.question_count }} questions</span>
+<span>Deadline: {{ exam.deadline|date:'M j, Y, g:i A' }} PHT</span>
+</div>
+<span class="badge {% if exam.access_status %}ok{% endif %}">
+{% if exam.access_status %}Open{% else %}Closed{% endif %}
+</span>
+</div>
+<div class="exam-actions">
+<a class="btn ghost" href="{% url 'modify_exam' exam.pk %}">Manage exam</a>
+<a class="btn" href="{% url 'exam_attempts_list' exam.pk %}">Review attempts</a>
+</div>
+</li>
+{% empty %}
+<li>
+<h2>Create your first exam</h2>
+<p>Add its details, build the questions, then open access for your class.</p>
+</li>
+{% endfor %}
+</ul>
+</section>
 {% endblock %}

@@ -1,40 +1,29 @@
-{% extends "base.html" %}
-
-{% block title %}MAKITEST{% endblock %}
-
+{% extends 'base.html' %}
 {% block content %}
-<h1>MAKITEST</h1>
-<p class="sub">Proctored online examinations with webcam gaze monitoring.</p>
-
-<div class="card">
-  {% if user.role == 'student' %}
-    <p>
-      During an exam your webcam is used to track your activities. Looking
-      away from the screen for too long, leaving the exam window, or using
-      forbidden keyboard shortcuts is recorded for the examiner to review.
-    </p>
-  {% elif user.role == 'teacher' %}
-    <p>
-      You can create and manage exams for your students. Each exam has a unique
-      access code that students must enter to take the exam.
-    </p>
-  {% else %}
-    <p>
-      Create an account to take a proctored exam, or log in if you already have one.
-    </p>
-  {% endif %}
-  
-  <p style="margin-bottom:0">
-    {% if user.role == 'student' %}
-      <a class="btn" href="{% url 'student_home' %}">Take an exam</a>
-    {% elif user.role == 'teacher' %}
-      <a class="btn" href="{% url 'teacher_home' %}">Teacher dashboard</a>
-    {% elif user.is_authenticated %}
-      <a class="btn" href="{% url 'logout' %}">Log out</a>
-    {% else %}
-      <a class="btn" href="{% url 'signup' %}">Create an account</a>
-      <a class="btn ghost" href="{% url 'login' %}">Log in</a>
-    {% endif %}
-  </p>
+<div class="grid">
+<section>
+<p class="muted">Online exams for your classroom</p>
+<h1>A clear place to take your next exam.</h1>
+<p class="sub">MAKITEST brings exam questions, camera setup, and results into one guided experience.</p>
+<div class="actions">
+{% if user.role == 'student' %}
+<a class="btn" href="{% url 'student_home' %}">Go to my exams</a>
+{% elif user.role == 'teacher' %}
+<a class="btn" href="{% url 'teacher_home' %}">Open teacher overview</a>
+{% else %}
+<a class="btn" href="{% url 'login' %}">Log in</a>
+<a class="btn ghost" href="{% url 'signup' %}">Create account</a>
+{% endif %}
+</div>
+</section>
+<section class="card">
+<h2>Know what to expect</h2>
+<ol>
+<li>Read your exam instructions.</li>
+<li>Check your camera and complete guided setup.</li>
+<li>Answer the questions and submit your exam.</li>
+</ol>
+<p class="muted">During an exam, camera observations and selected browser events support your teacher’s review. A flagged event does not establish misconduct.</p>
+</section>
 </div>
 {% endblock %}

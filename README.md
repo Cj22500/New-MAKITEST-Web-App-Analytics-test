@@ -1,5 +1,10 @@
 ## MAKITEST : Suspicious Exam Behaviour Detection System
 
+For the redesigned Django web app, use **Python 3.12** and follow
+[Web app setup and validation](docs/WEB_UI_AND_VALIDATION.md). The web app uses
+browser camera permissions and guided Space-key calibration; the desktop tracker
+instructions below describe the separate native research pipeline.
+
 This serves as a guide to the usage, setup, and system framework and architecture of the dual gaze tracking system of MAKITEST. The system monitors exam takers via webcam, tracking head pose and eye gaze to detect and log suspicious behaviours in real time.
 
 ---
@@ -86,7 +91,7 @@ the confidence of the selected label.
 ## Step-by-Step Setup
 
 ### Prerequisites
-- **Python 3.10 or higher** — [Download Python](https://www.python.org/downloads/)
+- **Python 3.12** — the supported, validated version for the pinned dependencies.
 - **A webcam** connected and accessible (index `0` or `1`)
 - **Windows OS** recommended (the `keyboard` library requires it for global hotkey hooks)
 

@@ -1,414 +1,77 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<style>
-    .page-header {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        padding: 1.5rem;
-        border-radius: 10px;
-        margin-bottom: 2rem;
-    }
-    .page-header h2 {
-        color: var(--text);
-        font-size: 24px;
-        margin: 0 0 0.5rem 0;
-    }
-    .page-header h4 {
-        color: var(--muted);
-        font-size: 16px;
-        font-weight: 400;
-        margin: 0;
-    }
-    .back-btn {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        color: var(--text);
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        transition: all 0.3s ease;
-        font-size: 14px;
-    }
-    .back-btn:hover {
-        background: var(--bg);
-        color: var(--text);
-        text-decoration: none;
-        border-color: var(--accent);
-    }
-    .attempt-card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 2rem;
-    }
-    .attempt-header {
-        background: var(--accent);
-        color: #06202b;
-        padding: 1rem 1.5rem;
-    }
-    .attempt-header h5 {
-        margin: 0;
-        font-weight: 600;
-    }
-    .attempt-body {
-        padding: 1.5rem;
-    }
-    .info-label {
-        color: var(--muted);
-        font-size: 0.875rem;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-    }
-    .info-value {
-        color: var(--text);
-        margin-bottom: 1rem;
-    }
-    .file-section-title {
-        color: var(--text);
-        font-size: 1rem;
-        font-weight: 600;
-        margin: 1.5rem 0 1rem 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--line);
-    }
-    .file-btn {
-        background: var(--accent);
-        border: 1px solid var(--accent);
-        color: #06202b;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 0.875rem;
-        font-weight: 600;
-        transition: all 0.2s ease;
-    }
-    .file-btn:hover {
-        background: transparent;
-        color: var(--accent);
-        text-decoration: none;
-    }
-    .file-btn.secondary {
-        background: var(--panel);
-        border-color: var(--line);
-        color: var(--text);
-    }
-    .file-btn.secondary:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-    }
-    .file-btn.warning {
-        background: #f59e0b;
-        border-color: #f59e0b;
-        color: #1a1a1a;
-    }
-    .file-btn.warning:hover {
-        background: transparent;
-        color: #f59e0b;
-    }
-    .file-btn.primary {
-        background: var(--ok);
-        border-color: var(--ok);
-        color: #0a2f1f;
-    }
-    .file-btn.primary:hover {
-        background: transparent;
-        color: var(--ok);
-    }
-    .file-path {
-        color: var(--muted);
-        font-size: 0.75rem;
-        display: block;
-        margin-top: 0.25rem;
-    }
-    .alert-warning {
-        background: rgba(239, 75, 75, 0.1);
-        border: 1px solid var(--bad);
-        color: var(--bad);
-        padding: 1rem;
-        border-radius: 6px;
-    }
-    .alert-info {
-        background: rgba(76, 201, 240, 0.1);
-        border: 1px solid var(--accent);
-        color: var(--accent);
-        padding: 1rem;
-        border-radius: 6px;
-    }
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        margin: 0 -0.5rem;
-    }
-    .col-3 {
-        flex: 0 0 25%;
-        max-width: 25%;
-        padding: 0 0.5rem;
-    }
-    .col-md-6 {
-        flex: 0 0 50%;
-        max-width: 50%;
-        padding: 0 0.5rem;
-    }
-    @media (max-width: 768px) {
-        .col-3, .col-md-6 {
-            flex: 0 0 100%;
-            max-width: 100%;
-            margin-bottom: 1rem;
-        }
-    }
-    .icon-calibration::before {
-        content: "■";
-        color: var(--accent);
-        margin-right: 0.5rem;
-    }
-    .icon-heatmap::before {
-        content: "▦";
-        color: var(--accent);
-        margin-right: 0.5rem;
-    }
-    .icon-logs::before {
-        content: "▤";
-        color: var(--accent);
-        margin-right: 0.5rem;
-    }
-    .icon-violations::before {
-        content: "●";
-        color: #f59e0b;
-        margin-right: 0.5rem;
-    }
-    .clips-heading {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 1rem;
-        margin: 1.5rem 0 1rem 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--line);
-    }
-    .clips-heading .file-section-title {
-        margin: 0;
-        padding: 0;
-        border: 0;
-    }
-    .clips-count {
-        color: var(--muted);
-        font-size: 0.8rem;
-        white-space: nowrap;
-    }
-    .clip-grid {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 1rem;
-        overflow-x: auto;
-        padding: 0 0.25rem 0.75rem;
-        scroll-snap-type: x proximity;
-        scrollbar-color: var(--accent) var(--line);
-    }
-    .clip-card {
-        flex: 0 0 280px;
-        min-width: 280px;
-        overflow: hidden;
-        background: var(--bg);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        scroll-snap-align: start;
-    }
-    .clip-card video {
-        display: block;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        object-fit: cover;
-        background: #000;
-    }
-    .clip-meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        padding: 0.65rem 0.75rem;
-    }
-    .clip-label {
-        min-width: 0;
-        color: var(--text);
-        font-size: 0.82rem;
-        font-weight: 600;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .clip-download {
-        flex: 0 0 auto;
-        color: var(--accent);
-        font-size: 0.76rem;
-        text-decoration: none;
-    }
-    .clip-download:hover { color: var(--text); }
-    @media (max-width: 560px) {
-        .clip-card { flex-basis: 250px; min-width: 250px; }
-        .clips-heading { align-items: flex-start; flex-direction: column; gap: 0.25rem; }
-    }
-</style>
-
-<div class="container mt-4 mb-5">
-    <div class="page-header">
-        <h2>{{ student.first_name }} {{ student.last_name }}</h2>
-        <h4>{{ exam.title }}</h4>
-    </div>
-    
-    <a href="{% url 'exam_attempts_list' exam.exam_id %}" class="back-btn mb-4">
-        <span style="margin-right: 0.5rem;">←</span> Back to Students
-    </a>
-    
-    {% for attempt in attempts %}
-    <div class="attempt-card mt-4">
-        <div class="attempt-header">
-            <h5>Attempt #{{ attempt.attempt_number }}</h5>
-        </div>
-        <div class="attempt-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="info-label">Score</p>
-                    <p class="info-value">
-                        {% if attempt.score %}
-                            {{ attempt.score|floatformat:1 }}%
-                        {% else %}
-                            Not completed
-                        {% endif %}
-                    </p>
-                    <p class="info-label">Completed</p>
-                    <p class="info-value">
-                        {% if attempt.completed_at %}
-                            {{ attempt.completed_at|date:"Y-m-d H:i:s" }}
-                        {% else %}
-                            In progress
-                        {% endif %}
-                    </p>
-                </div>
-                <div class="col-md-6">
-                    <p class="info-label">Suspicion Score</p>
-                    <p class="info-value">
-                        {{ attempt.suspicion_display }}
-                    </p>
-                    <p class="info-label">Violations</p>
-                    <p class="info-value">{{ attempt.violation_count }}</p>
-                    <p class="info-label">Session ID</p>
-                    <p class="info-value"><code style="color: var(--accent);">{{ attempt.proctoring_session_id }}</code></p>
-                </div>
-            </div>
-            
-            {% if attempt.files %}
-            <h6 class="file-section-title">Proctoring Session Files</h6>
-            
-            <div class="row mt-3">
-                <!-- Calibration Column -->
-                <div class="col-3">
-                    <p class="info-label mb-2 icon-calibration">Calibration</p>
-                    {% if attempt.files.calibration_file %}
-                        <a href="{% url 'download_session_file' attempt.proctoring_session_id 'calibration' %}" 
-                           class="file-btn d-block mb-2">
-                            Download
-                        </a>
-                        <a href="{% url 'view_session_file' attempt.proctoring_session_id 'calibration' %}" 
-                           class="file-btn secondary d-block" target="_blank">
-                            View
-                        </a>
-                    {% else %}
-                        <span class="file-path">Not available</span>
-                    {% endif %}
-                </div>
-                
-                <!-- Heatmap Column -->
-                <div class="col-3">
-                    <p class="info-label mb-2 icon-heatmap">Heatmap</p>
-                    {% if attempt.files.heatmap_image %}
-                        <a href="{% url 'download_session_file' attempt.proctoring_session_id 'heatmap' %}" 
-                           class="file-btn d-block mb-2">
-                            Download
-                        </a>
-                        <a href="{% url 'view_session_file' attempt.proctoring_session_id 'heatmap' %}" 
-                           class="file-btn secondary d-block" target="_blank">
-                            View
-                        </a>
-                    {% else %}
-                        <span class="file-path">Not available</span>
-                    {% endif %}
-                </div>
-                
-                <!-- Session Logs Column -->
-                <div class="col-3">
-                    <p class="info-label mb-2 icon-logs">Session Logs</p>
-                    {% if attempt.files.session_log_csvs %}
-                        {% for csv_path in attempt.files.session_log_csvs %}
-                        {% if csv_path %}
-                            <a href="{% url 'download_session_file_indexed' attempt.proctoring_session_id 'csv' forloop.counter0 %}" 
-                               class="file-btn d-block mb-2">
-                                {% if forloop.counter == 2 %}
-                                    Exam Session CSV
-                                {% else %}
-                                    Calibration CSV
-                                {% endif %}
-                            </a>
-                        {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        <span class="file-path">Not available</span>
-                    {% endif %}
-                </div>
-                
-                <!-- Violations Summary Column -->
-                <div class="col-3">
-                    <p class="info-label mb-2 icon-violations">Violations</p>
-                    {% if attempt.files.violation_videos %}
-                        <span class="file-path">{{ attempt.files.violation_videos|length }} video clips below</span>
-                    {% else %}
-                        <span class="file-path">Not available</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            {% if attempt.files.violation_videos %}
-            <div class="clips-heading">
-                <h6 class="file-section-title">Violation clips</h6>
-                <span class="clips-count">{{ attempt.files.violation_videos|length }} clips · select play to review</span>
-            </div>
-            <div class="clip-grid">
-                {% for video_filename in attempt.video_filenames %}
-                <article class="clip-card">
-                    <video controls preload="metadata">
-                        <source src="{% url 'view_session_file_indexed' attempt.proctoring_session_id 'video' forloop.counter0 %}" type="video/mp4">
-                        Your browser does not support video playback.
-                    </video>
-                    <div class="clip-meta">
-                        <span class="clip-label" title="{{ video_filename }}">{{ video_filename }}</span>
-                        <a class="clip-download" href="{% url 'download_session_file_indexed' attempt.proctoring_session_id 'video' forloop.counter0 %}">Download</a>
-                    </div>
-                </article>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <!-- Download Session Files Section -->
-            <h6 class="file-section-title">Download Session Files</h6>
-            <div class="mt-3">
-                <a href="{% url 'download_all_session_files' attempt.proctoring_session_id %}" 
-                   class="file-btn primary">
-                    Download All (ZIP)
-                </a>
-            </div>
-            {% else %}
-            <div class="alert-warning mt-3">
-                No proctoring files available for this attempt.
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    {% empty %}
-    <div class="alert-info mt-4">No attempts found for this student.</div>
-    {% endfor %}
+<p class="breadcrumbs">
+<a href="{% url 'exams_list' %}">My exams</a> / <a href="{% url 'exam_attempts_list' exam.pk %}">{{ exam.title }}</a> / Student attempts</p>
+<h1>{{ student.get_full_name|default:student.username }}</h1>
+<p class="sub">{{ exam.title }}</p>
+<div class="notice">Camera signals and model classifications support human review. They do not establish misconduct or automatically change exam scores.</div>
+{% for attempt in attempts %}
+<section class="card">
+<h2>Attempt {{ attempt.attempt_number }}</h2>
+<div class="grid">
+<div>
+<h3>Exam result</h3>
+<p>
+{% if attempt.score is not None %}{{ attempt.score|floatformat:1 }}%{% else %}In progress{% endif %}
+</p>
+<p class="muted">
+{% if attempt.completed_at %}Submitted {{ attempt.completed_at|date:'M j, Y, g:i A' }} PHT{% endif %}
+</p>
+<h3>Monitoring</h3>
+<p>
+{% if attempt.monitoring_interrupted %}Incomplete — technical interruption{% elif not attempt.monitoring_started %}Not started{% elif not attempt.completed_at %}In progress{% else %}Session recorded{% endif %}
+</p>
+<p>{{ attempt.violation_count }} flagged events</p>
 </div>
+<div>
+<h3>Model analysis</h3>
+<p>Status: {{ attempt.prediction_status|title }}</p>
+{% if attempt.prediction_status == 'completed' %}
+<p>Model classified this session as: <strong>{{ attempt.model_display }}</strong>.</p>
+<p>Confidence in the selected class: {{ attempt.confidence_percent|floatformat:0 }}%. This is not a standardized likelihood of misconduct.</p>
+{% else %}
+<p class="muted">A classification is unavailable until complete monitoring artifacts can be analyzed.</p>
+{% endif %}
+</div>
+</div>
+{% if attempt.files %}
+<h3>Recorded event clips</h3>
+<div class="clip-grid">
+{% for filename in attempt.video_filenames %}
+<article>
+<video controls preload="metadata" aria-label="Recorded event clip {{ forloop.counter }}">
+<source src="{% url 'view_session_file_indexed' attempt.proctoring_session_id 'video' forloop.counter0 %}" type="video/mp4">
+</video>
+<p class="clip-label">{{ filename }}</p>
+<a href="{% url 'download_session_file_indexed' attempt.proctoring_session_id 'video' forloop.counter0 %}">Download clip</a>
+</article>
+{% empty %}
+<p>No event clips were recorded for this session.</p>
+{% endfor %}
+</div>
+<details>
+<summary>Session files and technical details</summary>
+<p>Session {{ attempt.proctoring_session_id }}</p>
+{% if attempt.files.heatmap_image %}
+<a href="{% url 'view_session_file' attempt.proctoring_session_id 'heatmap' %}">View gaze heatmap</a>
+{% endif %}
+<div class="actions">
+{% for csv in attempt.files.session_log_csvs %}
+<a href="{% url 'download_session_file_indexed' attempt.proctoring_session_id 'csv' forloop.counter0 %}">
+{% if forloop.first %}Calibration log{% elif forloop.last %}Exam log{% else %}Additional session log{% endif %}
+</a>
+{% endfor %}
+<a href="{% url 'download_all_session_files' attempt.proctoring_session_id %}">Download all evidence</a>
+</div>
+</details>
+{% else %}
+<p class="notice">Session evidence is unavailable for this attempt.</p>
+{% endif %}
+{% if attempt.has_preparation %}
+<a class="btn ghost" href="{% url 'diagnostics' attempt.proctoring_session_id %}">Staff tracking diagnostics</a>
+{% endif %}
+</section>
+{% empty %}
+<section class="card">No attempts found.</section>
+{% endfor %}
 {% endblock %}

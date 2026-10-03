@@ -1,598 +1,73 @@
-{% comment %}
-MAKITEST proctoring page.
-
-Captures the webcam in the browser, streams JPEG frames to the Channels consumer
-over a WebSocket, and renders whatever comes back. The camera never leaves the
-client except as compressed frames; all tracking happens server-side.
-
-Deliberately a single self-contained file with inline CSS/JS — no build step, no
-static-files configuration, nothing extra to go wrong on defence day.
-{% endcomment %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MAKITEST — Proctoring Session</title>
-<style>
-  :root {
-    --bg: #12141a;
-    --panel: #1b1e26;
-    --line: #2c313d;
-    --text: #e8eaf0;
-    --muted: #949bab;
-    --ok: #3ecf8e;
-    --warn: #f5a623;
-    --bad: #ef4b4b;
-    --face: #3ecf8e;
-    --eye: #ef4b4b;
-    --weighted: #4cc9f0;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 20px;
-    background: var(--bg); color: var(--text);
-    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
-  }
-  h1 { font-size: 18px; margin: 0; letter-spacing: .02em; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
-       color: var(--muted); margin: 0 0 10px; font-weight: 600; }
-  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-           margin-bottom: 18px; }
-  .sid { color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
-
-  .layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 18px; }
-  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
-
-  .panel { background: var(--panel); border: 1px solid var(--line);
-           border-radius: 10px; padding: 14px; }
-
-  video, .feed img { width: 640px; height: 480px; border-radius: 6px; display: block; background: #000; }
-  video.hidden { display: none; }
-
-  /* Gaze grid: a 1920x1080 screen drawn at 16:9, with the 3x3 regions marked. */
-  .screen { position: relative; width: 100%; aspect-ratio: 16 / 9;
-            background: #0c0e13; border: 1px solid var(--line); border-radius: 6px;
-            overflow: hidden; }
-  .screen .cell { position: absolute; border: 1px dashed #232833; }
-  .dot { position: absolute; width: 14px; height: 14px; border-radius: 50%;
-         margin: -7px 0 0 -7px; transition: left .08s linear, top .08s linear;
-         box-shadow: 0 0 10px currentColor; }
-  .dot.face { background: var(--face); color: var(--face); }
-  .dot.eye { background: var(--eye); color: var(--eye); }
-  .dot.weighted { background: var(--weighted); color: var(--weighted);
-                  width: 20px; height: 20px; margin: -10px 0 0 -10px; }
-  .legend { display: flex; gap: 14px; margin-top: 10px; font-size: 12px; color: var(--muted); }
-  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
-
-  .rows { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; }
-  .rows dt { color: var(--muted); }
-  .rows dd { margin: 0; font-family: ui-monospace, Consolas, monospace; }
-
-  button { font: inherit; font-weight: 600; padding: 9px 16px; border-radius: 6px;
-           border: 1px solid var(--line); background: #262b36; color: var(--text);
-           cursor: pointer; }
-  button.primary { background: var(--weighted); border-color: var(--weighted); color: #06202b; }
-  button:disabled { opacity: .45; cursor: not-allowed; }
-
-  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px;
-          border-radius: 999px; font-size: 12px; font-weight: 600;
-          background: #262b36; color: var(--muted); }
-  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-  .pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
-
-  .prompt { font-size: 15px; font-weight: 600; margin: 10px 0; min-height: 1.5em; }
-  .bar { height: 6px; background: #262b36; border-radius: 3px; overflow: hidden; margin: 10px 0; }
-  .bar > i { display: block; height: 100%; width: 0; background: var(--weighted); transition: width .1s; }
-  .hint { color: var(--muted); font-size: 12px; }
-
-  .alert { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-weight: 600;
-           background: rgba(239,75,75,.12); border: 1px solid var(--bad); color: var(--bad); }
-  .alert[hidden] { display: none; }
-
-  #log { margin: 0; padding: 0; list-style: none; max-height: 190px; overflow-y: auto;
-         font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
-  #log li { padding: 3px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
-  #log li b { color: var(--text); font-weight: 600; }
-  #log li.bad b { color: var(--bad); }
-</style>
-</head>
-<body>
-
-<header>
-  <h1>MAKITEST — Suspicious Exam Behaviour Detection</h1>
-  <span id="conn" class="pill">connecting</span>
-  <span class="sid">session {{ session_id }}</span>
-</header>
-
-<div class="layout">
-
-  <div class="panel">
-    <h2>Camera</h2>
-    <div style="margin-bottom: 12px;">
-      <label for="camera-select" style="color: var(--muted); font-size: 12px; display: block; margin-bottom: 6px;">
-        Select Camera
-      </label>
-      <select id="camera-select" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--line); background: #262b36; color: var(--text); font: inherit;">
-        <option value="">Loading cameras...</option>
-      </select>
-    </div>
-    <div class="feed">
-      <!-- The raw webcam is shown until the server starts returning annotated
-           frames; after that the annotated view replaces it. -->
-      <video id="video" autoplay playsinline muted class="hidden"></video>
-      <img id="annotated" alt="" hidden>
-    </div>
-    <dl class="rows" style="margin-top:12px">
-      <dt>Face</dt><dd id="m-face">—</dd>
-      <dt>Yaw / Pitch</dt><dd id="m-angles">—</dd>
-      <dt>Gaze</dt><dd id="m-gaze">—</dd>
-      <dt>Server FPS</dt><dd id="m-fps">—</dd>
-      <dt>Frames</dt><dd id="m-frames">0 sent / 0 processed</dd>
-    </dl>
-    <div id="alert" class="alert" hidden></div>
-  </div>
-
-  <div class="panel">
-    <h2>Estimated screen position</h2>
-    <div class="screen" id="screen">
-      <div class="dot face" id="dot-face" hidden></div>
-      <div class="dot eye" id="dot-eye" hidden></div>
-      <div class="dot weighted" id="dot-weighted" hidden></div>
-    </div>
-    <div class="legend">
-      <span><i style="background:var(--face)"></i>Head pose</span>
-      <span><i style="background:var(--eye)"></i>Eye gaze</span>
-      <span><i style="background:var(--weighted)"></i>Weighted (45/55)</span>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>Calibration</h2>
-    <div class="prompt" id="cal-prompt">Waiting for the camera…</div>
-    <div class="bar"><i id="cal-bar"></i></div>
-    <button id="cal-btn" class="primary" disabled>Start calibration</button>
-    <button id="disc-btn" style="margin-left:10px">Back to home</button>
-    {% if exam_id %}
-    <button id="start-exam" class="primary" style="margin-left:10px" disabled>Start Exam</button>
-    {% endif %}
-    <span id="cal-stage" class="hint" style="margin-left:10px"></span>
-    <p class="hint" style="margin-bottom:0">
-      Hold your gaze on the target while samples are collected. Tracking results
-      appear only once all five stages are done.
-    </p>
-  </div>
-
-  <div class="panel">
-    <h2>Event log</h2>
-    <ul id="log"></ul>
-  </div>
-
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Camera setup — MAKITEST{% endblock %}
+{% block content %}
+<ol class="steps" aria-label="Exam preparation">
+<li>1. Exam details</li>
+<li aria-current="step">2. Camera setup</li>
+<li>3. Exam</li>
+</ol>
+<h1>Get your camera ready</h1>
+<p class="sub">{{ exam.title }} · Your exam timer hasn’t started.</p>
+<div id="setup" data-session="{{ prep.session_id }}" data-reset="{% url 'reset_preparation' %}" data-finalized="{{ prep.finalized_at|yesno:'true,false' }}">
+<div class="camera-layout">
+<section class="card">
+<h2>Camera check</h2>
+<video id="video" class="camera" autoplay playsinline muted aria-label="Your camera preview">
+</video>
+<div class="field">
+<label for="camera-select">Camera</label>
+<select id="camera-select">
+<option value="">Default camera</option>
+</select>
 </div>
-
-<script>
-(function () {
-  "use strict";
-
-  const SESSION_ID = "{{ session_id }}";
-  const USER_ROLE = "{{ user_role }}";
-  const EXAM_ID = "{{ exam_id|default:'' }}";
-  const CAPTURE_W = 640, CAPTURE_H = 480;
-  const TARGET_FPS = 10;
-  const JPEG_QUALITY = 0.7;
-  // The server maps everything onto a virtual 1920x1080 screen.
-  const SCREEN_W = 1920, SCREEN_H = 1080;
-
-  const $ = (id) => document.getElementById(id);
-  const video = $("video"), annotated = $("annotated");
-  const canvas = document.createElement("canvas");
-  canvas.width = CAPTURE_W; canvas.height = CAPTURE_H;
-  const ctx = canvas.getContext("2d", { alpha: false });
-
-  let ws = null, streaming = false, inflight = false;
-  let sent = 0, processed = 0, lastStage = null;
-  let switchingCamera = false;
-
-  // ---------------------------------------------------------------- utilities
-
-  function log(message, bad) {
-    const li = document.createElement("li");
-    const t = new Date().toLocaleTimeString();
-    li.innerHTML = "<b>" + t + "</b> " + message;
-    if (bad) li.className = "bad";
-    const list = $("log");
-    list.insertBefore(li, list.firstChild);
-    while (list.children.length > 80) list.removeChild(list.lastChild);
-  }
-
-  function setConn(text, cls) {
-    const el = $("conn");
-    el.textContent = text;
-    el.className = "pill" + (cls ? " " + cls : "");
-  }
-
-  function placeDot(el, pos) {
-    if (!pos) { el.hidden = true; return; }
-    el.hidden = false;
-    el.style.left = (pos[0] / SCREEN_W * 100) + "%";
-    el.style.top = (pos[1] / SCREEN_H * 100) + "%";
-  }
-
-  // Draw the 3x3 region guides the server classifies against.
-  (function drawGrid() {
-    const screen = $("screen");
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.style.cssText = "left:" + (c * 100 / 3) + "%;top:" + (r * 100 / 3) +
-                             "%;width:" + (100 / 3) + "%;height:" + (100 / 3) + "%";
-        screen.insertBefore(cell, screen.firstChild);
-      }
-    }
-  })();
-
-  // ------------------------------------------------------------------- camera
-
-  let currentStream = null;
-  let currentDeviceId = null;
-
-  // Enumerate available cameras and populate the dropdown
-  async function enumerateCameras() {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(d => d.kind === 'videoinput');
-      
-      const select = $("camera-select");
-      select.innerHTML = '';
-      
-      if (videoDevices.length === 0) {
-        select.innerHTML = '<option value="">No cameras found</option>';
-        log("No cameras detected.", true);
-        return [];
-      }
-      
-      videoDevices.forEach((device, index) => {
-        const option = document.createElement('option');
-        option.value = device.deviceId;
-        option.textContent = device.label || `Camera ${index + 1}`;
-        select.appendChild(option);
-      });
-      
-      return videoDevices;
-    } catch (err) {
-      log("Failed to enumerate cameras: " + err.name, true);
-      return [];
-    }
-  }
-
-  // Stop the current camera stream properly
-  function stopCamera() {
-    if (currentStream) {
-      currentStream.getTracks().forEach(track => {
-        track.stop();
-        log("Stopped camera track: " + track.label);
-      });
-      currentStream = null;
-    }
-    if (video.srcObject) {
-      video.srcObject = null;
-    }
-    // Clear the stale annotated frame - video stays hidden for frame capture only
-    annotated.hidden = true;
-    annotated.removeAttribute('src');
-  }
-
-  async function startCamera(deviceId = null) {
-    // Stop any existing stream first
-    stopCamera();
-    
-    try {
-      const constraints = {
-        video: {
-          width: CAPTURE_W,
-          height: CAPTURE_H
-        },
-        audio: false
-      };
-      
-      // If a specific device is requested, add it to constraints
-      if (deviceId) {
-        constraints.video.deviceId = { exact: deviceId };
-      }
-      
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      currentStream = stream;
-      currentDeviceId = deviceId;
-      
-      video.srcObject = stream;
-      await video.play();
-      
-      // Get the actual device label
-      const track = stream.getVideoTracks()[0];
-      const label = track.label || "Unknown camera";
-      log("Camera started: " + label);
-      
-      return true;
-    } catch (err) {
-      // Almost always one of: permission denied, no camera, or a page served
-      // over plain HTTP from a non-localhost address (getUserMedia needs a
-      // secure context).
-      const secure = window.isSecureContext;
-      log("Camera unavailable: " + err.name +
-          (secure ? "" : " — page is not a secure context, use localhost or HTTPS"), true);
-      $("cal-prompt").textContent = "Camera unavailable.";
-      return false;
-    }
-  }
-
-  // Handle camera selection change
-  $("camera-select").addEventListener("change", async (e) => {
-    const deviceId = e.target.value;
-    if (!deviceId) return;
-    
-    log("Switching camera...");
-    streaming = false; // Pause frame capture during switch
-    switchingCamera = true; // Flag to ignore stale annotated frames
-    
-    const ok = await startCamera(deviceId);
-    
-    if (ok) {
-      // Wait a brief moment for the new camera to stabilize
-      setTimeout(() => {
-        streaming = true; // Resume frame capture
-        switchingCamera = false; // Accept new annotated frames
-        log("Camera switched successfully. Session continues.");
-      }, 300);
-    } else {
-      switchingCamera = false;
-      log("Failed to switch camera.", true);
-    }
-  });
-
-  function captureFrame() {
-    return new Promise((resolve) => {
-      ctx.drawImage(video, 0, 0, CAPTURE_W, CAPTURE_H);
-      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY);
-    });
-  }
-
-  async function pump() {
-    if (!streaming || inflight) return;
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
-    if (video.readyState < 2) return;
-    // Never queue: if the socket is still draining, skip this frame rather than
-    // building a backlog of stale ones.
-    if (ws.bufferedAmount > 0) return;
-
-    inflight = true;
-    try {
-      const blob = await captureFrame();
-      if (blob && ws.readyState === WebSocket.OPEN) {
-        ws.send(await blob.arrayBuffer());
-        sent++;
-      }
-    } catch (err) {
-      /* a dropped frame is not worth reporting */
-    } finally {
-      inflight = false;
-    }
-  }
-
-  // ---------------------------------------------------------------- websocket
-
-  function connect() {
-    const scheme = location.protocol === "https:" ? "wss" : "ws";
-    ws = new WebSocket(scheme + "://" + location.host + "/ws/proctor/" + SESSION_ID + "/");
-    ws.binaryType = "arraybuffer";
-
-    ws.onopen = () => { setConn("connected", "ok"); log("WebSocket connected."); };
-
-    ws.onclose = (e) => {
-      setConn("disconnected", "bad");
-      streaming = false;
-      log("WebSocket closed (code " + e.code + ").", true);
-    };
-
-    ws.onerror = () => setConn("error", "bad");
-
-    ws.onmessage = (e) => {
-      let msg;
-      try { msg = JSON.parse(e.data); } catch (_) { return; }
-
-      if (msg.type === "ready") {
-        streaming = true;
-        $("cal-btn").disabled = false;
-        applyCalibration(msg.calibration);
-        log("Server ready — pipeline loaded.");
-      } else if (msg.type === "frame_result") {
-        applyFrameResult(msg);
-      } else if (msg.type === "calibration") {
-        applyCalibration(msg);
-        if (msg.message) log(msg.message, !msg.ok);
-      } else if (msg.type === "calibration_complete") {
-        // Backend has saved calibration to database
-        log("✓ Calibration saved to your profile.");
-      } else if (msg.type === "error") {
-        log("Server error: " + msg.message, true);
-      }
-    };
-  }
-
-  // ------------------------------------------------------------------ render
-
-  function applyFrameResult(r) {
-    if (r.error) return;
-    processed++;
-
-    $("m-face").textContent = r.face_detected ? "detected" : "not detected";
-    $("m-angles").textContent = (r.yaw === null || r.yaw === undefined)
-      ? "—" : r.yaw.toFixed(1) + "° / " + r.pitch.toFixed(1) + "°";
-    $("m-gaze").textContent = r.gaze_direction ? r.gaze_direction.join(" ") : "—";
-    $("m-fps").textContent = r.fps ? r.fps.toFixed(1) : "—";
-    $("m-frames").textContent = sent + " sent / " + processed + " processed";
-
-    placeDot($("dot-face"), r.face_screen_pos);
-    placeDot($("dot-eye"), r.eye_screen_pos);
-    placeDot($("dot-weighted"), r.weighted_screen_pos);
-
-    // Swap the raw feed for the server's annotated view once it arrives.
-    // Skip this if we're switching cameras to avoid showing stale frames.
-    if (r.debug_face && !switchingCamera) {
-      annotated.src = r.debug_face;
-      annotated.hidden = false;
-      video.classList.add("hidden");
-    }
-
-    applyCalibration(r.calibration);
-
-    const alert = $("alert");
-    if (r.suspicion && r.suspicion.is_recording) {
-      const reason = r.suspicion.current_violation;
-      alert.hidden = false;
-      alert.textContent = "Recording evidence — " + reason;
-      if (reason !== alert.dataset.reason) {
-        alert.dataset.reason = reason;
-        log("Violation: " + reason, true);
-      }
-    } else {
-      alert.hidden = true;
-      alert.dataset.reason = "";
-    }
-  }
-
-  function applyCalibration(cal) {
-    if (!cal) return;
-
-    $("cal-prompt").textContent = cal.prompt || "";
-    $("cal-stage").textContent = cal.calibrated
-      ? "" : (cal.stage < 0 ? "" : "stage " + (cal.stage + 1) + " of 5");
-
-    const pct = cal.collecting && cal.needed ? (cal.collected / cal.needed * 100) : (cal.calibrated ? 100 : 0);
-    $("cal-bar").style.width = pct + "%";
-
-    const btn = $("cal-btn");
-    const startExamBtn = $("start-exam");
-    
-    if (cal.calibrated) {
-      btn.disabled = true;
-      btn.textContent = "Calibrated";
-      // Enable the Start Exam button when calibration is complete
-      if (startExamBtn && EXAM_ID) {
-        startExamBtn.disabled = false;
-      }
-    } else {
-      btn.disabled = cal.collecting;
-      btn.textContent = cal.collecting ? "Collecting samples…"
-                      : cal.stage < 0 ? "Start calibration" : "Capture this stage";
-    }
-
-    if (cal.stage !== lastStage) {
-      lastStage = cal.stage;
-      if (cal.calibrated) log("Calibration complete — tracking is live.");
-    }
-  }
-
-  $("cal-btn").addEventListener("click", () => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "calibrate_next" }));
-    }
-  });
-
-  $("disc-btn").addEventListener("click", () => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.close(1000);
-      log("Disconnecting and returning to home...");
-    }
-    stopCamera();
-    streaming = false;
-    
-    // Redirect to the user's role landing page
-    const redirectUrl = USER_ROLE === 'student' ? '/studentside/' : 
-                        USER_ROLE === 'teacher' ? '/teacherside/' : '/';
-    window.location.href = redirectUrl;
-  });
-
-  const startExamBtn = $("start-exam");
-  if (startExamBtn) {
-    startExamBtn.addEventListener("click", () => {
-      if (!EXAM_ID) {
-        log("No exam selected. Please return home and select an exam.", true);
-        return;
-      }
-      
-      log("Starting exam...");
-      // Keep WebSocket and camera running during the exam
-      // Redirect to exam session
-      window.location.href = '/studentside/exam_session/';
-    });
-  }
-
-  // -------------------------------------------------------- keypress tracking
-
-  // Replaces KeypressTrackProcessor, whose global hook would have read the
-  // server's keyboard. The browser cannot see Alt+Tab, the Windows key or
-  // PrintScreen at all — those are taken by the OS before the page sees them —
-  // so window blur and tab-hide stand in as the detectable signal that the
-  // student left the exam.
-  const COMBOS = [
-    { test: (e) => e.ctrlKey && e.key.toLowerCase() === "c", name: "ctrl+c" },
-    { test: (e) => e.ctrlKey && e.key.toLowerCase() === "v", name: "ctrl+v" },
-    { test: (e) => e.ctrlKey && e.key.toLowerCase() === "x", name: "ctrl+x" },
-    { test: (e) => e.ctrlKey && e.key.toLowerCase() === "t", name: "ctrl+t" },
-    { test: (e) => e.ctrlKey && e.key.toLowerCase() === "n", name: "ctrl+n" },
-    { test: (e) => e.ctrlKey && e.key.toLowerCase() === "w", name: "ctrl+w" },
-    { test: (e) => e.key === "F11", name: "f11" },
-    { test: (e) => e.key === "Escape", name: "escape" },
-    { test: (e) => e.key === "PrintScreen", name: "print_screen" },
-    { test: (e) => e.key === "Meta" || e.metaKey, name: "windows_key" },
-    { test: (e) => e.altKey && e.key === "Tab", name: "alt+tab" },
-  ];
-
-  function report(keys) {
-    if (!keys.length || !ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(JSON.stringify({ type: "keystrokes", keys: keys }));
-    keys.forEach((k) => log("Suspicious key: " + k, true));
-  }
-
-  window.addEventListener("keydown", (e) => {
-    const hits = COMBOS.filter((c) => { try { return c.test(e); } catch (_) { return false; } })
-                       .map((c) => c.name);
-    if (hits.length) report([hits[0]]);
-  });
-
-  // PrintScreen only reaches the page on keyup in most browsers.
-  window.addEventListener("keyup", (e) => {
-    if (e.key === "PrintScreen") report(["print_screen"]);
-  });
-
-  window.addEventListener("blur", () => report(["window_focus_lost"]));
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) report(["tab_hidden"]);
-  });
-
-  // ---------------------------------------------------------------- lifecycle
-
-  window.addEventListener("beforeunload", () => { 
-    stopCamera(); // Clean up camera on page unload
-    if (ws) ws.close(1000); 
-  });
-
-  (async function start() {
-    connect();
-    
-    // Enumerate cameras first to populate the dropdown
-    const cameras = await enumerateCameras();
-    
-    // Start with the first available camera (or user can select later)
-    if (cameras.length > 0) {
-      const ok = await startCamera(cameras[0].deviceId);
-      if (ok) setInterval(pump, Math.round(1000 / TARGET_FPS));
-    } else {
-      log("No cameras available to start.", true);
-    }
-  })();
-})();
+<button id="enable-camera" class="btn ghost">Enable camera</button>
+<p id="camera-status" class="foot" role="status">Choose Enable camera. Your browser will ask for permission.</p>
+</section>
+<section class="card">
+<h2>A quick, guided setup</h2>
+<ol>
+<li>Sit comfortably and keep your face visible.</li>
+<li>First, look at the camera to set your starting position.</li>
+<li>Look at each target while your eyes are measured.</li>
+<li>After a point finishes, press Space to continue.</li>
+</ol>
+<p>The camera check helps confirm visibility. It does not certify tracking accuracy.</p>
+<button id="begin" class="primary" disabled>Begin calibration</button>
+<div id="ready" hidden>
+<h3>Setup complete</h3>
+<p>When you start, the timer runs until your time limit or the exam deadline.</p>
+<form id="start-form" method="post" action="{% url 'start_exam' %}">
+{% csrf_token %}
+<button id="start-exam" class="primary" type="button">Start exam</button>
+</form>
+</div>
+<div class="actions">
+<button id="restart" class="btn ghost">Restart setup</button>
+<a href="{% url 'student_home' %}">Back to my exams</a>
+</div>
+</section>
+</div>
+<dialog id="calibration-stage" class="setup-stage" hidden tabindex="-1" aria-labelledby="cal-prompt">
+<div id="target" class="target" hidden aria-hidden="true">
+</div>
+<div class="setup-instructions">
+<p id="step-count" class="muted">
+</p>
+<h2 id="cal-prompt">Look at the camera</h2>
+<p id="cal-status" role="status" aria-live="polite">Press Space when you are ready.</p>
+<progress id="cal-progress" class="progress" max="60" value="0" aria-label="Current point progress">
+</progress>
+</div>
+<div class="setup-controls">
+<p>Press <kbd>Space</kbd> when prompted</p>
+<button id="continue" class="btn ghost">Continue</button>
+<button id="cancel" class="btn ghost">Back to camera check</button>
+</div>
+</dialog>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'makitest/setup.js' %}" defer>
 </script>
-</body>
-</html>
+{% endblock %}

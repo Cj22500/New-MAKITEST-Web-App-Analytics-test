@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<p class="breadcrumbs">
+<a href="{% url 'modify_exam' prep.exam.pk %}">{{ prep.exam.title }}</a> / Staff diagnostics</p>
+<h1>Tracking diagnostics</h1>
+<p class="sub">Read-only estimates from the existing student session. No additional tracking session is created.</p>
+<div class="grid">
+<section class="card">
+<h2>Estimated screen position</h2>
+<p id="blend-legend">Green: head · Red: eyes · Blue: combined</p>
+<div class="diag-screen">
+<i id="head" class="diag-dot head" hidden>
+</i>
+<i id="eye" class="diag-dot eye" hidden>
+</i>
+<i id="combined" class="diag-dot combined" hidden>
+</i>
+</div>
+<p id="diag-status" role="status">Waiting for live session data…</p>
+</section>
+<section class="card">
+<h2>Camera diagnostic view</h2>
+<img id="debug" class="question-image" alt="Annotated camera diagnostic view" hidden>
+</section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>document.addEventListener('DOMContentLoaded',()=>{async function refresh(){try{const response=await fetch('?format=json');if(!response.ok)return;const data=await response.json();const dimensions=data.screen_size||[1920,1080];if(data.blend_weights){document.getElementById('blend-legend').textContent=`Green: head · Red: eyes · Blue: combined (${Math.round(data.blend_weights[0]*100)}% head, ${Math.round(data.blend_weights[1]*100)}% eyes)`;}for(const [id,key] of [['head','face_screen_pos'],['eye','eye_screen_pos'],['combined','weighted_screen_pos']]){const dot=document.getElementById(id),point=data[key];dot.hidden=!point;if(point){dot.style.left=Math.max(0,Math.min(100,point[0]/dimensions[0]*100))+'%';dot.style.top=Math.max(0,Math.min(100,point[1]/dimensions[1]*100))+'%';}}const image=document.getElementById('debug');image.hidden=!data.debug_face;if(data.debug_face)image.src=data.debug_face;document.getElementById('diag-status').textContent=data.type?'Live estimates · '+(data.fps||0)+' frames/s':'No live session. The student may have finished or disconnected.';}catch{document.getElementById('diag-status').textContent='Diagnostics connection unavailable.'}}refresh();setInterval(refresh,2000);});</script>
+{% endblock %}

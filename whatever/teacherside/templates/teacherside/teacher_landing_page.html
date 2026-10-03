@@ -1,25 +1,29 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<h1>Welcome, Teacher!</h1>
-
-<div class="card">
-  <h2 style="font-size:17px;margin:0 0 6px">Manage Exams</h2>
-  <p class="sub" style="margin-bottom:14px">
-    Create a new exam or view your existing exams.
-  </p>
-  <p style="margin-bottom:0">
-    <a class="btn" href="{% url 'create_exam' %}">Create Exam</a>
-    <a class="btn" href="{% url 'exams_list' %}">View Exams</a>
-  </p>
+<div class="page-heading">
+<div>
+<h1>Teacher overview</h1>
+<p class="sub">Prepare exams and review your students’ attempts.</p>
 </div>
-
-<div class="card">
-  <h2 style="font-size:17px;margin:0 0 6px">Manage Students</h2>
-  <p class="sub" style="margin-bottom:14px">
-    View and update student class designations.
-  </p>
-  <p style="margin-bottom:0">
-    <a class="btn" href="{% url 'manage_students' %}">View Students</a>
-  </p>
+<a class="btn" href="{% url 'create_exam' %}">Create exam</a>
 </div>
+<div class="grid three">
+<section class="card">
+<h2>{{ exam_count }} exams</h2>
+<a href="{% url 'exams_list' %}">Manage my exams</a>
+</section>
+<section class="card">
+<h2>{{ open_count }} open exams</h2>
+<p class="muted">Check questions and deadlines before opening access.</p>
+</section>
+<section class="card">
+<h2>{{ attempt_count }} attempts</h2>
+<p class="muted">Open an exam to review its students’ attempts.</p>
+</section>
+</div>
+<section class="card">
+<h2>Prepare your classes</h2>
+<p>Students need a class assignment to see their exams. The student directory is shared with other teachers in this research prototype.</p>
+<a class="btn ghost" href="{% url 'manage_students' %}">Manage students</a>
+</section>
 {% endblock %}

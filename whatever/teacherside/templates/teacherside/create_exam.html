@@ -1,146 +1,19 @@
-{% extends "base.html" %}
-
-{% block title %}Create Exam — MAKITEST{% endblock %}
-
-{% block head %}
-<style>
-    .warning-banner {
-        background: rgba(255, 152, 0, 0.1);
-        border: 1px solid rgba(255, 152, 0, 0.3);
-        border-radius: 8px;
-        padding: 16px 20px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .warning-banner-icon {
-        font-size: 24px;
-        flex-shrink: 0;
-    }
-    .warning-banner-content {
-        flex: 1;
-    }
-    .warning-banner-content strong {
-        display: block;
-        margin-bottom: 4px;
-        color: #ff9800;
-    }
-    .warning-banner-content p {
-        margin: 0;
-        font-size: 14px;
-        color: var(--muted);
-    }
-    /* Style for class designation dropdown */
-    select#id_class_designation {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: var(--bg);
-        color: var(--fg);
-        font-size: 14px;
-        cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 36px;
-    }
-    select#id_class_designation:focus {
-        outline: none;
-        border-color: var(--accent, #007bff);
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-    select#id_class_designation:hover {
-        border-color: var(--accent, #007bff);
-    }
-    select#id_class_designation option {
-        padding: 8px;
-        background: var(--bg);
-        color: var(--fg);
-    }
-    select#id_class_designation option:first-child {
-        color: var(--muted);
-    }
-    /* White calendar icon for deadline input */
-    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
-
+{% extends 'base.html' %}
 {% block content %}
-
-<h1>Create Exam</h1>
-
-{% if not form.class_designation.field.choices or form.class_designation.field.choices|length <= 1 %}
-<div class="warning-banner">
-    <div class="warning-banner-icon">⚠️</div>
-    <div class="warning-banner-content">
-        <strong>No Student Classes Found</strong>
-        <p>Please assign class designations to students first. <a href="{% url 'manage_students' %}" style="color: #ff9800; text-decoration: underline;">Go to Manage Students →</a></p>
-    </div>
+<p class="breadcrumbs">
+<a href="{% url 'exams_list' %}">My exams</a> / Create exam</p>
+<h1>Create exam</h1>
+<p class="sub">Create the details first. Your exam stays closed while you add questions.</p>
+{% if form.class_designation.field.choices|length <= 1 %}
+<div class="notice warning">Assign student classes first. <a href="{% url 'manage_students' %}">Manage students</a>
 </div>
 {% endif %}
-
-<div class="card">
-  <form method="post" novalidate>
-    {% csrf_token %}
-    <div class="field">
-      <label for="title">Title</label>
-        {% for error in form.title.errors %}
-            <p class="field-error">{{ error }}</p>
-        {% endfor %}
-      <input type="text" name="title" id="title" required>
-    </div>
-    <div class="field">
-      <label for="description">Description</label>
-      <textarea name="description" id="description" required></textarea>
-        {% for error in form.description.errors %}
-            <p class="field-error">{{ error }}</p>
-        {% endfor %}
-    </div>
-    <div class="field">
-      <label for="deadline">Deadline</label>
-      <input type="datetime-local" name="deadline" id="deadline" required>
-      {% for error in form.deadline.errors %}
-          <p class="field-error">{{ error }}</p>
-      {% endfor %}
-    </div>
-    <div class="field">
-      <label for="class_designation">Class Designation</label>
-      {{ form.class_designation }}
-        {% for error in form.class_designation.errors %}
-            <p class="field-error">{{ error }}</p>
-        {% endfor %}
-      <small>{{ form.class_designation.help_text }}</small>
-    </div>
-    <div class="field">
-        <label for="timelimit">Time Limit</label>
-        <input type="number" name="timelimit" id="timelimit" min="20" required>
-        {% for error in form.timelimit.errors %}
-            <p class="field-error">{{ error }}</p>
-        {% endfor %}
-        <small>Enter the time limit in minutes (e.g., 90 for 1 hour 30 minutes).</small>
-    </div>
-    <div class="field">
-        <label for="attempt_limit">Attempt Limit</label>
-        <input type="number" name="attempt_limit" id="attempt_limit" min="1" required>
-        {% for error in form.attempt_limit.errors %}
-            <p class="field-error">{{ error }}</p>
-        {% endfor %}
-    </div>
-    <div class="field">
-        <label for="access_code">Access Code</label>
-        <input type="text" name="access_code" id="access_code" required>
-        {% for error in form.access_code.errors %}
-            <p class="field-error">{{ error }}</p>
-        {% endfor %}
-        <small>Students will need this code to access the exam. Exam access will be closed until you manually open it. <strong> Can be left empty. </strong> </small>
-    </div>
-    <button type="submit" class="primary">Create Exam</button>
-  </form>
-</div>
+<section class="card">
+<form method="post" novalidate>
+{% csrf_token %}
+{% include 'form_fields.html' %}
+<p class="help">Deadlines use Philippine time (PHT). Students’ attempts end at the deadline, even when time remains.</p>
+<button class="primary">Create exam and add questions</button>
+</form>
+</section>
 {% endblock %}

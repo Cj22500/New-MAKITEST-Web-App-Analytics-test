@@ -1,402 +1,72 @@
 {% extends 'base.html' %}
-
-{% block head %}
-<style>
-    .exam-header {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 24px;
-    }
-    .exam-header h1 {
-        margin: 0 0 8px 0;
-        font-size: 24px;
-    }
-    .exam-meta {
-        display: flex;
-        gap: 24px;
-        margin-top: 12px;
-        font-size: 14px;
-        color: var(--muted);
-    }
-    .exam-meta span {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .questions-section {
-        margin-top: 32px;
-    }
-    .question-card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 12px;
-        position: relative;
-    }
-    .question-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 12px;
-    }
-    .question-number {
-        font-weight: 600;
-        color: var(--accent);
-        font-size: 14px;
-    }
-    .question-type-badge {
-        display: inline-block;
-        background: var(--line);
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        color: var(--fg);
-        margin-left: 8px;
-    }
-    .question-text {
-        margin: 8px 0;
-        font-size: 15px;
-    }
-    .question-actions {
-        display: flex;
-        gap: 8px;
-    }
-    .btn-delete {
-        background: var(--bad);
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-    }
-    .btn-delete:hover {
-        opacity: 0.8;
-    }
-    .choices-preview {
-        margin-top: 12px;
-        padding-left: 16px;
-        font-size: 14px;
-        color: var(--muted);
-    }
-    .choices-preview li {
-        margin: 4px 0;
-    }
-    .correct-indicator {
-        color: var(--ok);
-        font-weight: 600;
-        margin-left: 6px;
-    }
-    .action-buttons {
-        display: flex;
-        gap: 12px;
-        margin-top: 24px;
-    }
-    .empty-state {
-        text-align: center;
-        padding: 48px 20px;
-        color: var(--muted);
-    }
-    .edit-section {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 24px;
-    }
-    .edit-toggle {
-        background: none;
-        border: none;
-        color: var(--accent);
-        cursor: pointer;
-        font-size: 14px;
-        padding: 8px 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        text-align: left;
-    }
-    .edit-toggle:hover {
-        opacity: 0.8;
-    }
-    .edit-form {
-        display: none;
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--line);
-    }
-    .edit-form.active {
-        display: block;
-    }
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-    .field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .field label {
-        font-weight: 600;
-        font-size: 14px;
-    }
-    .field input,
-    .field textarea,
-    .field select {
-        padding: 8px 12px;
-        border: 1px solid var(--line);
-        border-radius: 4px;
-        background: var(--bg);
-        color: var(--fg);
-        font-size: 14px;
-    }
-    .field select {
-        cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 36px;
-    }
-    .field select:focus {
-        outline: none;
-        border-color: var(--accent, #007bff);
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-    .field select:hover {
-        border-color: var(--accent, #007bff);
-    }
-    .field select option {
-        padding: 8px;
-        background: var(--bg);
-        color: var(--fg);
-    }
-    .field select option:first-child {
-        color: var(--muted);
-    }
-    .field textarea {
-        resize: vertical;
-        min-height: 80px;
-    }
-    .field small {
-        color: var(--muted);
-        font-size: 12px;
-    }
-    .toggle-icon {
-        transition: transform 0.2s;
-    }
-    .toggle-icon.active {
-        transform: rotate(90deg);
-    }
-    .checkbox-field {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 4px;
-    }
-    .checkbox-field input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-    }
-    .checkbox-field label {
-        cursor: pointer;
-        margin: 0;
-        font-weight: 600;
-    }
-    .access-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    .access-badge.open {
-        background: rgba(76, 175, 80, 0.2);
-        color: #4caf50;
-    }
-    .access-badge.closed {
-        background: rgba(244, 67, 54, 0.2);
-        color: #f44336;
-    }
-    /* White calendar icon for deadline input */
-    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-        cursor: pointer;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="exam-header">
-    <h1>{{ exam.title }}</h1>
-    <p>{{ exam.description }}</p>
-    <div class="exam-meta">
-        <span>📅 Deadline: {{ exam.deadline|date:"M d, Y H:i" }}</span>
-        <span>⏱️ Time Limit: {{ exam.timelimit }}</span>
-        <span>
-            Access: 
-            {% if exam.access_status %}
-            <span class="access-badge open">🔓 Open</span>
-            {% else %}
-            <span class="access-badge closed">🔒 Closed</span>
-            {% endif %}
-        </span>
-    </div>
+<p class="breadcrumbs">
+<a href="{% url 'exams_list' %}">My exams</a> / {{ exam.title }}</p>
+<h1>{{ exam.title }}</h1>
+<p class="sub">{{ exam.class_designation }} · {% if exam.access_status %}Open{% else %}Closed{% endif %}
+</p>
+<details {% if form.errors %}open{% endif %}>
+<summary>Exam settings</summary>
+<form method="post" novalidate>
+{% csrf_token %}
+{% include 'form_fields.html' %}
+<p class="help">Deadline changes also apply to active attempts. The original attempt duration is retained.</p>
+<button class="primary">Save settings</button>
+</form>
+</details>
+<div class="page-heading">
+<h2>Questions ({{ questions|length }})</h2>
+{% if not frozen %}
+<a class="btn" href="{% url 'add_questions' exam.pk %}">Add question</a>
+{% endif %}
 </div>
-
-<div class="edit-section">
-    <button class="edit-toggle" onclick="toggleEditForm()">
-        <span class="toggle-icon" id="toggleIcon">▶</span>
-        <strong>Edit Exam Details</strong>
-    </button>
-    <div class="edit-form" id="editForm">
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-row">
-                <div class="field">
-                    <label for="id_title">Exam Title *</label>
-                    {{ form.title }}
-                </div>
-                <div class="field">
-                    <label for="id_class_designation">Class Designation *</label>
-                    {{ form.class_designation }}
-                    <small style="color: var(--muted); font-size: 12px;">{{ form.class_designation.help_text }}</small>
-                </div>
-            </div>
-            
-            <div class="field" style="margin-bottom: 16px;">
-                <label for="id_description">Description *</label>
-                {{ form.description }}
-            </div>
-            
-            <div class="form-row">
-                <div class="field">
-                    <label for="id_deadline">Deadline *</label>
-                    {{ form.deadline }}
-                </div>
-                <div class="field">
-                    <label for="id_timelimit">Time Limit (minutes) *</label>
-                    {{ form.timelimit }}
-                    <small>Minimum 20 minutes</small>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="field">
-                    <label for="id_attempt_limit">Attempt Limit *</label>
-                    {{ form.attempt_limit }}
-                    <small>Maximum attempts allowed</small>
-                </div>
-                <div class="field">
-                    <label for="id_access_code">Access Code (optional)</label>
-                    {{ form.access_code }}
-                    <small>Leave blank for open access</small>
-                </div>
-            </div>
-            
-            <div class="checkbox-field" style="margin-bottom: 16px;">
-                {{ form.access_status }}
-                <label for="id_access_status">🔓 Exam is Open (Students can access)</label>
-                <small style="color: var(--muted); margin-left: auto;">Uncheck to close exam access</small>
-            </div>
-            
-            <div style="display: flex; gap: 12px; margin-top: 20px;">
-                <button type="submit" class="btn primary">Save Changes</button>
-                <button type="button" class="btn ghost" onclick="toggleEditForm()">Cancel</button>
-            </div>
-        </form>
-    </div>
+{% if frozen %}
+<div class="notice">Questions are locked because students have started this exam. Create a new exam to change the questions.</div>
+{% endif %}
+{% for question in questions %}
+<section class="card">
+<div class="row-head">
+<h3>Question {{ forloop.counter }} · {{ question.get_question_type_display }}</h3>
+{% if not frozen %}
+<div class="actions">
+<a class="btn ghost" href="{% url 'edit_question' exam.pk question.pk %}">
+{% if question.question_type == 'IMG' %}Convert question{% else %}Edit question{% endif %}
+</a>
+<form method="post" action="{% url 'delete_question' question.pk %}" data-confirm-delete>
+{% csrf_token %}
+<button class="btn danger">Delete</button>
+</form>
 </div>
-
-<div class="questions-section">
-    <h2>Questions ({{ questions.count }})</h2>
-    
-    {% if questions %}
-        {% for question in questions %}
-        <div class="question-card">
-            <div class="question-header">
-                <div>
-                    <span class="question-number">Question {{ forloop.counter }}</span>
-                    <span class="question-type-badge">{{ question.get_question_type_display }}</span>
-                </div>
-                <div class="question-actions">
-                    <form method="post" action="{% url 'delete_question' question.question_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this question?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-delete">Delete</button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="question-text">
-                {{ question.question_text }}
-            </div>
-            
-            {% if question.question_image %}
-            <div style="margin-top: 8px;">
-                <img src="/media/{{ question.question_image }}" style="max-width: 300px; border-radius: 4px;" alt="Question image" onerror="this.style.display='none';">
-            </div>
-            {% endif %}
-            
-            {% if question.question_type == 'MCQ' and question.choices %}
-            <div class="choices-preview">
-                <strong style="color: var(--fg);">Choices:</strong>
-                <ul>
-                    {% for choice in question.choices %}
-                    <li>
-                        {{ choice.text }}
-                        {% if choice.text == question.correct_answer_text %}
-                        <span class="correct-indicator">✓ Correct</span>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% elif question.question_type == 'TF' %}
-            <div class="choices-preview">
-                <strong style="color: var(--fg);">Correct Answer:</strong> {{ question.correct_answer_text }}
-            </div>
-            {% elif question.question_type == 'NUM' %}
-            <div class="choices-preview">
-                <strong style="color: var(--fg);">Correct Answer:</strong> {{ question.correct_answer_text }}
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
-    {% else %}
-    <div class="empty-state">
-        <p style="font-size: 16px; margin-bottom: 16px;">📝 No questions yet</p>
-        <p>Start by adding your first question to this exam.</p>
-        <a href="{% url 'add_questions' exam.exam_id %}" class="btn primary" style="margin-top: 16px; display: inline-block;">Add First Question</a>
-    </div>
-    {% endif %}
+{% endif %}
 </div>
-
-<div class="action-buttons">
-    <a href="{% url 'exams_list' %}" class="btn ghost">← Back to Exams</a>
-    {% if questions %}
-    <a href="{% url 'add_questions' exam.exam_id %}" class="btn primary">+ Add More Questions</a>
-    {% endif %}
-</div>
-
-<script>
-function toggleEditForm() {
-    const form = document.getElementById('editForm');
-    const icon = document.getElementById('toggleIcon');
-    form.classList.toggle('active');
-    icon.classList.toggle('active');
-}
-</script>
+<p class="question-text">{{ question.question_text }}</p>
+{% if question.question_type == 'IMG' %}
+<p class="notice warning">Choose a supported answer type before opening this exam.</p>
+{% endif %}
+{% for choice in question.choices %}
+<p>{{ choice.text }}{% if choice.text == question.correct_answer_text %} <span class="badge ok">Correct</span>
+{% endif %}
+</p>
+{% endfor %}
+<p>
+<strong>Correct answer:</strong> {{ question.correct_answer_text|default:'Not set' }}</p>
+</section>
+{% empty %}
+<section class="card">
+<h3>No questions yet</h3>
+<p>Add your first question before opening the exam.</p>
+</section>
+{% endfor %}
+<a class="btn ghost" href="{% url 'exam_attempts_list' exam.pk %}">Review attempts</a>
+<dialog id="delete-dialog" aria-labelledby="delete-title">
+<h2 id="delete-title">Delete this question?</h2>
+<p>This removes the question from the exam.</p>
+<button id="delete-confirm" class="btn danger">Delete question</button>
+<form method="dialog">
+<button class="btn ghost">Cancel</button>
+</form>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script>document.addEventListener('DOMContentLoaded',()=>{let pending;document.querySelectorAll('[data-confirm-delete]').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();pending=form;document.getElementById('delete-dialog').showModal();}));document.getElementById('delete-confirm').onclick=()=>pending.submit();});</script>
 {% endblock %}

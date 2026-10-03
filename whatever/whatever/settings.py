@@ -99,9 +99,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'whatever.wsgi.application'
 ASGI_APPLICATION = 'whatever.asgi.application'
 
-# In-memory layer is enough here: each WebSocket carries its own GazeSession and
-# nothing needs to broadcast between connections. Swap for channels_redis only if
-# you ever run more than one Daphne process.
+# The in-process camera registry supports a single Daphne worker. Redis alone
+# does not share the native tracking pipeline; see docs/WEB_UI_AND_VALIDATION.md.
 CHANNEL_LAYERS = {
     'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'},
 }
@@ -142,7 +141,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Manila'
 
 USE_I18N = True
 
@@ -153,6 +152,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files (User uploaded content)
 MEDIA_URL = '/media/'

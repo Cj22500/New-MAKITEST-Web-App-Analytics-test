@@ -1,388 +1,119 @@
-{% extends "base.html" %}
-
-{% block title %}{{ exam.title }} — MAKITEST{% endblock %}
-
+{% extends 'base.html' %}
+{% load static %}
+{% block navigation %}
+<nav class="exam-nav" aria-label="Exam header">
+<span class="brand">MAKITEST</span>
+<span>{{ exam.title }}</span>
+<span class="who">{{ user.first_name|default:user.username }}</span>
+</nav>
+{% endblock %}
 {% block content %}
-<div style="display: grid; grid-template-columns: 1fr 320px; gap: 20px; max-width: 1400px; margin: 0 auto;">
-  
-  <!-- LEFT COLUMN: Exam Questions -->
-  <div class="card" style="max-width: 100%;">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--line);">
-      <div>
-        <h1 style="margin: 0 0 5px 0;">{{ exam.title }}</h1>
-        <p style="margin: 0; color: var(--muted);">{{ questions|length }} Question(s) | Time Limit: {{ exam.timelimit }}</p>
-      </div>
-      <div style="text-align: right;">
-        <div id="timer" style="font-size: 24px; font-weight: 600; color: var(--ok); font-family: monospace;"></div>
-        <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--muted);">Time Remaining</p>
-      </div>
-    </header>
-
-    <form id="exam-form" method="post" action="{% url 'submit_exam' %}">
-    {% csrf_token %}
-    
-    {% for question in questions %}
-    <div class="question-block" style="margin-bottom: 30px; padding: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
-      <h3 style="margin: 0 0 15px 0; color: var(--text);">
-        Question {{ forloop.counter }}
-        <span style="color: var(--muted); font-size: 14px; font-weight: normal;">({{ question.get_question_type_display }})</span>
-      </h3>
-      
-      <p style="font-size: 15px; line-height: 1.6; margin-bottom: 15px;">{{ question.question_text }}</p>
-      
-      {% if question.question_image %}
-      <div style="margin-bottom: 15px;">
-        <img src="{{ question.question_image.url }}" alt="Question image" style="max-width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line);">
-      </div>
-      {% endif %}
-
-      {% if question.question_type == 'MCQ' %}
-        <div class="choices" style="display: flex; flex-direction: column; gap: 10px;">
-          {% for choice in question.choices %}
-          <label class="choice-label" style="display: flex; align-items: center; padding: 12px; background: var(--bg); border: 2px solid var(--line); border-radius: 6px; cursor: pointer; transition: all 0.2s;">
-            <input type="radio" name="question_{{ question.question_id }}" value="{{ forloop.counter0 }}" required style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
-            <span style="flex: 1;">
-              {{ choice.text }}
-              {% if choice.image %}
-              <img src="{{ choice.image }}" alt="Choice image" style="display: block; margin-top: 8px; max-width: 200px; height: auto; border-radius: 4px;">
-              {% endif %}
-            </span>
-          </label>
-          {% endfor %}
-        </div>
-
-      {% elif question.question_type == 'TF' %}
-        <div class="choices" style="display: flex; gap: 15px;">
-          <label class="choice-label" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; background: var(--bg); border: 2px solid var(--line); border-radius: 6px; cursor: pointer; transition: all 0.2s;">
-            <input type="radio" name="question_{{ question.question_id }}" value="True" required style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
-            <span style="font-weight: 600;">True</span>
-          </label>
-          <label class="choice-label" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; background: var(--bg); border: 2px solid var(--line); border-radius: 6px; cursor: pointer; transition: all 0.2s;">
-            <input type="radio" name="question_{{ question.question_id }}" value="False" required style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
-            <span style="font-weight: 600;">False</span>
-          </label>
-        </div>
-
-      {% elif question.question_type == 'NUM' or question.question_type == 'FIB' %}
-        <input type="text" name="question_{{ question.question_id }}" required 
-               style="width: 100%; padding: 12px; background: var(--bg); border: 2px solid var(--line); border-radius: 6px; color: var(--text); font-size: 15px; font-family: inherit;"
-               placeholder="Enter your answer here...">
-
-      {% endif %}
-    </div>
-    {% endfor %}
-
-    <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--line);">
-      <button type="button" class="btn ghost" onclick="if(confirm('Are you sure you want to exit the exam? Your progress will be lost.')) window.location.href='{% url 'student_home' %}';">
-        Exit Exam
-      </button>
-      <button type="submit" class="btn primary" style="font-size: 16px; padding: 12px 24px;">
-        Submit Exam
-      </button>
-    </div>
-  </form>
-  </div>
-
-  <!-- RIGHT COLUMN: Proctoring Monitor (Sticky) -->
-  <div style="position: sticky; top: 20px; height: fit-content;">
-    <div class="card" style="padding: 15px;">
-      <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">
-        🎥 Proctoring Active
-      </h3>
-      
-      <div class="feed" style="margin-bottom: 12px; position: relative;">
-        <video id="video" autoplay playsinline muted class="hidden" style="width: 100%; height: auto; border-radius: 6px; background: #000;"></video>
-        <img id="annotated" alt="Camera feed" hidden style="width: 100%; height: auto; border-radius: 6px;">
-      </div>
-
-      <div id="proctor-status" style="font-size: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span id="conn" class="pill" style="font-size: 11px;">connecting</span>
-          <span style="color: var(--muted); font-size: 11px;">
-            <span id="m-fps" style="font-weight: 600;">—</span> fps
-          </span>
-        </div>
-      </div>
-      
-      <div id="alert" class="alert" hidden style="padding: 8px; font-size: 11px; background: rgba(239,75,75,.12); border: 1px solid var(--bad); color: var(--bad); border-radius: 6px; font-weight: 600; margin-top: 10px;"></div>
-    </div>
-  </div>
-
+<div id="exam" data-attempt="{{ attempt.pk }}" data-session="{{ attempt.proctoring_session_id }}" data-state="{% url 'attempt_state' attempt.pk %}" data-save="{% url 'save_exam_answers' attempt.pk %}" data-expiry="{{ expiry }}" data-now="{{ server_now }}" data-camera="{{ camera_id }}">
+<div class="exam-toolbar">
+<div>
+<strong id="answered-count">0 of {{ questions|length }} answered</strong>
+<div id="save-status" class="muted" role="status">Connecting to answer saving…</div>
 </div>
-
-<style>
-  .choice-label:hover {
-    border-color: var(--weighted) !important;
-    background: rgba(76, 201, 240, 0.05) !important;
-  }
-  
-  .choice-label:has(input:checked) {
-    border-color: var(--weighted) !important;
-    background: rgba(76, 201, 240, 0.1) !important;
-  }
-  
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    background: #262b36;
-    color: var(--muted);
-  }
-  .pill::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-  .pill.ok { color: var(--ok); }
-  .pill.warn { color: var(--warn); }
-  .pill.bad { color: var(--bad); }
-</style>
-
-<script>
-  // Timer functionality
-  const timerDisplay = document.getElementById('timer');
-  let timeRemaining = {{ remaining_seconds }};
-
-  function formatTime(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-  }
-
-  function updateTimer() {
-    if (timeRemaining <= 0) {
-      timerDisplay.textContent = '00:00';
-      timerDisplay.style.color = 'var(--bad)';
-      alert('Time is up! Your exam will be submitted automatically.');
-      document.getElementById('exam-form').requestSubmit();
-      return;
-    }
-
-    timerDisplay.textContent = formatTime(timeRemaining);
-    
-    if (timeRemaining <= 300) {
-      timerDisplay.style.color = 'var(--warn)';
-    }
-    if (timeRemaining <= 60) {
-      timerDisplay.style.color = 'var(--bad)';
-    }
-
-    timeRemaining--;
-  }
-
-  updateTimer();
-  const timerInterval = setInterval(updateTimer, 1000);
-
-  // Proctoring WebSocket Integration
-  (function() {
-    "use strict";
-    
-    const SESSION_ID = "{{ proctoring_session_id }}";
-    const CAPTURE_W = 320, CAPTURE_H = 240;
-    const TARGET_FPS = 10;  // Match calibration page fps
-    const JPEG_QUALITY = 0.6;
-    
-    const $ = (id) => document.getElementById(id);
-    const video = $("video");
-    const annotated = $("annotated");
-    const canvas = document.createElement("canvas");
-    canvas.width = CAPTURE_W;
-    canvas.height = CAPTURE_H;
-    const ctx = canvas.getContext("2d", { alpha: false });
-    
-    let ws = null, streaming = false, currentStream = null;
-    let sessionFinalized = false;
-    let finalizationRequested = false;
-    let submitAfterFinalization = false;
-    let finalizationTimeout = null;
-    
-    function connect() {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      ws = new WebSocket(`${protocol}//${window.location.host}/ws/proctor/${SESSION_ID}/`);
-      
-      ws.onopen = () => {
-        $("conn").textContent = "connected";
-        $("conn").className = "pill ok";
-        startCamera();
-      };
-      
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === "session_closed") {
-          sessionFinalized = true;
-          finalizationRequested = false;
-          if (finalizationTimeout) clearTimeout(finalizationTimeout);
-          streaming = false;
-          if (submitAfterFinalization) {
-            submitAfterFinalization = false;
-            window.examNativeSubmitAllowed = true;
-            document.getElementById('exam-form').submit();
-          }
-        } else if (data.type === "frame_result") {
-          if (data.debug_face) {
-            annotated.src = data.debug_face;
-            annotated.hidden = false;
-            video.classList.add('hidden');
-          }
-          
-          if (data.fps) {
-            $("m-fps").textContent = data.fps.toFixed(1);
-          }
-          
-        }
-      };
-      
-      ws.onerror = () => {
-        $("conn").textContent = "error";
-        $("conn").className = "pill bad";
-      };
-      
-      ws.onclose = () => {
-        $("conn").textContent = "disconnected";
-        $("conn").className = "pill warn";
-      };
-    }
-    
-    async function startCamera() {
-      try {
-        currentStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: CAPTURE_W, height: CAPTURE_H },
-          audio: false
-        });
-        video.srcObject = currentStream;
-        video.onloadedmetadata = () => {
-          video.play();
-          streaming = true;
-          capture();
-        };
-      } catch (err) {
-        console.error("Camera access denied:", err);
-        const alert = $("alert");
-        alert.textContent = "⚠️ Camera access required for proctored exams";
-        alert.hidden = false;
-      }
-    }
-    
-    function capture() {
-      if (!streaming || !ws || ws.readyState !== WebSocket.OPEN) {
-        setTimeout(capture, 1000);
-        return;
-      }
-      
-      ctx.drawImage(video, 0, 0, CAPTURE_W, CAPTURE_H);
-      canvas.toBlob((blob) => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(blob);
-        }
-      }, "image/jpeg", JPEG_QUALITY);
-      
-      setTimeout(capture, 1000 / TARGET_FPS);
-    }
-    
-    // Monitor suspicious keystrokes
-    document.addEventListener('keydown', (e) => {
-      const suspicious = [];
-      if (e.altKey && e.key === 'Tab') suspicious.push('alt+tab');
-      if (e.ctrlKey && e.key.toLowerCase() === 'c') suspicious.push('ctrl+c');
-      if (e.ctrlKey && e.key.toLowerCase() === 'v') suspicious.push('ctrl+v');
-      if (e.metaKey && e.key === 'Tab') suspicious.push('cmd+tab');
-      if (e.key === 'F11') suspicious.push('f11');
-      if (e.key === 'PrintScreen') suspicious.push('print_screen');
-      
-      if (suspicious.length > 0 && ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'keystrokes',
-          keys: suspicious
-        }));
-      }
-    });
-    
-    window.addEventListener('blur', () => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'keystrokes',
-          keys: ['window_focus_lost']
-        }));
-      }
-    });
-    
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'keystrokes',
-          keys: ['tab_hidden']
-        }));
-      }
-    });
-    
-    connect();
-
-    window.requestExamSubmission = function () {
-      if (sessionFinalized) {
-        window.examNativeSubmitAllowed = true;
-        document.getElementById('exam-form').submit();
-        return;
-      }
-
-      submitAfterFinalization = true;
-      if (!ws || ws.readyState !== WebSocket.OPEN) {
-        submitAfterFinalization = false;
-        window.examNativeSubmitAllowed = true;
-        document.getElementById('exam-form').submit();
-        return;
-      }
-
-      if (finalizationRequested) return;
-      finalizationRequested = true;
-      ws.send(JSON.stringify({ type: "finalize_session" }));
-      finalizationTimeout = setTimeout(() => {
-        if (!sessionFinalized && submitAfterFinalization) {
-          submitAfterFinalization = false;
-          finalizationRequested = false;
-          window.examNativeSubmitAllowed = true;
-          document.getElementById('exam-form').submit();
-        }
-      }, 30000);
-    };
-    
-    window.addEventListener('beforeunload', () => {
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-      }
-      if (ws) ws.close();
-    });
-  })();
-
-  // Form submission
-  document.getElementById('exam-form').addEventListener('submit', (e) => {
-    if (window.examSubmissionStarted) {
-      e.preventDefault();
-      return;
-    }
-    if (!confirm('Are you sure you want to submit your exam? You cannot change your answers after submission.')) {
-      e.preventDefault();
-      return false;
-    }
-    window.examSubmissionStarted = true;
-    if (window.examNativeSubmitAllowed || !window.requestExamSubmission) {
-      window.examNativeSubmitAllowed = false;
-      return;
-    }
-    e.preventDefault();
-    window.requestExamSubmission();
-  });
+<div>
+<div id="timer" class="timer" role="timer" aria-label="Time remaining">
+</div>
+<small>Ends at {{ attempt.expires_at|date:'g:i A' }} PHT</small>
+</div>
+</div>
+<div id="writer-conflict" class="notice warning" hidden>
+<p>This exam is active in another tab or device. Answers are read-only here.</p>
+<button id="takeover" class="btn ghost">Continue in this tab</button>
+</div>
+<div class="exam-layout">
+<section>
+<h1>{{ exam.title }}</h1>
+<p class="sub">Answer at your own pace. You can revisit any question before submitting.</p>
+<form id="exam-form" method="post" action="{% url 'submit_exam' %}" novalidate>
+{% csrf_token %}
+<input type="hidden" name="attempt_id" value="{{ attempt.pk }}">
+<input id="writer-token" type="hidden" name="writer_token">
+{% for question in questions %}
+<fieldset class="question-block" id="question-{{ forloop.counter }}" data-id="{{ question.pk }}">
+<legend>Question {{ forloop.counter }}</legend>
+<p class="question-text">{{ question.question_text }}</p>
+{% if question.question_image %}
+<button class="image-button" type="button" data-enlarge aria-label="Enlarge question {{ forloop.counter }} image">
+<img class="question-image" src="{{ question.question_image.url }}" alt="{{ question.image_description|default:'Question illustration; ask your teacher for a description if needed.' }}">
+<small>Enlarge image</small>
+</button>
+{% endif %}
+{% if question.question_type == 'MCQ' %}
+{% for choice in question.choices %}
+<label class="choice-label">
+<input type="radio" name="question_{{ question.pk }}" value="{{ forloop.counter0 }}" {% if question.saved_answer == forloop.counter0|stringformat:'s' %}checked{% endif %}>
+<span>{{ choice.text }}{% if choice.image %}
+<img class="choice-image" src="/media/{{ choice.image }}" alt="{{ choice.description|default:choice.text }}">
+{% endif %}
+</span>
+</label>
+{% endfor %}
+{% elif question.question_type == 'TF' %}
+<label class="choice-label">
+<input type="radio" name="question_{{ question.pk }}" value="True" {% if question.saved_answer == 'True' %}checked{% endif %}>True</label>
+<label class="choice-label">
+<input type="radio" name="question_{{ question.pk }}" value="False" {% if question.saved_answer == 'False' %}checked{% endif %}>False</label>
+{% else %}
+<label for="answer-{{ question.pk }}">Your answer</label>
+<input id="answer-{{ question.pk }}" name="question_{{ question.pk }}" value="{{ question.saved_answer }}" {% if question.question_type == 'NUM' %}inputmode="decimal"{% endif %} autocomplete="off">
+{% endif %}
+<button class="link" type="button" data-clear="{{ question.pk }}">Clear answer</button>
+</fieldset>
+{% endfor %}
+<div class="actions">
+<button id="review-submit" class="primary" type="button">Review and submit</button>
+<button id="leave" class="btn ghost" type="button">Leave exam</button>
+</div>
+</form>
+</section>
+<aside class="sidebar">
+<section class="card">
+<h2>Questions</h2>
+<div class="jump-links" aria-label="Jump to question">
+{% for question in questions %}
+<a href="#question-{{ forloop.counter }}" data-jump="{{ question.pk }}" aria-label="Question {{ forloop.counter }}">{{ forloop.counter }}</a>
+{% endfor %}
+</div>
+</section>
+<section class="card">
+<h2>Camera status</h2>
+<video id="video" class="camera monitor-preview" autoplay muted playsinline aria-label="Your camera preview">
+</video>
+<p id="camera-status" class="foot" role="status">Connecting…</p>
+<button id="retry-camera" class="btn ghost">Retry camera</button>
+<p class="foot">Technical interruptions do not prevent answering. Your teacher can review monitoring completeness.</p>
+</section>
+</aside>
+</div>
+</div>
+<dialog id="submit-dialog" aria-labelledby="submit-title">
+<h2 id="submit-title">Ready to submit?</h2>
+<p id="review-summary">
+</p>
+<p>You cannot change answers after submitting.</p>
+<div class="actions">
+<button id="confirm-submit" class="primary">Submit exam</button>
+<form method="dialog">
+<button class="btn ghost">Keep working</button>
+</form>
+</div>
+</dialog>
+<dialog id="leave-dialog" aria-labelledby="leave-title">
+<h2 id="leave-title">Leave this exam?</h2>
+<p>Server-saved answers remain available. The timer keeps running and the exam still ends at its deadline.</p>
+<p id="leave-save-state">
+</p>
+<a class="btn" href="{% url 'student_home' %}">Leave exam</a>
+<form method="dialog">
+<button class="btn ghost">Keep working</button>
+</form>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'makitest/exam.js' %}" defer>
 </script>
 {% endblock %}
-

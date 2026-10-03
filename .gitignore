@@ -1,3 +1,7 @@
+# Local validation artifacts
+.local-tools/
+.validation/
+whatever/media/
 # Python
 __pycache__/
 *.py[cod]

@@ -1,41 +1,52 @@
-{% extends "base.html" %}
-
-{% block title %}{{ exam.title }} — MAKITEST{% endblock %}
-
+{% extends 'base.html' %}
 {% block content %}
-<div class="card">
-  <h1>{{ exam.title }} by {{ exam.created_by.username }}</h1>
-  <p><strong>Description:</strong> {{ exam.description }}</p>
-  <p><strong>Time Limit:</strong> {{ exam.timelimit }} minutes</p>
-  <p><strong>Attempts:</strong> 
-    {% if exam.attempt_limit %}
-      {{ attempts_used }}/{{ exam.attempt_limit }} used
-      {% if remaining_attempts > 0 %}
-        <span style="color: var(--ok); font-weight: 600;"> ({{ remaining_attempts }} remaining)</span>
-      {% endif %}
-    {% else %}
-      Unlimited
-    {% endif %}
-  </p>
-  
-  <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--line);">
-
-  <h2><p>Read before you begin.</p></h2>
-  <p>Once you start, the following are monitored and recorded:</p>
-  <ul>
-    <li>Where you are looking, via head pose and eye gaze</li>
-    <li>Whether your face is visible to the camera</li>
-    <li>Leaving the exam window or switching tabs</li>
-    <li>Copy, paste and other forbidden keyboard shortcuts</li>
-  </ul>
-  <p>
-    You will be asked to allow camera access, then to complete a short
-    calibration — five stages, looking at each edge of the screen in turn.
-    Tracking only begins once calibration is finished.
-  </p>
-  <p style="margin-bottom:0">
-    <a class="btn" href="{% url 'home' %}">Start Proctored Exam</a>
-    <a class="btn ghost" href="{% url 'student_home' %}">Back</a>
-  </p>
+<ol class="steps" aria-label="Exam preparation">
+<li aria-current="step">1. Exam details</li>
+<li>2. Camera setup</li>
+<li>3. Exam</li>
+</ol>
+<h1>{{ exam.title }}</h1>
+<p class="sub">{{ exam.description }}</p>
+<div class="grid">
+<section class="card">
+<h2>Before you begin</h2>
+<div class="meta">
+<span>
+<strong>{{ duration_minutes }} minutes</strong>
+</span>
+<span>{{ attempts_used }} attempts used</span>
 </div>
+<p>
+<strong>Deadline: {{ exam.deadline|date:'M j, Y, g:i A' }} PHT.</strong> The exam ends at this deadline, even if your timer has time remaining.</p>
+<p>Your timer starts after camera setup, when you choose Start exam. Setup does not use an attempt.</p>
+<h3>Get ready</h3>
+<ul>
+<li>Use a laptop or desktop with a working webcam.</li>
+<li>Close other apps that use your camera.</li>
+<li>Keep your face visible and your workspace ready.</li>
+</ul>
+</section>
+<section class="card">
+<h2>How monitoring works</h2>
+<p>Camera frames are sent to the server to estimate head movement, eye gaze, and face visibility. Selected keyboard events, window focus changes, and hidden tabs are also reported.</p>
+<p>Event logs, gaze heatmaps, and clips around flagged events are saved for authorized teacher review. Your microphone is not used.</p>
+<p class="muted">Monitoring supports human review. These signals alone do not prove misconduct.</p>
+<form method="post">
+{% csrf_token %}
+<input type="hidden" name="exam_id" value="{{ exam.pk }}">
+{% if exam.access_code %}
+<div class="field">
+<label for="access-code">Exam access code</label>
+<input id="access-code" name="access_code" autocomplete="off" required aria-describedby="code-help">
+<small id="code-help">Use the code your teacher shared.</small>
+</div>
+{% endif %}
+{% if error %}
+<p class="field-error" role="alert">{{ error }}</p>
+{% endif %}
+<button class="primary">Continue to camera setup</button>
+</form>
+</section>
+</div>
+<a href="{% url 'student_home' %}">Back to my exams</a>
 {% endblock %}

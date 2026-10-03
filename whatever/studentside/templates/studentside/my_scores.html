@@ -1,125 +1,30 @@
-{% extends "base.html" %}
-
-{% block title %}My Scores — MAKITEST{% endblock %}
-
+{% extends 'base.html' %}
 {% block content %}
-<h1>My Scores</h1>
-<p class="sub">Your exam attempts, grouped by exam.</p>
-
-{% if not exam_groups %}
-<div class="card">
-  <h2 style="font-size:17px;margin:0 0 6px">No Attempts Yet</h2>
-  <p style="margin-bottom:0; color: var(--muted);">
-    You haven't taken any exams yet. Check the available exams on your dashboard.
-  </p>
+<h1>My results</h1>
+<p class="sub">Your attempts and scores, grouped by exam.</p>
+{% for group in exam_groups %}
+<details>
+<summary>{{ group.exam.title }} · {{ group.attempts|length }} attempts{% if group.best_score is not None %} · Best {{ group.best_score|floatformat:1 }}%{% endif %}
+</summary>
+{% for attempt in group.attempts %}
+<div class="exam-item">
+<div>Attempt {{ attempt.attempt_number }}<p class="muted">
+{% if attempt.completed_at %}{{ attempt.completed_at|date:'M j, Y, g:i A' }} PHT · {{ attempt.score|floatformat:1 }}%{% else %}In progress{% endif %}
+</p>
 </div>
+{% if attempt.completed_at %}
+<a class="btn ghost" href="{% url 'exam_results' attempt.pk %}">View result</a>
 {% else %}
-<div class="card">
-  <ul class="exam-dir-list">
-    {% for group in exam_groups %}
-    <li class="exam-dir">
-      <details>
-        <summary class="exam-dir-summary">
-          <div class="exam-dir-info">
-            <strong>{{ group.exam.title }}</strong>
-            <p style="margin: 4px 0 0; color: var(--muted); font-size: 13px;">
-              Attempts done: {{ group.attempts|length }}
-              {% if group.exam.attempt_limit %}/ {{ group.exam.attempt_limit }}{% endif %}
-            </p>
-          </div>
-          <div class="exam-dir-score">
-            {% if group.best_score is not None %}
-              <span style="font-size: 20px; font-weight: 700; color: {% if group.best_score >= 75 %}var(--ok){% elif group.best_score >= 50 %}#ff9800{% else %}var(--bad){% endif %};">
-                {{ group.best_score|floatformat:2 }}%
-              </span>
-              <p style="margin: 2px 0 0; color: var(--muted); font-size: 12px;">Highest Score</p>
-            {% else %}
-              <span style="color: var(--muted);">—</span>
-            {% endif %}
-          </div>
-          <span class="exam-dir-chevron" aria-hidden="true">▸</span>
-        </summary>
-        <ul class="attempt-list">
-          {% for attempt in group.attempts %}
-          <li class="attempt-item">
-            <div class="attempt-info">
-              <span>Attempt {{ attempt.attempt_number }}</span>
-              {% if attempt.completed_at %}
-                <span style="color: var(--muted); font-size: 13px;"> &middot; {{ attempt.completed_at|date:"M d, Y H:i" }}</span>
-              {% else %}
-                <span style="color: var(--muted); font-size: 13px;"> &middot; In Progress</span>
-              {% endif %}
-            </div>
-            <div class="attempt-score">
-              {% if attempt.score is not None %}
-                <span style="font-weight: 600; color: {% if attempt.score >= 75 %}var(--ok){% elif attempt.score >= 50 %}#ff9800{% else %}var(--bad){% endif %};">
-                  {{ attempt.score|floatformat:2 }}%
-                </span>
-              {% else %}
-                <span style="color: var(--muted);">—</span>
-              {% endif %}
-            </div>
-            <div class="attempt-actions">
-              {% if attempt.completed_at %}
-                <a href="{% url 'exam_results' attempt.id %}" class="btn">View Details</a>
-              {% else %}
-                <button class="btn" disabled style="opacity: 0.5; cursor: not-allowed;">Not Finished</button>
-              {% endif %}
-            </div>
-          </li>
-          {% endfor %}
-        </ul>
-      </details>
-    </li>
-    {% endfor %}
-  </ul>
-  <style>
-  .exam-dir-list { list-style: none; padding: 0; margin: 0; }
-  .exam-dir {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      margin-bottom: 12px;
-      overflow: hidden;
-  }
-  .exam-dir-summary {
-      cursor: pointer;
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      list-style: none;
-  }
-  .exam-dir-summary::-webkit-details-marker { display: none; }
-  .exam-dir-summary::marker { content: ""; }
-  .exam-dir-info { flex: 1; }
-  .exam-dir-score { text-align: right; min-width: 90px; }
-  .exam-dir-chevron {
-      color: var(--muted);
-      font-size: 30px;
-      transition: transform 0.2s ease;
-      flex-shrink: 0;
-  }
-  details[open] > .exam-dir-summary .exam-dir-chevron { transform: rotate(90deg); }
-  .attempt-list {
-      list-style: none;
-      margin: 0;
-      padding: 0 16px 16px;
-      border-top: 1px solid var(--line);
-  }
-  .attempt-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--line);
-  }
-  .attempt-item:last-child { border-bottom: none; }
-  .attempt-info { flex: 1; }
-  .attempt-score { min-width: 70px; text-align: right; }
-  </style>
-</div>
+<a href="{% url 'exam_details' %}?exam_id={{ group.exam.pk }}">Resume exam</a>
 {% endif %}
+</div>
+{% endfor %}
+</details>
+{% empty %}
+<section class="card">
+<h2>No results yet</h2>
+<p>After you submit an exam, its result will appear here.</p>
+<a class="btn" href="{% url 'student_home' %}">View my exams</a>
+</section>
+{% endfor %}
 {% endblock %}
