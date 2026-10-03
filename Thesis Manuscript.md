@@ -598,7 +598,6 @@ Python Django is a high-level web framework which is known for its scalability, 
 Model is involved in handling how data is defined and stored; Views are the ones that handle requests and decisions of what data to output; Templates are responsible for what the end users are going to be interacting and experiencing in the browser.
 To start, the homepage content is where the users can login and register before they are able to access the content of the website. Once the user logs in, they will be able to see the contents of the website depending on their roles 
 
-
 Table 9. System Roles and Access
 Role	Content
 Student	
@@ -729,6 +728,74 @@ The Persistence and Domain Modeling Subsystem establishes the data schema throug
 
 Figure 27. Persistence and Domain Modeling UML Diagram
  
+### High-Level Entity Relationship Diagram
+The ERD below summarizes the web application's main stored records and their relationships. It focuses on accounts, exam content, student attempts and answers, calibration settings, and proctoring artifact references rather than every database field.
+
+Figure 27.1. High-Level Entity Relationship Diagram of the Web Application
+
+<!-- mermaid-checked: every attribute is `<type> <name> [<key>] ["<description>"]` with at most one of PK/FK/UK, no \n in descriptions, no {} in descriptions, every relationship label is double-quoted -->
+```mermaid
+erDiagram
+    CustomUser ||--o{ Exam : "creates"
+    Exam ||--o{ Question : "contains"
+    CustomUser ||--o{ StudentExamAttempt : "takes"
+    Exam ||--o{ StudentExamAttempt : "receives"
+    StudentExamAttempt ||--o{ StudentAnswer : "records"
+    Question ||--o{ StudentAnswer : "is answered by"
+    StudentExamAttempt o|--o{ ProctoringSessionFiles : "references"
+    CustomUser ||--o| StudentTrackingThresholds : "has calibration"
+
+    CustomUser {
+        int id PK
+        string username
+        string role
+        string classDesignation
+    }
+    Exam {
+        int examId PK
+        int createdById FK
+        string title
+        string classDesignation
+        datetime deadline
+    }
+    Question {
+        int questionId PK
+        int examId FK
+        string questionType
+        string questionText
+    }
+    StudentExamAttempt {
+        int id PK
+        int studentId FK
+        int examId FK
+        int attemptNumber
+        float score
+        string predictionLabel
+        float predictionConfidence
+    }
+    StudentAnswer {
+        int id PK
+        int studentExamAttemptId FK
+        int questionId FK
+        string answerText
+    }
+    ProctoringSessionFiles {
+        int id PK
+        int examAttemptId FK
+        string sessionId UK
+        string sessionDirectory
+    }
+    StudentTrackingThresholds {
+        int id PK
+        int studentId FK
+        float calibrationCenter
+        datetime calibratedAt
+    }
+```
+
+`CustomUser` stores the account and role information used throughout the application. A teacher or administrator account may create multiple `Exam` records, and each exam contains multiple `Question` records. A student may have multiple `StudentExamAttempt` records across exams; each attempt stores the result and prediction summary, and links to submitted `StudentAnswer` records for the questions.
+
+The supporting entities capture proctoring data without expanding the diagram to every generated file: `ProctoringSessionFiles` records session identifiers and artifact locations, while the actual heatmaps, logs, and video files are stored as files rather than as database entities. `StudentTrackingThresholds` holds a student's calibration values and is associated with at most one record per student. The optional attempt link on a proctoring-file record reflects that the model permits records without an associated exam attempt.
 
 3.2 Identity, Authentication, and Access Control
 The Identity and Access Control Subsystem governs secure registration and role based authorization. The SignUpForm extends Django’s UserCreationForm with application specific fields such as email, birthday, and LRN_number, enforcing role dependent validation rules during submission. Its atomic save() method guarantees synchronized creation of both the base User record and the corresponding role extension. Access control is further reinforced by the login_required_role decorator, which validates both authentication and administrator authorization before permitting entry into protected views. This dual factor gate ensures that newly registered accounts remain inactive until explicitly approved, thereby safeguarding sensitive exam delivery surfaces against unauthorized access.
@@ -1042,8 +1109,6 @@ Walsh, L. L., Lichti, D. A., Zambrano-Varghese, C. M., Borgaonkar, A. D., Sodhi,
 Zarzycka, E., Krasodomska, J., Mazurczak-Mąka, A., & Turek-Radwan, M. (2021). Distance learning during the COVID-19 pandemic: students’ communication and collaboration and the role of social media. Cogent Arts and Humanities, 8(1). https://doi.org/10.1080/23311983.2021.1953228
 Zhao, J., Awais-E-Yazdan, M., Mushtaque, I., & Deng, L. (2022). The Impact of technology adaptation on academic engagement: A moderating role of perceived argumentation strength and school support. Frontiers in Psychology, 13, 962081. https://doi.org/10.3389/fpsyg.2022.962081
 Zhao, Q., & Ye, M. (2010). The application and implementation of face recognition in authentication system for distance education. 2010 International Conference on Networking and Digital Society, 25, 487–489. https://doi.org/10.1109/icnds.2010.5479246
-
-
 
 
 
