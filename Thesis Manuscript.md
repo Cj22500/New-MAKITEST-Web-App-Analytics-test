@@ -773,6 +773,32 @@ Documentation and Future Development	Clarity of documentation and support for co
 Overall Mean	Aggregate score across all categories	4.7	Excellent overall acceptance and satisfaction
 ## Presentation of Data Results
 The study dataset contains 186 session-level observations, with 93 records in each label class. It contains 81 columns: 79 numeric predictors, a session identifier, and the binary label. The predictors combine heatmap-distribution features with event-log features. Inspection of the current feature table found no missing predictor values and no duplicate session identifiers. Because participants may contribute more than one session, the 186 observations are not equivalent to 186 independent participants; results are interpreted as exploratory session-level evidence.
+
+Table 19. Session-Level Dataset Fields and Descriptions
+
+| Field(s) | Description |
+|---|---|
+| `centroid_x_norm` | Horizontal gaze-density centroid, normalized by heatmap width. |
+| `centroid_y_norm` | Vertical gaze-density centroid, normalized by heatmap height. |
+| `spread_x` | Horizontal standard deviation of gaze density, normalized by heatmap width. |
+| `spread_y` | Vertical standard deviation of gaze density, normalized by heatmap height. |
+| `elongation_ratio` | Larger-to-smaller covariance eigenvalue ratio, describing heatmap shape elongation. |
+| `entropy` | Shannon entropy of normalized gaze intensity across the 8×8 grid, in bits. |
+| `peak_ratio` | Share of total gaze intensity contributed by the brightest 5% of pixels. |
+| `coverage_ratio` | Fraction of heatmap pixels with recovered intensity greater than 25. |
+| `grid_cell_0`–`grid_cell_63` | Normalized gaze intensity per 8×8 cell, indexed row-wise from top-left to bottom-right. |
+| `violation_count_frantic_eye_movement` | Number of session-log records categorized as frantic eye movement. |
+| `violation_count_forbidden_key` | Number of session-log records categorized as forbidden-key events. |
+| `violation_count_off_screen` | Number of session-log records categorized as off-screen gaze. |
+| `violation_count_duration` | Number of session-log records categorized as prolonged-gaze duration violations. |
+| `num_transitions` | Number of records in the session’s suspicion-scoring log. |
+| `pct_non_center_time` | Share of observed session duration logged with gaze direction other than Center. |
+| `violation_rate` | Fraction of log records categorized as one of the four violation types. |
+| `session_id` | Unique session-folder identifier retained as metadata, not used as a predictor. |
+| `label` | Dataset class: 0 for non-cheating or 1 for cheating; not independent proof of misconduct. |
+
+The `grid_cell` range represents 64 separate dataset columns; each value is the normalized intensity mass for its corresponding cell. The identifier and label are retained in the dataset but excluded from the model predictors.
+
 The system generated outputs including gaze heatmaps, event-activated replay clips, and CSV session logs of gaze direction and duration. These served as the primary basis for analysis. Heatmaps displayed gaze concentration patterns, replay clips captured contextual evidence of suspicious events, and CSV logs provided quantitative measurements of gaze durations and directional shifts.
 Each trial underwent an independent calibration process to align gaze coordinates with the camera’s field of view. Variations in tester height, seating distance, and facial positioning influenced detection precision. To ensure comparability, all heatmaps were manually aligned to a standardized reference screen area, preserving relative gaze distribution while compensating for calibration differences.
 
@@ -974,7 +1000,6 @@ Walsh, L. L., Lichti, D. A., Zambrano-Varghese, C. M., Borgaonkar, A. D., Sodhi,
 Zarzycka, E., Krasodomska, J., Mazurczak-Mąka, A., & Turek-Radwan, M. (2021). Distance learning during the COVID-19 pandemic: students’ communication and collaboration and the role of social media. Cogent Arts and Humanities, 8(1). https://doi.org/10.1080/23311983.2021.1953228
 Zhao, J., Awais-E-Yazdan, M., Mushtaque, I., & Deng, L. (2022). The Impact of technology adaptation on academic engagement: A moderating role of perceived argumentation strength and school support. Frontiers in Psychology, 13, 962081. https://doi.org/10.3389/fpsyg.2022.962081
 Zhao, Q., & Ye, M. (2010). The application and implementation of face recognition in authentication system for distance education. 2010 International Conference on Networking and Digital Society, 25, 487–489. https://doi.org/10.1109/icnds.2010.5479246
-
 
 
 
