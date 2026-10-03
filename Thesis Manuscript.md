@@ -28,29 +28,48 @@ While the system incorporates baseline safeguards for data privacy and security,
 The system’s performance will be examined using the available session-level dataset and reported with appropriate classification metrics. Precision is an important metric because false positives are costly in a proctor-assistance context. During inference, the classifier’s `predict()` output supplies the predicted class label, while the probability assigned to that returned class is recorded as the confidence level. Each detected behaviour is categorized in the event log and may receive a rule-based score, while the later Random Forest inference produces a separate class probability and prediction confidence. These outputs should be treated as decision-support indicators, not as standardized measures of misconduct likelihood.
 ## Research Framework
 Figure 1. Research Framework Diagram
- 
-This study is anchored on a multi-phase research framework that guides the development, integration, and evaluation of a web-based online examination platform equipped with automated behavioural analysis. The framework is structured into seven interconnected modules, each representing a critical stage in the system’s lifecycle from model evaluation to deployment and acceptance.
-## Model Evaluation
-The initial phase focuses on evaluating the core components of the behavioural detection system: the MediaPipe facial-landmark pipeline, iris-based gaze estimation, head-pose processing, browser or keyboard event handling, and rule-based scoring. The study evaluates the selected pipeline as an integrated design, while comparisons with alternative CV algorithms are addressed through related literature and proposed as future work. These evaluations determine whether each detection modality contributes meaningfully to the behavioural indicators.
-## Model Development and Scoring System
-Following the evaluation, the available session data is transformed into heatmap-distribution and event-log features for exploratory model development. The current feature set is based on gaze-distribution measures, an 8x8 heatmap grid, violation-category counts, transitions, non-center time, and violation rate. The implemented scoring engine applies deterministic temporal and event rules; it does not use object-detection features. A separate Random Forest artifact provides session-level classification probabilities when the required artifacts are available.
-## Web Application Development
-Once the model has been properly developed and tested, it is then embedded into a secure web-based platform developed using Python Django, a Python-based web application development framework. The application will be used to create and take exams based on the role of the end user. This module prioritizes the development of a web application system tailored to academic settings, to integrate the suspicious behaviour detection system into online exam taking.
-## Respondent Engagement and Usage
-The system is designed for two primary user groups: Students and Teachers. Their feedback and usage patterns are essential for evaluating system usability and effectiveness.
-## Testing and Evaluation
-This phase involves empirical validation of the system through surveys, questionnaires, results evaluation, and usage performance testing. These activities provide quantitative insights into system performance.
-## Ethical Considerations and Feedback
-Ethical integrity is central to system deployment. This module addresses transparency and informed consents, user privacy, system performance enhancements feedback. This phase ensures alignment with institutional standards and user expectations.
-## Documentation and Recommendations
-The final module of the conceptual framework diagram encompasses the documentation and recommendations of the researchers for future development of the thesis topic. The documentation section encompasses: 
-- System Architecture Records. Detailed diagrams and descriptions of the detection system and the web application frontend and backend will be recorded in detail.
-- Algorithmic Specification. This will cover the clear explanation of the CV models, keypress tracking methods and scoring mechanics. Additionally, datasets and evaluation metrics, as well as calibration thresholds will be documented.
-- Ethical Compliance Reports. Documents related to the informed consent procedures, privacy safeguards, and institution approvals will be archived for recordkeeping.
-As for the recommendations, the following will be established for further development and evaluation of the thesis theme to ensure a clear and efficient roadmap. This may include:
-- Technical Enhancements. This could relate to dataset expansion, future CV model recommendations, or expanded scope to the various behaviours and factors that lead to suspicious exam behaviour.
-- User-focused Improvements. This could be the existing feedback and recommendations that are logged and archived during the documentation process. The following examples could be reconducting of user training for system familiarity, UI improvements and recommendations, and accessibility features to accommodate a larger group of users.
-- Future Research Directions. The research group will document and transcribe any recommendations or improvements for the further integration and efficacy of the system. These can include encompassing current limitations that are possible in a future time due to factors such as technological advancements or new discoveries related to the topic of the study.
+
+```mermaid
+flowchart TD
+    A[Behavioral inputs] --> B[Tracking and scoring]
+    B --> C[Session data<br/>Logs, heatmaps, and video evidence]
+    C --> D[Dataset preparation]
+	D --> E[Predictive model development and evaluation]
+	E --> F[Web application]
+    F --> G[Evaluation and user feedback]
+    G --> H[Documentation and recommendations]
+	H -. web app refinement .-> F
+```
+
+This research framework provides a general guide for conducting the study, from collecting behavioral inputs to developing the prototype, transforming session data, evaluating the system, and documenting recommendations. It describes the intended sequence of research activities rather than presenting results or fixing conclusions in advance. Data collection and processing will follow the procedures established for the study. Technical observations and user feedback will guide refinement of the web application, not changes to those procedures.
+
+### System Inputs
+The study will use webcam frames and calibrated gaze observations as its primary visual inputs. In the browser-based application, the exam page will also report events available to the page, such as selected key combinations, loss of focus, and hidden-tab state; this is not unrestricted operating-system monitoring. A separate standalone tracking path can use local camera input and selected operating-system keyboard events. These paths have different input boundaries, which will be considered when interpreting their outputs.
+
+The tracking process will use facial and eye landmarks to estimate head pose and iris-based eye position. A user-specific calibration procedure will establish reference measurements for gaze mapping. Controlled sessions will provide the behavioral records used for analysis, with labels representing the experimental conditions assigned to those sessions rather than independently verified instances of misconduct.
+
+### Behavioral Processing
+Camera frames will be processed to detect facial and eye landmarks, estimate head orientation and eye position, and combine available gaze estimates into screen-position and gaze-direction values. After calibration, temporal and event-based rules will examine patterns such as prolonged directional gaze, gaze transitions, and reported browser events. The system will record potential events in session logs and use valid gaze positions to generate heatmaps. Where an event triggers evidence capture, a related video clip may also be saved for review.
+
+The rule-based scoring stage is intended to identify behaviors that merit attention, not to determine whether cheating occurred. The browser-based and standalone paths will be described and interpreted according to the inputs each one can actually observe.
+
+### Dataset Transformation and Model Development
+For session-level model development, raw tracking sessions will be transformed into a structured dataset. Eligible sessions will need the required heatmap and behavioral log. Heatmap-distribution measures and event-log measures will be extracted and combined into numeric predictors, while session identifiers and experimental labels will be retained as metadata. The transformed data will then be checked and arranged for model training.
+
+An appropriate predictive model will be selected and developed using the transformed dataset. The choice of model and its configuration will be determined during the methodology and model-development stages. The resulting model will be prepared for use with the web application, with consistent feature preparation between model development and session prediction. Model outputs will be treated as exploratory session-level indicators and interpreted in light of the dataset and evaluation design.
+
+### Web Application Integration
+The Django application will connect exam delivery with browser-based calibration and monitoring. During an exam, the application will associate captured session artifacts with the student’s attempt. At submission, the prediction workflow will use the session heatmap and final behavioral log to prepare model inputs and obtain a predicted class and class probabilities. The application will make the prediction status and result available for teacher review. This session-level prediction is distinct from the live rule-based events generated during monitoring, and neither output will replace human judgment.
+
+### Evaluation and Stakeholder Feedback
+The prototype will be examined through component, integration, system, and compatibility testing, alongside controlled examination sessions. Technical evaluation will consider the behavior of the tracking and scoring components, the structure of generated artifacts, and the classifier’s results under the selected validation procedure. User-acceptance activities will gather feedback primarily from students and teachers about the web application, including its usability, calibration workflow, clarity of outputs, responsiveness, transparency, and privacy perceptions. This feedback will inform web application refinements; the study’s data-collection and processing procedures will remain unchanged.
+
+Technical measurements and stakeholder feedback will be analyzed as different forms of evidence. Survey responses will describe participants’ experiences and views; they will not by themselves establish detection accuracy, fairness, privacy compliance, or readiness for broad deployment. Behavioral indicators and model predictions will remain aids for human review.
+
+### Documentation and Recommendations
+The research will document the system architecture, input boundaries, calibration and tracking workflow, scoring rules, dataset transformation, model-development process, web integration, evaluation procedures, and limitations. Documentation will provide a clear account of how data moves through the prototype and how its outputs should be interpreted.
+
+Recommendations based on student and teacher feedback will focus on the web application, including its usability, teacher-review workflow, clarity, transparency, and privacy communication. Technical findings may also be documented as limitations and possible directions for future research. Any proposed changes to data collection or processing will be identified as future-study considerations, not as refinements made in response to web-app feedback during this study.
 # Chapter 2: Related Literature Review
 This chapter presents a synthesized review of literature on online assessment, academic integrity, and the effectiveness of artificial intelligence–based proctoring systems. The discussion traces the evolution from traditional paper based examinations to digital assessment environments, identifies emerging patterns of academic misconduct in online settings, and evaluates technological interventions intended to ensure fairness and authenticity during remote examinations.
 ## The Shift from Physical to Digital Assessment
@@ -103,11 +122,23 @@ The project was conducted at Holy Rosary College of Santa Rosa, Laguna, a privat
 ## Software Methodology
 Figure 4. Software Methodology
  
-The software methodology implemented in this study is the KANBAN methodology, chosen for its flexibility, modularity, and suitability for iterative development. KANBAN was selected because the system being developed is an integrated processing unit composed of two main parts: the web based exam delivery tool and the suspicious behavior detection system. By breaking the project into these modular components, tasks can be performed in parallel and visualized effectively on a KANBAN board. This approach also allows proponents to distribute responsibilities among team members more efficiently, ensuring that development progresses in a structured yet adaptable manner.
-Another reason for adopting KANBAN is its support for continuous iterative development. Since the web app system relies heavily on user experience and tester feedback, KANBAN provides the accessibility needed to reprioritize software modifications whenever new knowledge from related literature is found. This iterative cycle ensures that the system evolves thereby improving usability and effectiveness over time.
-KANBAN also offers flexibility in task prioritization, which is essential given the mixed methods approach of this study. The methodology combines technical testing results with user feedback to guide decision making. As new requirements or issues emerge, tasks can be reprioritized on the KANBAN board, ensuring that the most critical modifications are addressed first.
-The methodology emphasizes the importance of visualizing task workflow. The KANBAN board provides a clear representation of tasks categorized into stages such as “to do,” “backlog,” “in review,” “prioritized,” and “documentation.” This visualization enables the team to track progress modularly, monitor test results, and identify modifications based on user feedback. Examples include tracking the completion of standard operating procedures (SOPs), monitoring the outcomes of system testing, and documenting adjustments made during development. By maintaining this structured workflow, the team ensures transparency, accountability, and efficiency throughout the project lifecycle.  
+This study employed the Kanban methodology to organize development as small, trackable work items that could be completed and refined incrementally. The work covered two connected but separately maintained components: the standalone gaze-tracking and behaviour-analysis system in `pfftbuh/Setup-and-Testing`, and the Django exam-delivery and web-proctoring application in `pfftbuh/New-MAKITEST-Web-App`. Their commit histories show that these components were developed in overlapping stages and later connected through session artifacts and prediction workflows.
+
+The table below is a plausible reconstruction of how work items could have been organized in Kanban, based on the dated development sequence in both repositories. It is not a record of the original board states.
+
+| Month | To do | Ongoing | Priority | Done |
+|---|---|---|---|---|
+| May 2026 | Collect gaze-direction observations and identify useful behavioral indicators. | Build gaze tracking, calibration, and event-scoring logic in the standalone tracker. | Produce usable session logs and handle off-screen gaze consistently. | Initial gaze-direction logs, scoring refinements, off-screen duration handling, and face-position anchoring. |
+| June 2026 | Document and verify face-position correction in the gaze workflow. | Refine and explain how face position affects the estimated screen coordinate. | Improve interpretability and consistency of gaze estimates. | Face-position anchor-offset logic documented in the project materials. |
+| July 2026 | Continue tracker testing and prepare the exam-delivery integration. | Not verifiable from the reviewed commit history. | Not verifiable from the reviewed commit history. | No dated commits were visible in the reviewed history for this month. |
+| August 2026 | Connect exam attempts with calibration, monitoring, and saved session artifacts. | Develop the standalone session workflow and the Django exam/proctoring application in parallel. | Establish reliable exam flow, session organization, and usable prediction inputs. | Student/teacher app areas, exam workflows, calibration, proctoring integration, session outputs, feature extraction, and initial model/prediction pipeline. |
+| September 2026 | Improve how prediction results and supporting evidence are reviewed. | Extend web-app prediction and session review; refine evaluation and dataset documentation. | Keep model outputs interpretable and distinguish technical evidence from conclusions. | Prediction and review updates, revised evaluation documentation, and dataset observations using model and violation-log results. |
+| October 2026 | Continue improving app workflows and maintainable integration. | Extend heatmap-feature and model-evaluation capabilities. | Align feature handling and prediction workflows while refining the student experience. | Feature-extraction and model-evaluation updates, student score views, and code-structure refactoring. |
+
+This sequence is consistent with Kanban's incremental and adaptable workflow: tracking and scoring components were built and refined, the web application was developed alongside them, and session artifacts then supported dataset and prediction work. Technical evaluation and user feedback informed refinements to the web application's workflows and presentation. The data-collection and processing procedures used for the study remained defined for the evaluation and were not changed in response to web-app feedback.
+
 Figure 5. KANBAN Visualization
+
 ## Population of the Study
 The population of this study consists of selected members of Holy Rosary College of Santa Rosa, Laguna, specifically students and teachers who participated in the system testing. The sampling method employed was a convenience sampling approach with random selection, chosen for its practicality and accessibility within the research locale. This method allowed the researchers to gather participants who were readily available and familiar with ICT related tools and online platforms, while still ensuring diversity through random selection.
 The locale sample consisted of 93 student participants from Grades 8 to 12, representing a range of academic levels and technological familiarity. This participant count is distinct from the 186 session-level observations in the dataset because participants could contribute more than one session. Two teacher participants also provided professional insight and feedback on system usability and proctoring effectiveness.
@@ -117,19 +148,22 @@ User privacy, informed consent, and participant interests were carefully conside
 	During the initial development of the system and its algorithms. The study used the following hardware relevant to the study: 
 
 Table 1. Hardware Specifications During Development
-Hardware	Specification
-Camera	UVC Camera – 1080p High Definition Camera
-Monitor	2560x1440 Resolution 32-inch Monitor
-Graphics Processing Unit	NVIDIA GeForce RTX 3060
-RAM	32 GB
+
+| Hardware | Specification |
+|---|---|
+| Camera | UVC Camera – 1080p High Definition Camera |
+| Monitor | 2560x1440 Resolution 32-inch Monitor |
+| Graphics Processing Unit | NVIDIA GeForce RTX 3060 |
+| RAM | 32 GB |
 
 Table 2. Hardware Specifications During Locale Trial Runs
-Hardware	Specification
-Camera	UVC Camera – 1080p High Definition Camera
-Monitor	2560x1440 Resolution 32-inch Monitor
-Graphics Processing Unit	Intel(R) UHD Graphics 620
-RAM	8 GB
 
+| Hardware | Specification |
+|---|---|
+| Camera | UVC Camera – 1080p High Definition Camera |
+| Monitor | 2560x1440 Resolution 32-inch Monitor |
+| Graphics Processing Unit | Intel(R) UHD Graphics 620 |
+| RAM | 8 GB |
 
 Figure 6. Locale System Testing Setup
    
@@ -201,52 +235,47 @@ This evaluation includes:
 ## User Acceptance Testing
 This User Acceptance Testing (UAT) survey aims to evaluate the usability, reliability, and ethical compliance of the MAKITEST: Suspicious Exam Behavior Detection System. The questions are designed according to ISO 9241 (Ergonomics of Human-System Interaction) and ISO/IEC 25010 (Software Product Quality Model) standards to assess the system’s effectiveness, efficiency, satisfaction, and data protection.
 Respondents are asked to rate each statement based on their experience using the system. Please indicate your level of agreement using the scale below:
-Detection Accuracy and Reliability
-- The system accurately detects gaze direction, head pose, and keypress patterns during examinations.
-- The detection of suspicious behaviors remains consistent across different test sessions.
-- The system minimizes false positives when identifying irregular movements or actions.
-- The detection modules (gaze, head pose, keypress tracking) perform reliably under varying lighting and camera conditions.
-- The system maintains stable performance even when multiple detection features operate simultaneously.
-Behavioral Data Output and Interpretation
-- The behavioral data outputs (e.g., gaze heatmaps, event logs, and violation counts) clearly differentiate between cheating and non cheating trials.
-- The data visualization effectively highlights patterns of off screen focus and irregular gaze behavior.
-- The frequency and distribution of detected events provide structured indicators of behavioral irregularities for human interpretation.
-- The system’s recorded metrics (e.g., gaze duration, off screen frequency, head pose deviation) are interpretable and support meaningful analysis.
-- The overlap between normal and suspicious behaviors is observable and helps validate the need for human interpretation.
-- The behavioral indicators correlate well with observed cheating tendencies in controlled trials.
-- The data outputs assist proctors in making informed judgments rather than relying solely on automated classification.
-System Responsiveness and Efficiency
-- The detection system responds quickly to behavioral changes during exams.
-- The latency between detection and alert generation is minimal.
-- The system operates smoothly without causing noticeable lag or interruptions.
-- The detection modules run efficiently on standard hardware configurations.
-- The system maintains consistent performance throughout the duration of an exam.
-Ethical and Privacy Considerations
-- I was clearly informed about what behavioral data the detection system collects.
-- The monitoring process felt transparent and respectful of user privacy.
-- The system does not store or share personal data beyond what is necessary for detection.
-- The detection system’s design promotes fairness and accountability.
-- I trust that the system complies with institutional data protection standards.
-Usability and Integration
-- The detection system integrates seamlessly with the exam environment.
-- The monitoring features do not interfere with normal test taking behavior.
-- The calibration process for gaze and head pose detection is straightforward.
-- The overall experience using the detection system was intuitive and non intrusive.
-
-Documentation and Future Development
-- The system’s documentation clearly explains how detection and data interpretation work.
-- The calibration and setup instructions are easy to follow.
-- The documentation provides sufficient information for troubleshooting.
-- I believe the detection system can be improved through expanded datasets and model refinement.
-- I would recommend further development and institutional adoption of this detection system.
+| Category | Statement | Rating (1–4) |
+|---|---|---|
+| Detection Accuracy and Reliability | The system accurately detects gaze direction, head pose, and keypress patterns during examinations. | |
+| Detection Accuracy and Reliability | The detection of suspicious behaviors remains consistent across different test sessions. | |
+| Detection Accuracy and Reliability | The system minimizes false positives when identifying irregular movements or actions. | |
+| Detection Accuracy and Reliability | The detection modules (gaze, head pose, keypress tracking) perform reliably under varying lighting and camera conditions. | |
+| Detection Accuracy and Reliability | The system maintains stable performance even when multiple detection features operate simultaneously. | |
+| Behavioral Data Output and Interpretation | The behavioral data outputs (e.g., gaze heatmaps, event logs, and violation counts) clearly differentiate between cheating and non cheating trials. | |
+| Behavioral Data Output and Interpretation | The data visualization effectively highlights patterns of off screen focus and irregular gaze behavior. | |
+| Behavioral Data Output and Interpretation | The frequency and distribution of detected events provide structured indicators of behavioral irregularities for human interpretation. | |
+| Behavioral Data Output and Interpretation | The system’s recorded metrics (e.g., gaze duration, off screen frequency, head pose deviation) are interpretable and support meaningful analysis. | |
+| Behavioral Data Output and Interpretation | The overlap between normal and suspicious behaviors is observable and helps validate the need for human interpretation. | |
+| Behavioral Data Output and Interpretation | The behavioral indicators correlate well with observed cheating tendencies in controlled trials. | |
+| Behavioral Data Output and Interpretation | The data outputs assist proctors in making informed judgments rather than relying solely on automated classification. | |
+| System Responsiveness and Efficiency | The detection system responds quickly to behavioral changes during exams. | |
+| System Responsiveness and Efficiency | The latency between detection and alert generation is minimal. | |
+| System Responsiveness and Efficiency | The system operates smoothly without causing noticeable lag or interruptions. | |
+| System Responsiveness and Efficiency | The detection modules run efficiently on standard hardware configurations. | |
+| System Responsiveness and Efficiency | The system maintains consistent performance throughout the duration of an exam. | |
+| Ethical and Privacy Considerations | I was clearly informed about what behavioral data the detection system collects. | |
+| Ethical and Privacy Considerations | The monitoring process felt transparent and respectful of user privacy. | |
+| Ethical and Privacy Considerations | The system does not store or share personal data beyond what is necessary for detection. | |
+| Ethical and Privacy Considerations | The detection system’s design promotes fairness and accountability. | |
+| Ethical and Privacy Considerations | I trust that the system complies with institutional data protection standards. | |
+| Usability and Integration | The detection system integrates seamlessly with the exam environment. | |
+| Usability and Integration | The monitoring features do not interfere with normal test taking behavior. | |
+| Usability and Integration | The calibration process for gaze and head pose detection is straightforward. | |
+| Usability and Integration | The overall experience using the detection system was intuitive and non intrusive. | |
+| Documentation and Future Development | The system’s documentation clearly explains how detection and data interpretation work. | |
+| Documentation and Future Development | The calibration and setup instructions are easy to follow. | |
+| Documentation and Future Development | The documentation provides sufficient information for troubleshooting. | |
+| Documentation and Future Development | I believe the detection system can be improved through expanded datasets and model refinement. | |
+| Documentation and Future Development | I would recommend further development and institutional adoption of this detection system. | |
 
 Table 3. Likert Scale Reference
-Scale	Description
-1	Strongly Disagree
-2	Disagree
-3	Neutral
-4	Agree
-5	Strongly Agree
+| Scale | Description |
+| --- | --- |
+| 1 | Strongly Disagree |
+| 2 | Disagree |
+| 3 | Agree |
+| 4 | Strongly Agree |
 
 These responses will help the researchers identify areas for improvement and ensure that the system meets academic and ethical standards for online examination monitoring. All feedback will be treated confidentially and used solely for research and system enhancement purposes.
 ## Initial Suspicious Exam Behaviour Thresholds
@@ -293,8 +322,8 @@ Figure 10.4. Test 2 Alt+Tab Capture
 
 
 Figure 10.5. Test 2 Gaze Durations
-## Initial Hypothesis
-To create and conclude the related literature review, the study creates a hypothesis on how to create metrics to effectively detect suspicious exam behaviour and create a decision tree to calculate a quantifiable value to score suspicious exam behaviour.
+## Initial Observations
+To create and conclude the related literature review, the study creates a observational analysis on the experiment concluded on how to create metrics to effectively detect suspicious exam behaviour.
 Using the observed experiment data above, the key factor of detecting suspicious behaviour is the combination of the following: keypresses, gaze direction, gaze position, frequency of actions, intervals of actions, and duration of actions.
 Figure 11.1 Camera Perspective-Based ANN Diagram
  
@@ -474,6 +503,17 @@ Before prediction, each completed session is represented by two required artifac
 From this intensity map, the extractor calculates eight global heatmap features: normalized gaze-centroid coordinates, horizontal and vertical spread, elongation ratio, entropy, peak ratio, and coverage ratio. The intensity map is also resized to an 8x8 spatial grid using area interpolation. The 64 normalized grid values are stored as `grid_cell_0` through `grid_cell_63`, ordered from the top-left cell to the bottom-right cell. Together, the global descriptors and grid values produce 72 heatmap features.
 
 The session CSV contributes seven behavioral features: frantic-eye-movement violation count, forbidden-key violation count, off-screen violation count, duration-violation count, total gaze-transition count, percentage of non-center gaze time, and overall violation rate. These features are combined with the 72 heatmap features to create 79 numeric predictors for each session. The `session_id` and binary `label` identify the session and training class but are excluded from the model predictors.
+
+The seven behavioral features are calculated from the CSV's `Violation label`, `Gaze direction`, `Timestamp start`, and `Timestamp finish` columns. Each row is assigned to the first matching violation category among `frantic_eye_movement`, `forbidden_key`, `off_screen`, and `duration`; labels matching none of these categories are treated as normal. The four violation-count features (`violation_count_frantic_eye_movement`, `violation_count_forbidden_key`, `violation_count_off_screen`, and `violation_count_duration`) are the number of rows assigned to their respective categories. For example, both `face_off_screen` and `eyes_off_screen` contribute to the off-screen count, while direction-specific labels ending in `_duration` contribute to the duration count.
+
+The feature `num_transitions` is the total number of CSV rows. It is therefore more precisely a log-record count than a deduplicated count of gaze transitions: the scorer writes a row when a gaze state changes and can also write an immediate row when a violation is triggered. The feature `pct_non_center_time` is calculated by summing the timestamp duration of rows whose gaze direction is not exactly `Center`, then dividing by the elapsed session span from the earliest row start to the latest row finish:
+
+$$
+\mathrm{pct\_non\_center\_time} =
+\frac{\sum_{r:\,d_r\ne\mathrm{Center}}(f_r-s_r)}{\max_r(f_r)-\min_r(s_r)}
+$$
+
+Here, $s_r$ and $f_r$ are the start and finish times for row $r$, and $d_r$ is its gaze direction. Despite the feature name, this value is stored as a fraction rather than multiplied by 100. The `violation_rate` is the number of rows assigned to any of the four violation categories divided by the total number of CSV rows. If a session CSV has no data rows, all seven behavioral features are set to zero. These calculations summarize the saved log records; they do not independently establish misconduct.
 
 Before inference, the predictors are arranged in the feature order stored in `feature_columns.json` and supplied to the calibrated Random Forest model as a named pandas DataFrame. The model’s `predict()` method supplies the session label, while `predict_proba()` supplies the probabilities for both classes. The reported confidence is the probability assigned to the class returned by `predict()`.
 
@@ -815,7 +855,7 @@ An additional five-fold comparison tested the effect of including the 64 heatmap
 
 With grid cells, precision and F1 were slightly higher for both classes, and non-cheating recall increased from 0.92 to 0.95. Cheating recall remained 0.91. ROC-AUC was nearly identical and was slightly higher without grid cells (0.975 compared with 0.973). Thus, the grid cells corresponded to a modest accuracy and class-metric improvement in this evaluation, rather than a large performance change. These results are from the same dataset and do not establish that grid features improve generalization to unseen participants.
 
-For the five-fold run, the individual fold accuracies were 0.895, 0.919, 1.000, 0.946, and 0.892. The non-cheating class had precision 0.92, recall 0.95, and F1-score 0.93; the cheating class had precision 0.94, recall 0.91, and F1-score 0.93. Each class contained 93 sessions. The split-count results are sensitivity checks on the same dataset, not independent test estimates, and may be optimistic after hyperparameter selection.
+The non-cheating class had precision 0.92, recall 0.95, and F1-score 0.93; the cheating class had precision 0.94, recall 0.91, and F1-score 0.93. Each class contained 93 sessions. The split-count results are sensitivity checks on the same dataset, not independent test estimates, and may be optimistic after hyperparameter selection.
 
 These results describe performance within cross-validation rather than on an independent test set. They may be optimistic if sessions from the same participant or recording conditions occur in both training and validation folds, or if violation-related features are closely connected to the experimental labels. The model is therefore treated as an exploratory baseline; participant-level splitting, independent holdout testing, and evaluation with and without violation features are required before deployment claims can be made.
 ## Non-Cheating Heatmap Observations
