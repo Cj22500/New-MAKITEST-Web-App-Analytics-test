@@ -175,3 +175,92 @@ gantt
 ### B.4 Reading the chart
 
 The chart is a high-level reconstruction from the three linked Git histories and the current project structure, not a project-management schedule. Related workstreams overlap because the repositories represent the standalone prototype, an earlier web-app lineage, and the current integrated web application. Some histories also contain merges or mirrored development; overlapping bars therefore indicate related recorded milestones, not necessarily independent work. Where a bar bridges a period without a notable commit, the extension follows the convention stated in B.1 and should not be read as evidence of continuous work, exact feature-completion dates, effort, or deployment readiness.
+
+# Appendix C
+## Use-Case Model of the MAKITEST System
+
+### C.1 Purpose and scope
+
+This appendix presents the principal user goals supported by the MAKITEST web-application prototype. The use cases reflect the implemented Django applications and the study's focus on browser-based exam delivery and proctor assistance. “Teacher / Proctor” refers to the authorized teacher role in the application; the system supports staff review of monitoring indicators but does not automatically determine that misconduct occurred.
+
+The model covers account access, teacher authorization, exam and question management, student exam preparation and completion, session monitoring, and review of submitted attempts. The standalone desktop tracker, offline model-training workflow, operating-system-wide keyboard capture, facial recognition, liveness detection, object detection, and hand tracking are outside this web-application boundary.
+
+### C.2 Use-case diagram
+
+```mermaid
+%%{init: {"themeVariables": {"fontSize": "18px"}, "flowchart": {"nodeSpacing": 24, "rankSpacing": 32, "curve": "linear"}}}%%
+flowchart LR
+    Student[Student]
+    Teacher[Teacher / Proctor]
+    Admin[Administrator]
+
+    subgraph System["MAKITEST web application"]
+        direction TB
+        UC1([Create account, sign in, and sign out])
+        UC2([View eligible exams])
+        UC3([Prepare exam and calibrate camera])
+        UC4([Take exam and save answers])
+        UC5([Submit exam and view results])
+        UC6([View personal score history])
+        UC7([Create and manage exams and questions])
+        UC8([Configure exam access and class])
+        UC9([Manage student class assignments])
+        UC10([Review attempts and monitoring evidence])
+        UC11([Authorize teacher accounts])
+        UC12([Process session data and generate indicators])
+    end
+
+    Student --> UC1
+    Student --> UC2
+    Student --> UC3
+    Student --> UC4
+    Student --> UC5
+    Student --> UC6
+
+    Teacher --> UC1
+    Teacher --> UC7
+    Teacher --> UC8
+    Teacher --> UC9
+    Teacher --> UC10
+
+    Admin --> UC1
+    Admin --> UC11
+
+    UC3 --> UC4
+    UC4 --> UC12
+    UC5 --> UC12
+    UC12 --> UC10
+```
+
+### C.3 Actors
+
+| Actor | Role in the system |
+|---|---|
+| **Student** | Uses a student account to view exams assigned to the student's class, complete camera setup when required, take eligible exams, submit answers, and view personal results and scores. |
+| **Teacher / Proctor** | Uses an authorized teacher account to manage their exams and questions, maintain student class assignments, and review exam attempts and available monitoring evidence. |
+| **Administrator** | Uses an administrator account to authorize or revoke authorization for teacher accounts. |
+| **MAKITEST web application** | Performs internal operations such as checking exam eligibility, saving answers and scores, processing session data, and producing monitoring artifacts and prediction indicators. These are system responsibilities, not additional human actors. |
+
+### C.4 Use-case descriptions
+
+| ID and use case | Actor(s) and preconditions | Main flow | Exceptions and constraints |
+|---|---|---|---|
+| **UC-01 — Account access** | Student, Teacher / Proctor, Administrator; user is signed out. | Register if needed → sign in → system routes by role → sign out. | Invalid credentials or registration data are rejected; unauthorized teachers cannot access teacher features. |
+| **UC-02 — View eligible exams** | Student; signed in. | Open dashboard → view class-matched exams, availability and attempts → select an exam. | No class or matching exam means no exam is listed; closed, expired, or attempt-limited exams cannot be started. |
+| **UC-03 — Prepare exam and calibrate camera** | Student; has selected an eligible exam. | Enter configured access code → create preparation session → grant camera permission and complete guided calibration → save calibration/session data. | Wrong code or incomplete setup prevents starting; camera availability and browser permission are required for calibration. |
+| **UC-04 — Take exam and save answers** | Student; signed in, eligible, prepared and calibrated. | Start or resume attempt → answer questions while time is tracked and answers saved → browser sends available camera frames/events → system records processed monitoring indicators and evidence. | Expired attempts are finalized. Missing monitoring or prediction inputs do not prevent scoring; prediction status may be unavailable or failed. |
+| **UC-05 — Submit exam and view results** | Student; has an active or completed attempt. | Submit or reach time limit → system finalizes and grades saved answers → associate available artifacts → display result and save to attempt history. | Repeated submission does not complete the same attempt twice; prediction may remain pending or be unavailable/failed when the score is ready. |
+| **UC-06 — View personal score history** | Student; signed in. | Open scores → view own attempts and scores → select an attempt for available result details. | Students can access only their own attempt and score information. |
+| **UC-07 — Create and manage exams and questions** | Authorized Teacher / Proctor; signed in. | Create exam with title, description, class, deadline, time/attempt limits and optional code → add/edit questions and answer keys → save validated changes. | New exams remain closed during preparation; incomplete or unsupported questions prevent opening. Teachers can manage only their own exams. |
+| **UC-08 — Configure exam access and class** | Authorized Teacher / Proctor; signed in and owns the exam. | Set class, deadline, time/attempt limits and optional code → open or close exam → system applies settings to student eligibility. | Incomplete or unsupported questions prevent opening; class and availability rules restrict student access. |
+| **UC-09 — Manage student class assignments** | Authorized Teacher / Proctor; signed in. | Search or browse student list → update class designation → system saves it for exam matching. | Only student class designation is managed through this workflow. |
+| **UC-10 — Review attempts and monitoring evidence** | Authorized Teacher / Proctor; signed in; attempt belongs to an exam they own. | Open exam/student attempts → review answers, scores, prediction status and indicators → view/download registered CSVs, heatmaps, clips or session archive → make a human assessment. | Artifacts are shown only when registered. Gaze, event, rule-score and model outputs are review indicators, not proof or automatic misconduct decisions. |
+| **UC-11 — Authorize teacher accounts** | Administrator; signed in. | Open authorization page → inspect teacher states → authorize or revoke a teacher → system saves the decision. | Unauthorized teachers cannot sign in to teacher features. |
+
+### C.5 Scope notes and assumptions
+
+- Role-specific web pages enforce student, authorized-teacher, and administrator access. A student can access only their own exam attempts and scores; teachers can manage only their own exams and review associated attempts.
+- Exam availability is constrained by class designation, open/closed state, deadline, attempt limit, and any configured access code.
+- The web monitoring flow uses browser-provided camera frames and browser-reported events. It does not imply unrestricted keyboard or operating-system monitoring, and the system does not automatically determine cheating.
+- Camera WebSocket authentication is configurable in the current prototype; it may allow anonymous connections unless `GAZE_REQUIRE_AUTH` is enabled. This use-case model therefore describes the intended student workflow and does not claim that every deployment enforces authenticated WebSocket connections.
+- The custom administrator workflow documented here covers teacher-account authorization. The broader user/exam database CRUD functions described as a role capability in the manuscript are not represented as custom use cases unless provided through separately configured Django administration.
