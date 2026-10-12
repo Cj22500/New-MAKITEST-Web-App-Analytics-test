@@ -139,6 +139,7 @@ This study employed the Kanban methodology to organize development as small, tra
 
 The table below is a plausible reconstruction of how work items could have been organized in Kanban, based on the dated development sequence in both repositories. It is not a record of the original board states.
 
+Table 2. Reconstructed Kanban Work Items
 | Month | To do | Ongoing | Priority | Done |
 |---|---|---|---|---|
 | May 2026 | Collect gaze-direction observations and identify useful behavioral indicators. | Build gaze tracking, calibration, and event-scoring logic in the standalone tracker. | Produce usable session logs and handle off-screen gaze consistently. | Initial gaze-direction logs, scoring refinements, off-screen duration handling, and face-position anchoring. |
@@ -160,7 +161,7 @@ The combination of convenience and random sampling provided a balanced approach,
 User privacy, informed consent, and participant interests were carefully considered during the development of the fundamental aspects of the project. To address these concerns, the proponents conducted a trial run orientation as well as written informed data privacy consent forms encompassing the scope of use of the gathered personal data in the research. In addition, participants were asked what specific details they would like to be informed about when using the system, ensuring transparency and accountability throughout the research process. 
 	During the initial development of the system and its algorithms. The study used the following hardware relevant to the study: 
 
-Table 2. Hardware Specifications During Development
+Table 3. Hardware Specifications During Development
 
 | Hardware | Specification |
 |---|---|
@@ -169,7 +170,7 @@ Table 2. Hardware Specifications During Development
 | Graphics Processing Unit | NVIDIA GeForce RTX 3060 |
 | RAM | 32 GB |
 
-Table 3. Hardware Specifications During Locale Trial Runs
+Table 4. Hardware Specifications During Locale Trial Runs
 
 | Hardware | Specification |
 |---|---|
@@ -249,7 +250,7 @@ This evaluation includes:
 This User Acceptance Testing (UAT) survey aims to evaluate the usability, reliability, and ethical compliance of the MAKITEST: Suspicious Exam Behavior Detection System. The questions are designed according to ISO 9241 (Ergonomics of Human-System Interaction) and ISO/IEC 25010 (Software Product Quality Model) standards to assess the system’s effectiveness, efficiency, satisfaction, and data protection.
 Respondents are asked to rate each statement based on their experience using the system. Please indicate your level of agreement using the scale below:
 
-Table 4. User Acceptance Testing Survey
+Table 5. User Acceptance Testing Survey
 | Category | Statement | Rating (1–4) |
 |---|---|---|
 | Detection Accuracy and Reliability | The system accurately detects gaze direction, head pose, and keypress patterns during examinations. | |
@@ -284,7 +285,7 @@ Table 4. User Acceptance Testing Survey
 | Documentation and Future Development | I believe the detection system can be improved through expanded datasets and model refinement. | |
 | Documentation and Future Development | I would recommend further development and institutional adoption of this detection system. | |
 
-Table 5. Likert Scale Reference
+Table 6. Likert Scale Reference
 | Scale | Description |
 | --- | --- |
 | 1 | Strongly Disagree |
@@ -302,7 +303,7 @@ As the research take this approach, this method of testing can vary to the limit
 	The second experiment was a controlled JLPT N5 Level test which the tester is allowed to use other resources to help with taking the exam. The resource used in this experiment is a second screen positioned on the top right of the user’s main monitor. The user has a Japanese Kanji Dictionary site in addition to the in-browser Copilot AI sidebar chat of the Microsoft Edge web browser.
 The reason of it being a JLPT exam is that this helps in observing all the actions that the research is creating a basis on, which is suspicious exam behaviour. Using a JLPT exam makes use of a kanji dictionary, grammar books, translators, and the online software equivalents of all the above.
 
-Table 6. Recorded Observations
+Table 7. Recorded Observations
 | Recorded Data | Measures / Indicators | Non-cheating Interpretation | Cheating Interpretation |
 |---|---|---|---|
 | Repeated gaze position in the same spot | Direction of gaze; time intervals; keypresses | Habitual eye movement, checking the time, or looking away from the screen | Glancing at notes or another device/screen |
@@ -349,13 +350,13 @@ To define initial thresholds from hypothesis of the two testing experiments, we 
 
 
 
-Table 7. Definition of Gaze Duration Terms
+Table 8. Definition of Gaze Duration Terms
 	Threshold
 Short Duration	<19 seconds
 Long Duration	>19 seconds
 309seconds + 501seconds / (21 questions + 21 questions) = 19.2857 seconds per question
 
-Table 8. Definition of Gaze Position Terms
+Table 9. Definition of Gaze Position Terms
 	Threshold
 Within Screen	Total Area < 25%
 Outside Screen	Total Area > 25%
@@ -407,7 +408,7 @@ These are the different keypress strategies that were chosen to be used for the 
 - Continuous Tracking – simple recording of the student's keypresses during the entire assessment session.
 - Event-based Tracking – Focusing on shortcut usage detection or high APM (Actions Per Minute) 
 In this strategy evaluation, the proponents have employed a different approach. Since continuous tracking have encompassed more data than event-based tracking, we will be tracking the following criteria:
-Table 9. Keypress Strategies
+Table 10. Keypress Strategies
 	Continuous Tracking	Event-Based Tracking
 Accuracy	Total keypress detection rate	Detection during and/or after defined shortcut events
 Contextual Relevance	Identify noise from irrelevant keypresses	Completeness of data during key events
@@ -480,7 +481,7 @@ Figure 16. Camera Distance Algorithm and Logic
 ## Calibration Protocol
 The system implements a structured calibration sequence that establishes user-specific gaze mapping parameters. In the Django path, calibration begins with a head-pose baseline, followed by five eye-calibration stages: center, up, down, left, and right. Each eye stage collects 60 valid samples.
 
-Table 10. Calibration Protocol Stages
+Table 11. Calibration Protocol Stages
 Stage	Description
 Stage -1 - Head-Pose Baseline	The user sits in a neutral position while the system records the current head-pose reference.
 Stage 0 - Center Calibration	The user focuses on the screen center. The system records pupil and iris-box-height samples to establish the user’s neutral eye measurements.
@@ -614,7 +615,7 @@ Python Django is a high-level web framework which is known for its scalability, 
 Model is involved in handling how data is defined and stored; Views are the ones that handle requests and decisions of what data to output; Templates are responsible for what the end users are going to be interacting and experiencing in the browser.
 To start, the homepage content is where the users can login and register before they are able to access the content of the website. Once the user logs in, they will be able to see the contents of the website depending on their roles 
 
-Table 11. System Roles and Access
+Table 12. System Roles and Access
 Role	Content
 Student	
 The system allows each examinee to maintain a User Profile, which serves as the foundation for personalized access. Through this profile, students can View their own assessment scores to monitor performance and progress. They are also able to View their own assessment session analytics, providing insights into their test taking behavior and outcomes. Finally, the platform enables them to Access and take their own assessments, ensuring a streamlined and secure examination process.
@@ -626,7 +627,7 @@ The system provides administrators with CRUD access to the user database, allowi
 Students will be able to go through the web app to view their respective profile account, assessments grades, assessments session analytics and assessments they need to take; Proctors will be able to see their class rosters, exam scores, exam session analytics, and assessment creation, publishing and modification tools; Administrators will have access to user databases and exam databases, which they have Create-Read-Update-Delete (CRUD) access to.
 ## Exam Delivery Module
 This module will allow the proctors to create assessments, customize exam access, import question banks and designate to the students/class.
-Table 12. System Features
+Table 13. System Features
 Feature	Description
 Import Question Banks	
 Accept formatted Excel sheets that consists of a question and an answer by batch / individually
@@ -831,7 +832,7 @@ Figure 30. View Controllers and Business Logic
 The Computer Vision and Streaming Subsystem delivers real-time gaze tracking and optional annotated frames to support behavioral analysis. In the browser implementation, JPEG frames are sent to a Django Channels WebSocket, where `GazeSession` processes face and eye landmarks and returns `frame_result` JSON messages. These messages can include gaze positions, gaze direction, head-pose values, suspicion state, and optional debug frames. This WebSocket design provides the data needed to correlate gaze estimates with session events.
 Figure 31. Computer Vision and Camera Streaming
 ## Gaze Tracking Submodules Testing
-Table 13. Gaze Tracking
+Table 14. Gaze Tracking
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Camera Initialization	Ensures webcam is initialized and processed frames properly	Ran tracking system using default plug-and-play camera hardware and settings	Successful	Camera freezes during calibration protocol; however, it is only the frame processing and will continue properly streaming frames after each calibration stage is complete.
 2	Landmarks Detection	Verify if system properly captures face landmarks	Ran landmark detection code snippet on camera-facing face with overhead lighting and monitor screen lighting only.	Successful	Landmark detection is consistent and accurate on both testing. A complete 90-degree angled face from the camera fails to get detected. The system now has fallback protocol for this instance and the system will continue running and waiting for a face to be detected.
@@ -839,13 +840,13 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 4	Face Axis/Direction Detection	Verify that face direction tracking is correctly 	Ran the gaze tracking system. Tested accuracy of estimated gaze position based on face axis	Successful with comments 	Gaze tracking system is significantly more stable and accurate when face axis and iris direction systems are cross validating outputs. A complete 90-degree angled face from the camera fails to get detected. The system now has a fallback protocol for this instance.
 5	Calibration Protocol	Verify that calibration protocol on gaze tracking is saved properly and consistently captures correct directions	Ran the calibration protocol on camera-facing face of 5 different users and verified that gaze tracking systems is consistently tracking correct directions and positions	Successful with comments 	While still able to consistently track gaze direction, if a user utilizes the calibration data of a different session. Some edge cases of slightly different face axis position from the start of the tracking may output a direction close, but not exactly the right gaze direction. This can be minimized by using a calibration protocol for each testing.
 
-Table 14. Keypress Track
+Table 15. Keypress Track
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Capture Character Keypresses	Verify that system tracks the any character or symbol pressed on the keyboard	Done by accomplishing a mock test in the exam delivery app	Successful with comments	Only tracks when within the exam delivery app tab or when an extension or software that keeps a selected tab on “focus” while out of the tab.
 2	Capture shortcuts	Verify that system tracks the shortcuts pressed on the keyboard	Done by accomplishing a mock test in the exam delivery app	Successful with comments	Only tracks when within the exam delivery app tab or when an extension or software that keeps a selected tab on “focus” while out of the tab.
 3	Save session keypress logs	Verify that the system saves keypresses after runtime is terminated.	Done by using the computer software version of the Suspicious Exam Behaviour System	Successful with comments	As it is tested on the computer app version of the system, this system tracks all keypresses even outside the exam app, which is out of the scope and specifications of the web app prototype of the system.
 
-Table 15. SEBD and Logging
+Table 16. SEBD and Logging
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Directional Gaze Duration Triggers	Ensure that brief tracking dropouts (e.g., blinks, quick posture adjustments) do not trigger false alerts, while sustained absences do.	Cover the webcam or close eyes for a brief moment (< 1s), then block the webcam or close eyes for a sustained period (> 2s) and check for alerts.	Successful	
 The implementation of a 1.5-second buffer successfully eliminated false positives from rapid eye blinks and natural head movement, only logging a violation when sustained off-screen behavior occurred.
@@ -854,21 +855,21 @@ The implementation of a 1.5-second buffer successfully eliminated false positive
 4	Asynchronous Video Clipping	Verify that frame-based video evidence is recorded and assembled when an event is flagged.	Trigger a behavioral violation (e.g., look sideways for 4 seconds) and check the output directory for the compiled video.	Successful with comments	The system stores 30 frames before the trigger and 30 frames after it, then saves them on an asynchronous daemon thread. The temporal duration represented by the clip depends on the incoming frame rate.
 5	Session Log (CSV) Generation	Verify that the system generates a structured CSV session log tracking transitions, behaviors, scores, and video filenames.	Complete a proctored exam session with normal behavior and triggered violations, terminate runtime, and inspect session_log_<timestamp>.csv.	Successful	Generates a standardized row format mapping gaze directions to start/end timestamps, violation labels, rule-based event scores (100 for a triggered violation, 0 for a normal state), and the exact matching video evidence filename for review. A triggered violation is not equivalent to a confirmed cheating finding.
 
-Table 16. Exam Delivery
+Table 17. Exam Delivery
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Integration Compatibility with SEBDS	Verify that the web-app structure will easily be able to incorporate changes to the SEBDS	In parallel with the Exam Delivery Web app development, a prototype SEBDS version was developed with web app integration in mind 	Successful with comments	The web app and the integration of the SEBDS system was successful. To note however, any changes to the SEBDS will still require knowledge of the web app structure to integrate the system properly.
 2	Student-specific dashboards and tools	Verify that the “Student” accounts can access and manage the actions and data stated in the web app development documentation.	Ran a full test of usage of the actions, views, and access the role are documented to be able to do.	Successful with comments	As this is a proof of concept of a full web-based exam delivery app, recommendations will need to be recorded for future researchers.
 3	Proctor/Teacher-specific dashboards and tools	Verify that the “Teacher” accounts can access and manage the actions and data stated in the web app development documentation. 	Ran a full test of usage of the actions, views, and access to the role are documented to be able to do.	Successful with comments	As this is proof of the concept of a full web-based exam delivery app, recommendations will need to be recorded for future researchers.
 4	Role-Restricted Access to Role-Specific Webpages	Verify that users with “Student” and “Teacher” roles can only view their own respective 	Done by copying the URL address of respective opposite roles while logged in to accounts with opposite roles. Testing while not logged in was also checked in this test case.  	Successful	
 
-Table 17. Integration Test
+Table 18. Integration Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	SEBDS integration testing with Gaze Tracking System	Verify that the SEBDS accomplishes its processes correctly when direction data from Gaze Tracking System is given.  	Ran the full system, calibrated the gaze tracking system and looked in every direction for 5 seconds each.	Successful	
 2	SEBDS integration testing with Keypress Tracking System	Verify that SEBDS accomplishes its processes correctly when keypress logging data from the Keypress Tracking System is given.	Ran the full system, calibrated the gaze tracking system and took a mock test while only using books, browser search, and browser AI chat sidebars.	Successful	
 3	Exam Delivery App integrated with the SEBDS	Verify that the SEBDS can be initialized and used in a web app format	Used an earlier version of the SEBDS to be integrated with the Exam Delivery Web App Prototype developed,	Successful with comments	Since the SEBDS version used is an earlier rendition, there will be a need to update some aspects of the web app framework. This is accounted for by encapsulating each module and its processes in their separate code files compared to the all-in-one packaged version of the initial SEBDS versions.
 
 
-Table 18. System Test
+Table 19. System Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Covering face/Loss of face detection during calibration	Checking what the system will do when calibration was interrupted by loss of face detection/deliberately covering face	Tester was instructed to cover face/turn face away from camera and other actions which led to loss of face detection	Unsuccessful	Crashes when face becomes undetected during calibration process
 2	Covering face/Loss of face detection during test session	Checking what the system will do when session was interrupted by loss of face detection/deliberately covering face	Tester was instructed to cover face/turn face away from camera and other actions which led to loss of face detection	Successful with comments	System continues to run and stays at the last saved point of estimated screen position. Resumes when the face is detected again.
@@ -876,7 +877,7 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 4	Wide eye peripheral tester	Check if system can estimate screen gaze position with outlier tester	Testers were found to have the ability to see the entire screen with minimal movement caught on camera feed. The tester was still instructed to partake in the system testing.	Unsuccessful with comments	The system was inaccurately tracking movements. Key factor is hardware limitations
 5	Tester height	Check if there is significant bias towards tester of certain face position within camera frame 	Testers were made to sit the same chair distance from the testing desk	Successful with comments	System has a clear bias on testers whose face is located near the middle of the camera frame
 
-Table 19. Compatibility Test
+Table 20. Compatibility Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Windows 11 Compatibility	To ensure that the system runs on Windows 11	Run the SEBDS and Web App prototype on a Windows 11 device.	Successful	
 # Chapter 4: Results and Discussion
@@ -887,7 +888,7 @@ The Ethical and Privacy Considerations category received high agreement, indicat
 Meanwhile, Usability and Integration responses were favorable regarding intuitiveness, intrusiveness, and calibration. These findings represent reported user perceptions of the prototype and should not be generalized beyond the tested participants and conditions.
 Finally, in Documentation and Future Development, participants agreed that the system’s documentation was clear, comprehensive, and easy to follow. Most respondents strongly supported continued development and institutional adoption, emphasizing that expanded datasets and model refinement could further enhance performance.
 Overall, the Likert scale results provide preliminary user-acceptance evidence for the prototype. They do not independently confirm technical reliability, ethical compliance, or the ability to distinguish cheating from non-cheating behavior.
-Table 20. UAT Testing Results
+Table 21. UAT Testing Results
 Category	Description	Mean Score	Interpretation
 Detection Accuracy and Reliability	Accuracy of gaze, head pose, and keypress detection; consistency across sessions	4.8	Strong agreement; highly reliable detection performance
 Behavioral Data Output and Interpretation	Clarity and conclusiveness of behavioral data (heatmaps, logs, violation counts)	4.7	Strong agreement; data effectively differentiates cheating vs. non cheating
@@ -899,7 +900,7 @@ Overall Mean	Aggregate score across all categories	4.7	Excellent overall accepta
 ## Presentation of Data Results
 The study dataset contains 186 session-level observations, with 93 records in each label class. It contains 81 columns: 79 numeric predictors, a session identifier, and the binary label. The predictors combine heatmap-distribution features with event-log features. Inspection of the current feature table found no missing predictor values and no duplicate session identifiers. Because participants may contribute more than one session, the 186 observations are not equivalent to 186 independent participants; results are interpreted as exploratory session-level evidence.
 
-Table 21. Session-Level Dataset Fields and Descriptions
+Table 22. Session-Level Dataset Fields and Descriptions
 
 | Field(s) | Description |
 |---|---|
@@ -983,11 +984,11 @@ The heatmaps generated from label-1 sessions showed more dispersed gaze clusters
 
 Figure 32.2 Cheating Heatmap
 ## Video Clipping System Observations
-Table 22. VCS Observations
+Table 23. VCS Observations
  
 Clip totals and per-session averages are not used as primary outcome measures because the source video files must first be matched to their session identifiers. In the system, clips are triggered by rule-based event activations such as irregular gaze, off-screen focus, or forbidden events reported by the monitoring path.
 ## Gaze Direction Duration Observations
-Table 23. Gaze Observations
+Table 24. Gaze Observations
 
 The following summaries use all 93 sessions in each label class. Total duration is the summed duration for a gaze direction, normalized duration is the proportion of the class total, and average duration per session is the total direction duration divided by the 93 sessions in that class. These averages represent duration per session, not the length of an individual transition.
 
