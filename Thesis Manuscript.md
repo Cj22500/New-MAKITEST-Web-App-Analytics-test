@@ -94,6 +94,19 @@ Figure 3. Neural Network Interpretations of Exam Behaviours and Tracked Environm
   
 Complementing this approach, Dilini et al. (2021) introduced a browser based eye gaze tracking system intended for online cheating detection. Their system implemented a nine point calibration procedure to establish user specific gaze boundaries and employed a One Class Support Vector Machine (OCSVM) to detect anomalous patterns. Because browser level monitoring does not require specialized hardware, this approach highlighted a scalable solution for remote examination monitoring. The system achieved an accuracy of 89.53%, underscoring the viability of lightweight behavioral analysis tools.
 In another study, Oravec (2020) focused on preventing impersonation during online examinations using a deep learning–based facial recognition and liveness detection system. By employing a ResNet 50 architecture, the system attained an average identity verification accuracy of 96.2%, significantly reducing instances of impersonation. These findings highlight the essential role of identity authentication within AI enabled online proctoring frameworks.
+Kabir et al. (2021) developed a smart online exam proctoring system that treated cheating detection as a multivariate time-series classification task. The researchers extracted eye movement, head movement, mouth-opening, and identity-tracking features from 43 exam videos, then compared deep learning and traditional machine learning models. Their best-performing model achieved up to 97.7% accuracy, with eye movement proving the strongest individual indicator and the combined features yielding the best overall results. Although these findings demonstrate the potential of combining behavioral signals, the relatively small dataset limits generalizability and supports the need for broader validation.
+
+Table 1. Model Accuracy Across Video Lengths
+| Learning Algorithm | 75 | 100 | 150 | 200 | 250 |
+|---|---:|---:|---:|---:|---:|
+| Random Forest | 96.9 | 97.7 | 86 | 85 | 67.6 |
+| Logistic Reg | 84 | 85.8 | 81.6 | 76.7 | 62.7 |
+| LSTM | 96.91 | 97.7 | 87.4 | 83.3 | 68.0 |
+| 2DCNN | 95.1 | 87.6 | 80.5 | 86.7 | 61.6 |
+| CNN-LSTM | 94.47 | 92.9 | 88.6 | 86.7 | 79.6 |
+| Conv-LSTM | 88.24 | 90.6 | 68.8 | 58.3 | 57.3 |
+| CNN-BiGRU | 92.01 | 92.1 | 82.9 | 81.7 | 62.7 |
+
 ## Ethical Considerations and User Experience
 Despite promising technical performance, remote proctoring tools raise concerns related to user experience and well being. Students report heightened anxiety and discomfort attributable to surveillance features, which may negatively affect performance (Marano et al., 2023). Additionally, commercial systems have been criticized for false positives, usability issues, and technical malfunctions, which can undermine trust and perceived fairness (Foster & Layman, 2013; Hussein et al., 2020). These concerns underscore the need to balance integrity protection with student autonomy, privacy, and psychological safety.
 ## Related Literature Synthesis
@@ -147,7 +160,7 @@ The combination of convenience and random sampling provided a balanced approach,
 User privacy, informed consent, and participant interests were carefully considered during the development of the fundamental aspects of the project. To address these concerns, the proponents conducted a trial run orientation as well as written informed data privacy consent forms encompassing the scope of use of the gathered personal data in the research. In addition, participants were asked what specific details they would like to be informed about when using the system, ensuring transparency and accountability throughout the research process. 
 	During the initial development of the system and its algorithms. The study used the following hardware relevant to the study: 
 
-Table 1. Hardware Specifications During Development
+Table 2. Hardware Specifications During Development
 
 | Hardware | Specification |
 |---|---|
@@ -156,7 +169,7 @@ Table 1. Hardware Specifications During Development
 | Graphics Processing Unit | NVIDIA GeForce RTX 3060 |
 | RAM | 32 GB |
 
-Table 2. Hardware Specifications During Locale Trial Runs
+Table 3. Hardware Specifications During Locale Trial Runs
 
 | Hardware | Specification |
 |---|---|
@@ -235,6 +248,8 @@ This evaluation includes:
 ## User Acceptance Testing
 This User Acceptance Testing (UAT) survey aims to evaluate the usability, reliability, and ethical compliance of the MAKITEST: Suspicious Exam Behavior Detection System. The questions are designed according to ISO 9241 (Ergonomics of Human-System Interaction) and ISO/IEC 25010 (Software Product Quality Model) standards to assess the system’s effectiveness, efficiency, satisfaction, and data protection.
 Respondents are asked to rate each statement based on their experience using the system. Please indicate your level of agreement using the scale below:
+
+Table 4. User Acceptance Testing Survey
 | Category | Statement | Rating (1–4) |
 |---|---|---|
 | Detection Accuracy and Reliability | The system accurately detects gaze direction, head pose, and keypress patterns during examinations. | |
@@ -269,7 +284,7 @@ Respondents are asked to rate each statement based on their experience using the
 | Documentation and Future Development | I believe the detection system can be improved through expanded datasets and model refinement. | |
 | Documentation and Future Development | I would recommend further development and institutional adoption of this detection system. | |
 
-Table 3. Likert Scale Reference
+Table 5. Likert Scale Reference
 | Scale | Description |
 | --- | --- |
 | 1 | Strongly Disagree |
@@ -286,17 +301,13 @@ As the research take this approach, this method of testing can vary to the limit
 
 	The second experiment was a controlled JLPT N5 Level test which the tester is allowed to use other resources to help with taking the exam. The resource used in this experiment is a second screen positioned on the top right of the user’s main monitor. The user has a Japanese Kanji Dictionary site in addition to the in-browser Copilot AI sidebar chat of the Microsoft Edge web browser.
 The reason of it being a JLPT exam is that this helps in observing all the actions that the research is creating a basis on, which is suspicious exam behaviour. Using a JLPT exam makes use of a kanji dictionary, grammar books, translators, and the online software equivalents of all the above.
-Table 4. Recorded Observations
-	Recorded Data	Non-cheating Interpretation	Cheating Interpretation
-Repeated gaze position in the same spot	-	Direction of the gaze
--	Time intervals
--	Keypresses	Habitual eye movement, checking time, time off screen 	Glancing at notes or another device/screen
-Long fixation away from the screen	-	Duration of the gaze
--	Position of gaze
--	Keypresses
-	Recalling memory, thinking deeply, or staring blankly	Searching for answers online or on other resources.  
-Rapid gaze scanning	-	Number of directions
--	Speed of gaze changes	Environmental noise/distraction or stress	Searching for external resources for answers.
+
+Table 6. Recorded Observations
+| Recorded Data | Measures / Indicators | Non-cheating Interpretation | Cheating Interpretation |
+|---|---|---|---|
+| Repeated gaze position in the same spot | Direction of gaze; time intervals; keypresses | Habitual eye movement, checking the time, or looking away from the screen | Glancing at notes or another device/screen |
+| Long fixation away from the screen | Duration of gaze; position of gaze; keypresses | Recalling memory, thinking deeply, or staring blankly | Searching for answers online or using other resources |
+| Rapid gaze scanning | Number of gaze directions; speed of gaze changes | Environmental noise, distraction, or stress | Searching for external resources for answers |
 ## Observation
 In the research’s observation, there are key differences with taking the exam without external resources and taking the with external resources. The biggest differences are the duration length of gaze to a certain direction and keypresses. With the first experiment, the research has found there are only three notable lengths of gaze positions: “Up Center”, “Down Center” and “Up Left.” The primary reason for gaze changes is looking at questions, choices, and moving to the next question. Other lengthy duration of gaze changes is averting gaze from the screen or thinking deeply/recalling memory. The research has also shown that the user looks at the same position of the screen for most of the test duration.
 Figure 10.1 Test 1 Recording
@@ -338,13 +349,13 @@ To define initial thresholds from hypothesis of the two testing experiments, we 
 
 
 
-Table 5. Definition of Gaze Duration Terms
+Table 7. Definition of Gaze Duration Terms
 	Threshold
 Short Duration	<19 seconds
 Long Duration	>19 seconds
 309seconds + 501seconds / (21 questions + 21 questions) = 19.2857 seconds per question
 
-Table 6. Definition of Gaze Position Terms
+Table 8. Definition of Gaze Position Terms
 	Threshold
 Within Screen	Total Area < 25%
 Outside Screen	Total Area > 25%
@@ -361,6 +372,11 @@ To identify the most effective detection strategy, the study focused on minimizi
 2. Iris Position Detection: Tracks pupil offsets and eyelid height relative to calibrated thresholds to determine vertical and horizontal gaze.
 3. Keyboard and browser event tracking: The standalone Windows prototype can use a non-blocking OS-level keyboard hook for selected forbidden shortcuts. The Django/browser path instead receives browser-reported key combinations, focus loss, and hidden-tab events through the WebSocket; it does not install a global keyboard hook on the server.
 These spatial and event features are fed into a state-machine-driven scoring engine (SuspicionScoringProcessor) that evaluates behaviors against specific temporal and frequency thresholds, including a 1.5-second off-screen threshold, a 3-second side-look threshold, a 5-second down-look threshold, and more than six center-to-off-center shifts within a rolling 60-second window. If a threshold is crossed, a violation is logged to a session CSV file and frame-based video evidence is assembled asynchronously. The browser implementation is a prototype and does not by itself resolve all security, privacy, or deployment constraints of online proctoring.
+These values are best understood as provisional alert thresholds informed by the pilot observations, rather than statistically optimized decision boundaries. In the two 21-question trials, the measured Up-Center gaze durations totalled 309 and 501 seconds, respectively, giving a descriptive average of approximately 19.29 seconds per question. This provides context for ordinary exam attention, but it measures accumulated gaze in one direction per question and is not equivalent to the duration of an individual gaze diversion. The shorter 3-second side-look and 5-second down-look thresholds therefore serve as persistence rules for drawing attention to sustained deviations before they approach a full question interval; the longer allowance for downward gaze also accommodates plausible reading or recall behavior. The 1.5-second off-screen rule similarly requires an out-of-bounds coordinate to persist rather than flagging a single transient frame, while the more-than-six center-to-off-center shifts in 60 seconds operationalize the repeated scanning behavior described in the pilot observations.
+
+The session feature dataset contains 186 records, with 93 in each experimental label group. Under the implemented rules, label-1 sessions had higher mean counts than label-0 sessions for frantic-eye-movement events (10.92 versus 8.55), off-screen events (1.46 versus 0.44), and prolonged-gaze events (4.38 versus 3.15); forbidden-key events were also much more frequent (5.48 versus 0.03). These group-level differences are consistent with the controlled condition in which external resources were available, and support using the events as prompts for human review. However, the event counts were produced by the thresholds themselves, the label groups represent experimental conditions rather than independently verified instances of misconduct, and the distributions overlap. They therefore do not independently validate the cutoffs or establish a false-positive rate. The exact values should be reported as pilot heuristics; selecting optimal cutoffs would require retaining frame- or event-level observations and comparing candidate thresholds on participant-separated validation data.
+
+The 25% estimated-gaze-area criterion described in Table 8 is a preliminary geometric definition, not the current scorer's runtime test. In the implementation, a coordinate is treated as off-screen when it lies outside the screen bounds, and this state must persist beyond 1.5 seconds to trigger an event. The distinction should be maintained when interpreting the operational results.
 The evaluation of candidate methods is conducted using established performance metrics. Accuracy is measured as the proportion of correctly identified behaviors relative to the total number of test cases, computed as:
  
 Where TP denotes true positives, TN true negatives, FP false positives, and FN false negatives. Accuracy is chosen because it provides a general measure of overall correctness, which is essential in determining whether the system can reliably distinguish between suspicious and non suspicious behaviors.
@@ -376,7 +392,7 @@ Figure 13. Visualized Eye-Gaze Concentration Heatmap
 As shown in Figure 9, the resulting heatmap displays a high-intensity red focal point concentrated near the center of the screen, which represents normal, sustained visual attention on the active test interface. Transient glances or persistent focus shifts away from the questions are rendered as lower-density signatures (green and blue hues) in the outer zones. This visualization provides proctors with a clean, aggregate visual summary of the examinee's visual focus distribution over the course of the assessment, making it easier to identify anomalous, off-screen reading patterns during post-exam audits.
 Figure 14. Suspicious Exam Detection Behaviour Showcase
 ## CV Model Framework Evaluation
-The implemented system uses a MediaPipe facial-landmark model with iris refinement, followed by geometric gaze estimation and rule-based scoring. The selected implementation does not include facial recognition or object detection. Comparisons with other CV models are addressed through related literature and proposed as future work.
+The implemented real-time vision pipeline uses a MediaPipe facial-landmark model with iris refinement, followed by geometric gaze estimation and rule-based scoring. Separately, the research evaluated a calibrated Random Forest as a session-level classifier using features extracted from gaze heatmaps and event logs. Among the tested Random Forest configurations, the 100-estimator, maximum-depth-4 model achieved the highest mean accuracy in the stratified five-fold grid search (0.930), making it the best-performing configuration evaluated in this study. This result does not establish that Random Forest outperforms deep-learning or other computer-vision models, which were not tested head-to-head. Because the classifier operates on a compact set of session-level features rather than raw video, Random Forest is generally less computationally demanding and faster to train and run inference than deep models that process video sequences. However, this study did not directly benchmark those runtimes, so the speed comparison is a methodological rationale rather than a measured result. The selected implementation does not include facial recognition or object detection. Comparisons with other CV models are addressed through related literature and proposed as future work.
 ## Evaluation Criteria
 To evaluate the different models, we used a set of tasks that we have determined to encompass each of the different aspects of what the system is observing and detecting.
 - Face Movement Tracking - Assesses the accuracy of monitoring head orientation and facial movements to detect deviations from expected screen focus.
@@ -391,7 +407,7 @@ These are the different keypress strategies that were chosen to be used for the 
 - Continuous Tracking – simple recording of the student's keypresses during the entire assessment session.
 - Event-based Tracking – Focusing on shortcut usage detection or high APM (Actions Per Minute) 
 In this strategy evaluation, the proponents have employed a different approach. Since continuous tracking have encompassed more data than event-based tracking, we will be tracking the following criteria:
-Table 7. Keypress Strategies
+Table 9. Keypress Strategies
 	Continuous Tracking	Event-Based Tracking
 Accuracy	Total keypress detection rate	Detection during and/or after defined shortcut events
 Contextual Relevance	Identify noise from irrelevant keypresses	Completeness of data during key events
@@ -464,7 +480,7 @@ Figure 16. Camera Distance Algorithm and Logic
 ## Calibration Protocol
 The system implements a structured calibration sequence that establishes user-specific gaze mapping parameters. In the Django path, calibration begins with a head-pose baseline, followed by five eye-calibration stages: center, up, down, left, and right. Each eye stage collects 60 valid samples.
 
-Table 8. Calibration Protocol Stages
+Table 10. Calibration Protocol Stages
 Stage	Description
 Stage -1 - Head-Pose Baseline	The user sits in a neutral position while the system records the current head-pose reference.
 Stage 0 - Center Calibration	The user focuses on the screen center. The system records pupil and iris-box-height samples to establish the user’s neutral eye measurements.
@@ -598,7 +614,7 @@ Python Django is a high-level web framework which is known for its scalability, 
 Model is involved in handling how data is defined and stored; Views are the ones that handle requests and decisions of what data to output; Templates are responsible for what the end users are going to be interacting and experiencing in the browser.
 To start, the homepage content is where the users can login and register before they are able to access the content of the website. Once the user logs in, they will be able to see the contents of the website depending on their roles 
 
-Table 9. System Roles and Access
+Table 11. System Roles and Access
 Role	Content
 Student	
 The system allows each examinee to maintain a User Profile, which serves as the foundation for personalized access. Through this profile, students can View their own assessment scores to monitor performance and progress. They are also able to View their own assessment session analytics, providing insights into their test taking behavior and outcomes. Finally, the platform enables them to Access and take their own assessments, ensuring a streamlined and secure examination process.
@@ -610,7 +626,7 @@ The system provides administrators with CRUD access to the user database, allowi
 Students will be able to go through the web app to view their respective profile account, assessments grades, assessments session analytics and assessments they need to take; Proctors will be able to see their class rosters, exam scores, exam session analytics, and assessment creation, publishing and modification tools; Administrators will have access to user databases and exam databases, which they have Create-Read-Update-Delete (CRUD) access to.
 ## Exam Delivery Module
 This module will allow the proctors to create assessments, customize exam access, import question banks and designate to the students/class.
-Table 10. System Features
+Table 12. System Features
 Feature	Description
 Import Question Banks	
 Accept formatted Excel sheets that consists of a question and an answer by batch / individually
@@ -815,7 +831,7 @@ Figure 30. View Controllers and Business Logic
 The Computer Vision and Streaming Subsystem delivers real-time gaze tracking and optional annotated frames to support behavioral analysis. In the browser implementation, JPEG frames are sent to a Django Channels WebSocket, where `GazeSession` processes face and eye landmarks and returns `frame_result` JSON messages. These messages can include gaze positions, gaze direction, head-pose values, suspicion state, and optional debug frames. This WebSocket design provides the data needed to correlate gaze estimates with session events.
 Figure 31. Computer Vision and Camera Streaming
 ## Gaze Tracking Submodules Testing
-Table 11. Gaze Tracking
+Table 13. Gaze Tracking
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Camera Initialization	Ensures webcam is initialized and processed frames properly	Ran tracking system using default plug-and-play camera hardware and settings	Successful	Camera freezes during calibration protocol; however, it is only the frame processing and will continue properly streaming frames after each calibration stage is complete.
 2	Landmarks Detection	Verify if system properly captures face landmarks	Ran landmark detection code snippet on camera-facing face with overhead lighting and monitor screen lighting only.	Successful	Landmark detection is consistent and accurate on both testing. A complete 90-degree angled face from the camera fails to get detected. The system now has fallback protocol for this instance and the system will continue running and waiting for a face to be detected.
@@ -823,13 +839,13 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 4	Face Axis/Direction Detection	Verify that face direction tracking is correctly 	Ran the gaze tracking system. Tested accuracy of estimated gaze position based on face axis	Successful with comments 	Gaze tracking system is significantly more stable and accurate when face axis and iris direction systems are cross validating outputs. A complete 90-degree angled face from the camera fails to get detected. The system now has a fallback protocol for this instance.
 5	Calibration Protocol	Verify that calibration protocol on gaze tracking is saved properly and consistently captures correct directions	Ran the calibration protocol on camera-facing face of 5 different users and verified that gaze tracking systems is consistently tracking correct directions and positions	Successful with comments 	While still able to consistently track gaze direction, if a user utilizes the calibration data of a different session. Some edge cases of slightly different face axis position from the start of the tracking may output a direction close, but not exactly the right gaze direction. This can be minimized by using a calibration protocol for each testing.
 
-Table 12. Keypress Track
+Table 14. Keypress Track
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Capture Character Keypresses	Verify that system tracks the any character or symbol pressed on the keyboard	Done by accomplishing a mock test in the exam delivery app	Successful with comments	Only tracks when within the exam delivery app tab or when an extension or software that keeps a selected tab on “focus” while out of the tab.
 2	Capture shortcuts	Verify that system tracks the shortcuts pressed on the keyboard	Done by accomplishing a mock test in the exam delivery app	Successful with comments	Only tracks when within the exam delivery app tab or when an extension or software that keeps a selected tab on “focus” while out of the tab.
 3	Save session keypress logs	Verify that the system saves keypresses after runtime is terminated.	Done by using the computer software version of the Suspicious Exam Behaviour System	Successful with comments	As it is tested on the computer app version of the system, this system tracks all keypresses even outside the exam app, which is out of the scope and specifications of the web app prototype of the system.
 
-Table 13. SEBD and Logging
+Table 15. SEBD and Logging
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Directional Gaze Duration Triggers	Ensure that brief tracking dropouts (e.g., blinks, quick posture adjustments) do not trigger false alerts, while sustained absences do.	Cover the webcam or close eyes for a brief moment (< 1s), then block the webcam or close eyes for a sustained period (> 2s) and check for alerts.	Successful	
 The implementation of a 1.5-second buffer successfully eliminated false positives from rapid eye blinks and natural head movement, only logging a violation when sustained off-screen behavior occurred.
@@ -838,21 +854,21 @@ The implementation of a 1.5-second buffer successfully eliminated false positive
 4	Asynchronous Video Clipping	Verify that frame-based video evidence is recorded and assembled when an event is flagged.	Trigger a behavioral violation (e.g., look sideways for 4 seconds) and check the output directory for the compiled video.	Successful with comments	The system stores 30 frames before the trigger and 30 frames after it, then saves them on an asynchronous daemon thread. The temporal duration represented by the clip depends on the incoming frame rate.
 5	Session Log (CSV) Generation	Verify that the system generates a structured CSV session log tracking transitions, behaviors, scores, and video filenames.	Complete a proctored exam session with normal behavior and triggered violations, terminate runtime, and inspect session_log_<timestamp>.csv.	Successful	Generates a standardized row format mapping gaze directions to start/end timestamps, violation labels, rule-based event scores (100 for a triggered violation, 0 for a normal state), and the exact matching video evidence filename for review. A triggered violation is not equivalent to a confirmed cheating finding.
 
-Table 14. Exam Delivery
+Table 16. Exam Delivery
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Integration Compatibility with SEBDS	Verify that the web-app structure will easily be able to incorporate changes to the SEBDS	In parallel with the Exam Delivery Web app development, a prototype SEBDS version was developed with web app integration in mind 	Successful with comments	The web app and the integration of the SEBDS system was successful. To note however, any changes to the SEBDS will still require knowledge of the web app structure to integrate the system properly.
 2	Student-specific dashboards and tools	Verify that the “Student” accounts can access and manage the actions and data stated in the web app development documentation.	Ran a full test of usage of the actions, views, and access the role are documented to be able to do.	Successful with comments	As this is a proof of concept of a full web-based exam delivery app, recommendations will need to be recorded for future researchers.
 3	Proctor/Teacher-specific dashboards and tools	Verify that the “Teacher” accounts can access and manage the actions and data stated in the web app development documentation. 	Ran a full test of usage of the actions, views, and access to the role are documented to be able to do.	Successful with comments	As this is proof of the concept of a full web-based exam delivery app, recommendations will need to be recorded for future researchers.
 4	Role-Restricted Access to Role-Specific Webpages	Verify that users with “Student” and “Teacher” roles can only view their own respective 	Done by copying the URL address of respective opposite roles while logged in to accounts with opposite roles. Testing while not logged in was also checked in this test case.  	Successful	
 
-Table 15. Integration Test
+Table 17. Integration Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	SEBDS integration testing with Gaze Tracking System	Verify that the SEBDS accomplishes its processes correctly when direction data from Gaze Tracking System is given.  	Ran the full system, calibrated the gaze tracking system and looked in every direction for 5 seconds each.	Successful	
 2	SEBDS integration testing with Keypress Tracking System	Verify that SEBDS accomplishes its processes correctly when keypress logging data from the Keypress Tracking System is given.	Ran the full system, calibrated the gaze tracking system and took a mock test while only using books, browser search, and browser AI chat sidebars.	Successful	
 3	Exam Delivery App integrated with the SEBDS	Verify that the SEBDS can be initialized and used in a web app format	Used an earlier version of the SEBDS to be integrated with the Exam Delivery Web App Prototype developed,	Successful with comments	Since the SEBDS version used is an earlier rendition, there will be a need to update some aspects of the web app framework. This is accounted for by encapsulating each module and its processes in their separate code files compared to the all-in-one packaged version of the initial SEBDS versions.
 
 
-Table 16. System Test
+Table 18. System Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Covering face/Loss of face detection during calibration	Checking what the system will do when calibration was interrupted by loss of face detection/deliberately covering face	Tester was instructed to cover face/turn face away from camera and other actions which led to loss of face detection	Unsuccessful	Crashes when face becomes undetected during calibration process
 2	Covering face/Loss of face detection during test session	Checking what the system will do when session was interrupted by loss of face detection/deliberately covering face	Tester was instructed to cover face/turn face away from camera and other actions which led to loss of face detection	Successful with comments	System continues to run and stays at the last saved point of estimated screen position. Resumes when the face is detected again.
@@ -860,7 +876,7 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 4	Wide eye peripheral tester	Check if system can estimate screen gaze position with outlier tester	Testers were found to have the ability to see the entire screen with minimal movement caught on camera feed. The tester was still instructed to partake in the system testing.	Unsuccessful with comments	The system was inaccurately tracking movements. Key factor is hardware limitations
 5	Tester height	Check if there is significant bias towards tester of certain face position within camera frame 	Testers were made to sit the same chair distance from the testing desk	Successful with comments	System has a clear bias on testers whose face is located near the middle of the camera frame
 
-Table 17. Compatibility Test
+Table 19. Compatibility Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Windows 11 Compatibility	To ensure that the system runs on Windows 11	Run the SEBDS and Web App prototype on a Windows 11 device.	Successful	
 # Chapter 4: Results and Discussion
@@ -871,7 +887,7 @@ The Ethical and Privacy Considerations category received high agreement, indicat
 Meanwhile, Usability and Integration responses were favorable regarding intuitiveness, intrusiveness, and calibration. These findings represent reported user perceptions of the prototype and should not be generalized beyond the tested participants and conditions.
 Finally, in Documentation and Future Development, participants agreed that the system’s documentation was clear, comprehensive, and easy to follow. Most respondents strongly supported continued development and institutional adoption, emphasizing that expanded datasets and model refinement could further enhance performance.
 Overall, the Likert scale results provide preliminary user-acceptance evidence for the prototype. They do not independently confirm technical reliability, ethical compliance, or the ability to distinguish cheating from non-cheating behavior.
-Table 18. UAT Testing Results
+Table 20. UAT Testing Results
 Category	Description	Mean Score	Interpretation
 Detection Accuracy and Reliability	Accuracy of gaze, head pose, and keypress detection; consistency across sessions	4.8	Strong agreement; highly reliable detection performance
 Behavioral Data Output and Interpretation	Clarity and conclusiveness of behavioral data (heatmaps, logs, violation counts)	4.7	Strong agreement; data effectively differentiates cheating vs. non cheating
@@ -883,7 +899,7 @@ Overall Mean	Aggregate score across all categories	4.7	Excellent overall accepta
 ## Presentation of Data Results
 The study dataset contains 186 session-level observations, with 93 records in each label class. It contains 81 columns: 79 numeric predictors, a session identifier, and the binary label. The predictors combine heatmap-distribution features with event-log features. Inspection of the current feature table found no missing predictor values and no duplicate session identifiers. Because participants may contribute more than one session, the 186 observations are not equivalent to 186 independent participants; results are interpreted as exploratory session-level evidence.
 
-Table 19. Session-Level Dataset Fields and Descriptions
+Table 21. Session-Level Dataset Fields and Descriptions
 
 | Field(s) | Description |
 |---|---|
@@ -964,11 +980,11 @@ The heatmaps generated from label-1 sessions showed more dispersed gaze clusters
 
 Figure 32.2 Cheating Heatmap
 ## Video Clipping System Observations
-Table 16. VCS Observations
+Table 22. VCS Observations
  
 Clip totals and per-session averages are not used as primary outcome measures because the source video files must first be matched to their session identifiers. In the system, clips are triggered by rule-based event activations such as irregular gaze, off-screen focus, or forbidden events reported by the monitoring path.
 ## Gaze Direction Duration Observations
-Table 17. Gaze Observations
+Table 23. Gaze Observations
 
 The following summaries use all 93 sessions in each label class. Total duration is the summed duration for a gaze direction, normalized duration is the proportion of the class total, and average duration per session is the total direction duration divided by the 93 sessions in that class. These averages represent duration per session, not the length of an individual transition.
 
@@ -1077,6 +1093,7 @@ Jalilzadeh, K., Rashtchi, M., & Mirzapour, F. (2024). Cheating in online assessm
 Janison. (2025, October 12). 6 ways students cheat online assessments, and how to stop them. Janison Solutions Pty Ltd. https://www.janison.com/resources/post/6-common-ways-students-cheat-at-online-assessments/
 Janke, S., Rudert, S. C., Petersen, Ä., Fritz, T. M., & Daumiller, M. (2021). Cheating in the wake of COVID-19: How dangerous is ad-hoc online testing for academic integrity? Computers and Education Open, 2, 100055. https://doi.org/10.1016/j.caeo.2021.100055
 Jordan, A. E. (2001). College Student cheating: the role of motivation, perceived norms, attitudes, and knowledge of institutional policy. Ethics & Behavior, 11(3), 233–247. https://doi.org/10.1207/s15327019eb1103_3
+Kabir, M. H., Rahman, M. M., Hasan, M. M., Islam, M. R., & Islam, M. S. (2021). A smart online exam proctoring system for detecting cheating using video analysis and machine learning. Journal of Computer Science, 17(9), 765–779. https://doi.org/10.3844/jcssp.2021.765.779
 Lancaster, T. (2021). Academic dishonesty or academic integrity? Using natural language processing (NLP) techniques to investigate positive integrity in academic integrity research. Journal of Academic Ethics, 19(3), 363–383. https://doi.org/10.1007/s10805-021-09422-4
 Lancaster, T., & Cotarlan, C. (2021). Contract cheating by STEM students through a file sharing website: a Covid-19 pandemic perspective. International Journal for Educational Integrity, 17(1). https://doi.org/10.1007/s40979-021-00070-0
 Liang, J. G., Watson, G. R., Sottile, J., & Behrend, B. A. (2023). Academic cheating in online and live college courses during the COVID pandemic. In Journal of Research in Education (Vol. 32, Issue 2, pp. 96–98). https://files.eric.ed.gov/fulltext/EJ1412003.pdf
@@ -1109,12 +1126,3 @@ Walsh, L. L., Lichti, D. A., Zambrano-Varghese, C. M., Borgaonkar, A. D., Sodhi,
 Zarzycka, E., Krasodomska, J., Mazurczak-Mąka, A., & Turek-Radwan, M. (2021). Distance learning during the COVID-19 pandemic: students’ communication and collaboration and the role of social media. Cogent Arts and Humanities, 8(1). https://doi.org/10.1080/23311983.2021.1953228
 Zhao, J., Awais-E-Yazdan, M., Mushtaque, I., & Deng, L. (2022). The Impact of technology adaptation on academic engagement: A moderating role of perceived argumentation strength and school support. Frontiers in Psychology, 13, 962081. https://doi.org/10.3389/fpsyg.2022.962081
 Zhao, Q., & Ye, M. (2010). The application and implementation of face recognition in authentication system for distance education. 2010 International Conference on Networking and Digital Society, 25, 487–489. https://doi.org/10.1109/icnds.2010.5479246
-
-
-
-
-
-
-
-
-
