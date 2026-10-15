@@ -9,7 +9,7 @@ class SignUpTests(TestCase):
     def test_signup_page_renders(self):
         response = self.client.get(reverse("signup"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Create your account")
+        self.assertContains(response, "Create Your Account")
         # Both password fields must be present exactly once: a stray {{ form }}
         # in the template once rendered the whole form a second time.
         self.assertEqual(response.content.count(b'name="password1"'), 1)
