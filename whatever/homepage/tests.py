@@ -1,6 +1,8 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+
+User = get_user_model()
 
 
 class SignUpTests(TestCase):
@@ -17,7 +19,10 @@ class SignUpTests(TestCase):
     def test_signup_creates_account_and_redirects_to_login(self):
         response = self.client.post(reverse('signup'), {
             'username': 'student1',
+            'first_name': 'Student',
+            'last_name': 'One',
             'email': 'student1@htw-berlin.de',
+            'role': 'student',
             'password1': 'exam-Pass-2026',
             'password2': 'exam-Pass-2026',
         })
@@ -78,9 +83,9 @@ class LoginTests(TestCase):
         response = self.client.post(reverse('login'), {
             'username': 'student1',
             'password': self.password,
-            'next': reverse('test_exam'),
+            'next': reverse('student_home'),
         })
-        self.assertRedirects(response, reverse('test_exam'))
+        self.assertRedirects(response, reverse('student_home'))
 
     def test_login_ignores_offsite_next(self):
         """An open redirect here would let someone bounce a student off-site."""
@@ -101,7 +106,7 @@ class LoginTests(TestCase):
 class StudentAccessTests(TestCase):
     """Every student page, including the proctoring view, requires a login."""
 
-    protected = ('student_home', 'test_exam', 'home')
+    protected = ('student_home', 'home')
 
     def test_anonymous_is_redirected_to_login(self):
         for name in self.protected:

@@ -7,6 +7,10 @@ venv/
 # Django
 db.sqlite3
 db.sqlite3-journal
+staticfiles/
+whatever/staticfiles/
+media/
+whatever/media/
 
 # Session output: CSV logs, evidence clips and heatmaps are generated per run
 whatever/sessions/
