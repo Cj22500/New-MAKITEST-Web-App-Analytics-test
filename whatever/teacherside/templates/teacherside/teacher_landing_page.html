@@ -1,25 +1,32 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<h1>Welcome, Teacher!</h1>
-
-<div class="card">
-  <h2 style="font-size:17px;margin:0 0 6px">Manage Exams</h2>
-  <p class="sub" style="margin-bottom:14px">
-    Create a new exam or view your existing exams.
-  </p>
-  <p style="margin-bottom:0">
-    <a class="btn" href="{% url 'create_exam' %}">Create Exam</a>
-    <a class="btn" href="{% url 'exams_list' %}">View Exams</a>
-  </p>
+<div class="page-heading">
+<div>
+<h1>Teacher Overview</h1>
+<p class="sub">Prepare exams and review your students’ attempts.</p>
 </div>
-
-<div class="card">
-  <h2 style="font-size:17px;margin:0 0 6px">Manage Students</h2>
-  <p class="sub" style="margin-bottom:14px">
-    View and update student class designations.
-  </p>
-  <p style="margin-bottom:0">
-    <a class="btn" href="{% url 'manage_students' %}">View Students</a>
-  </p>
+<a class="btn" href="{% url 'create_exam' %}">Create Exam</a>
 </div>
+<div class="hero">
+<a class="hero-tile link" href="{% url 'exams_list' %}">
+<span class="hero-label">Exams</span>
+<span class="hero-value">{{ exam_count }}</span>
+<p class="hero-sub">Manage my exams &rarr;</p>
+</a>
+<div class="hero-tile ok">
+<span class="hero-label">Open Exams</span>
+<span class="hero-value ok">{{ open_count }}</span>
+<p class="hero-sub">Check questions and deadlines before opening access.</p>
+</div>
+<div class="hero-tile">
+<span class="hero-label">Attempts</span>
+<span class="hero-value">{{ attempt_count }}</span>
+<p class="hero-sub">Open an exam to review its students&rsquo; attempts.</p>
+</div>
+</div>
+<section class="card">
+<h2>Prepare Your Classes</h2>
+<p>Students need a class assignment to see their exams. The student directory is shared with other teachers in this research prototype.</p>
+<a class="btn ghost" href="{% url 'manage_students' %}">Manage Students</a>
+</section>
 {% endblock %}

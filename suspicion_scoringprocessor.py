@@ -24,7 +24,7 @@ class SuspicionScoringProcessor:
             os.makedirs(output_dir, exist_ok=True)
 
         # Event-Based CSV Logging Initialization
-        self.session_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.session_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         self.csv_filename = os.path.join(self.output_dir, f"session_log_{self.session_timestamp}.csv")
         self._init_csv()
         
@@ -184,7 +184,7 @@ class SuspicionScoringProcessor:
                 self.current_score = 100
                 
                 # Define video filename early for linkage in CSV
-                timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+                timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
                 filename = f"{timestamp_str}_violation_{violation_reason}.mp4"
                 self.current_video_file = filename
                 self.recording_filename = filename

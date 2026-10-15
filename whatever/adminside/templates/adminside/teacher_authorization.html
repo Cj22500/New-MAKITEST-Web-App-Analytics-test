@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Authorization | MAKITEST{% endblock %}
+{% block content %}
+<p class="breadcrumbs">Administration / Teacher Authorization</p>
+<h1>Teacher Authorization</h1>
+<p class="sub">Review teacher accounts and control access to teacher features.</p>
+<section class="card table-wrap">
+<table class="data-table">
+<caption>Teacher Accounts</caption>
+<thead>
+<tr>
+<th scope="col">Teacher</th>
+<th scope="col">Email</th>
+<th scope="col">Authorization</th>
+<th scope="col">Action</th>
+</tr>
+</thead>
+<tbody>
+{% for teacher in teachers %}
+<tr>
+<td class="student-cell">{{ teacher.get_full_name|default:teacher.username }}<small>{{ teacher.username }}</small></td>
+<td>{{ teacher.email|default:'—' }}</td>
+<td><span class="pill {% if teacher.authorized %}ok{% else %}warn{% endif %}">{% if teacher.authorized %}Authorized{% else %}Not authorized{% endif %}</span></td>
+<td>
+<form method="post" action="{% url 'set_teacher_authorization' teacher.pk %}">
+{% csrf_token %}
+{% if teacher.authorized %}
+<input type="hidden" name="authorized" value="false">
+<button class="btn ghost">Unauthorize</button>
+{% else %}
+<input type="hidden" name="authorized" value="true">
+<button class="btn primary">Authorize</button>
+{% endif %}
+</form>
+</td>
+</tr>
+{% empty %}
+<tr><td colspan="4">No teacher accounts have registered.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</section>
+{% endblock %}

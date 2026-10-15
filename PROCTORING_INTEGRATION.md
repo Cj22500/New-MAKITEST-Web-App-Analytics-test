@@ -1,137 +1,94 @@
-# Proctoring Integration - Implementation Complete
+# Proctoring and Prediction Integration
 
-## Changes Summary
+## Components
 
-### ✅ Database Changes (studentside/models.py)
-Added proctoring fields to `StudentExamAttempt`:
-- `proctoring_session_id` - Links exam attempt to WebSocket session
-- `proctoring_started_at` - When proctoring began
-- `proctoring_ended_at` - When proctoring ended
-- `suspicion_score` - Cumulative suspicion score
-- `violation_count` - Number of flagged violations
+| Component | Responsibility |
+|---|---|
+| `whatever/camera/templates/camera/home.html` | Camera selection, calibration UI, browser frame capture |
+| `whatever/studentside/templates/studentside/exam_session.html` | Exam questions and exam-time monitor |
+| `whatever/camera/consumers.py` | Django Channels WebSocket protocol |
+| `gaze_session.py` | Per-connection tracking and artifact finalization |
+| `whatever/studentside/models.py` | Attempts, thresholds, and registered artifacts |
+| `web_session_predict.py` | Web-app classifier inference |
+| `heatmap_feature_extractor.py` | Heatmap and CSV feature construction |
 
-**ACTION REQUIRED:** Run migrations
-```bash
-python manage.py makemigrations
-python manage.py migrate
+## Lifecycle
+
+The ID created by `exam_details` is reused across two WebSocket connections. Each connection has its own in-memory `GazeSession`, but both write to the same session directory.
+
+```text
+exam_details
+  -> temporary request.session['proctoring_session_id']
+  -> camera WebSocket: calibration
+  -> StudentExamAttempt is created by exam_session
+  -> exam WebSocket: monitoring
+  -> GazeSession.finalize()
+  -> ProctoringSessionFiles.create_or_update_from_session()
+  -> web_session_predict.predict_session_files()
 ```
 
-### ✅ Backend Changes (studentside/views.py)
+## WebSocket Protocol
 
-#### 1. `exam_details` view
-- Generates unique `proctoring_session_id`
-- Stores session_id in Django session
-- Passes session_id to template
+Client messages:
 
-#### 2. `exam_session` view
-- Retrieves `proctoring_session_id` from session
-- Creates `StudentExamAttempt` record immediately (not at submission)
-- Stores attempt_id in session for later use
-- Passes proctoring_session_id to template for WebSocket connection
+| Message | Meaning |
+|---|---|
+| JPEG binary data | Process one camera frame |
+| `{"type":"calibrate_next"}` | Advance calibration |
+| `{"type":"keystrokes","keys":[...]}` | Report browser events |
+| `{"type":"ping"}` | Keepalive |
 
-#### 3. `submit_exam` view
-- Updates existing exam attempt (instead of creating new)
-- Finalizes proctoring timestamps
-- Clears all session variables
+Server messages include `ready`, `frame_result`, `calibration`, `calibration_complete`, `pong`, `session_closed`, and `error`.
 
-### ✅ Frontend Changes
+## Stored Data
 
-#### 1. camera/home.html (Already configured!)
-- "Start Exam" button already enables after calibration
-- Redirects to `/studentside/exam_session/` when clicked
-- Keeps WebSocket and camera running during transition
+`StudentExamAttempt` stores the student, exam, attempt number, score, timestamps, WebSocket session ID, live suspicion fields, and final prediction fields:
 
-#### 2. exam_session.html (NEW: Picture-in-Picture Proctoring)
-- Two-column layout: Questions (left) + Proctoring Monitor (right)
-- Sticky proctoring panel with:
-  - Live camera feed (320x240, 5 FPS)
-  - Connection status indicator
-  - Face detection status
-  - Gaze direction display
-  - FPS counter
-  - Violation alerts
-- WebSocket connection to `/ws/proctor/{session_id}/`
-- Continuous frame capture and suspicious keystroke detection
-- Monitors: Alt+Tab, Ctrl+C/V, F11, PrintScreen, window blur, tab hidden
+- `prediction_label`
+- `prediction_confidence`
+- `probability_cheating`
+- `probability_non_cheating`
+- `prediction_status`
+- `prediction_error`
+- `prediction_model_version`
+- `prediction_completed_at`
+- `prediction_artifact`
 
-## Flow Diagram
+Prediction statuses are `pending`, `running`, `completed`, `failed`, or `unavailable`.
 
-```
-1. Student → Exam Details Page
-   ├─ exam_details() generates proctoring_session_id
-   └─ Stores in Django session
+`ProctoringSessionFiles` records relative paths below `MEDIA_ROOT/sessions/<session_id>/` for calibration JSON, the heatmap, session logs, and violation videos.
 
-2. Student → "Start Proctored Exam" button
-   └─ Redirects to camera/home.html (calibration)
+The first CSV is the calibration log. The final CSV is treated as the exam log by `get_exam_csv_path()`. Prediction never falls back to the calibration CSV.
 
-3. Camera App (home.html)
-   ├─ Student completes 5-stage calibration
-   ├─ "Start Exam" button enables
-   └─ Redirects to /studentside/exam_session/
+## Prediction Flow
 
-4. Exam Session Page
-   ├─ Creates StudentExamAttempt with proctoring_session_id
-   ├─ Opens WebSocket: ws://host/ws/proctor/{session_id}/
-   ├─ Camera captures frames at 5 FPS
-   ├─ Tracks gaze, face, and keystrokes
-   └─ Questions displayed alongside proctoring panel
+`submit_exam` registers artifacts and invokes `_predict_exam_attempt`. The helper gets the registered heatmap and final exam CSV, marks the attempt `running`, calls `predict_session_files`, then saves probabilities, label, confidence, model version, completion time, and artifact path. Missing artifacts or inference errors produce `unavailable` or `failed` without blocking answer submission.
 
-5. Student submits exam
-   ├─ Updates exam attempt with completion time
-   ├─ Finalizes proctoring_ended_at
-   ├─ Closes WebSocket
-   └─ Shows results
+The prediction artifact is stored at:
+
+```text
+media/sessions/<session_id>/prediction/predicted_values.json
 ```
 
-## What's Now Integrated
+## Required Setup
 
-✅ **Calibration** → Complete 5-stage eye tracking setup
-✅ **Continuous Monitoring** → Camera + gaze tracking during entire exam
-✅ **Real-time Detection** → Face, eyes, gaze direction, violations
-✅ **Evidence Recording** → CSV logs + video clips saved to sessions/{session_id}/
-✅ **Database Linkage** → session_id stored in StudentExamAttempt for teacher review
-✅ **Violation Alerts** → Students see warnings when behavior is flagged
-✅ **Keystroke Monitoring** → Detects suspicious keys and tab switches
+```powershell
+pip install -r requirements.txt
+python whatever/manage.py migrate
+python whatever/manage.py check
+python whatever/manage.py runserver
+```
 
-## Teacher Review (Future Enhancement)
+The model contract must be present at the repository root:
 
-Teachers can now access proctoring data via:
-- Query `StudentExamAttempt.proctoring_session_id`
-- Access files in `sessions/{session_id}/`:
-  - `session_log_YYYYMMDD_HHMMSS.csv` - Full event log
-  - `*.avi` - Video evidence of violations
-  - `eye_calibration.json` - Student's calibration data
+```text
+suspicion_model.joblib
+feature_columns.json
+```
 
-## Testing Checklist
+## Current Limitations
 
-- [ ] Run migrations successfully
-- [ ] Student can access exam details page
-- [ ] Calibration completes without errors
-- [ ] "Start Exam" button appears after calibration
-- [ ] Exam session loads with proctoring panel
-- [ ] Camera feed visible in proctoring panel
-- [ ] Gaze tracking updates in real-time
-- [ ] Violations trigger alerts
-- [ ] Exam submission works correctly
-- [ ] Proctoring session_id saved to database
-- [ ] CSV and video files created in sessions folder
-
-## Next Steps (Optional)
-
-1. **Teacher Proctoring Review Page**
-   - View all exam attempts with proctoring data
-   - Play back video evidence
-   - Review suspicion scores and violation logs
-   - Filter by student, exam, or suspicion level
-
-2. **Advanced Analytics**
-   - Heatmaps of student gaze patterns
-   - Aggregate cheating statistics
-   - Time-series graphs of violations
-   - Export reports to PDF
-
-3. **Security Enhancements**
-   - Browser lockdown mode
-   - Multiple person detection
-   - Screen sharing detection
-   - Audio monitoring
+- Prediction is synchronous during submission.
+- The submission path depends on final session artifacts being present when the file scan runs.
+- Live `suspicion_score` and `violation_count` are separate from final classifier probabilities.
+- Teacher review displays prediction status and result; the prediction JSON is currently stored as a session artifact.

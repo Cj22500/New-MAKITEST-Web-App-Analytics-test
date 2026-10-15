@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>My Results</h1>
+<p class="sub">Your attempts and scores, grouped by exam.</p>
+{% for group in exam_groups %}
+<details>
+<summary>{{ group.exam.title }} · {{ group.attempts|length }} Attempts{% if group.best_score is not None %} · Best {{ group.best_score|floatformat:1 }}%{% endif %}
+</summary>
+{% for attempt in group.attempts %}
+<div class="exam-item">
+<div>Attempt {{ attempt.attempt_number }}<p class="muted">
+{% if attempt.completed_at %}{{ attempt.completed_at|date:'M j, Y, g:i A' }} PHT · <span class="score-chip">{{ attempt.score|floatformat:1 }}%</span>{% else %}In progress{% endif %}
+</p>
+</div>
+{% if attempt.completed_at %}
+<a class="btn ghost" href="{% url 'exam_results' attempt.pk %}">View Result</a>
+{% else %}
+<a href="{% url 'exam_details' %}?exam_id={{ group.exam.pk }}">Resume Exam</a>
+{% endif %}
+</div>
+{% endfor %}
+</details>
+{% empty %}
+<section class="card">
+<h2>No Results Yet</h2>
+<p>After you submit an exam, its result will appear here.</p>
+<a class="btn" href="{% url 'student_home' %}">View My Exams</a>
+</section>
+{% endfor %}
+{% endblock %}

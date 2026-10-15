@@ -62,6 +62,7 @@ class Question(models.Model):
     question_id = models.AutoField(primary_key=True)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions')
     question_text = models.TextField()
+    image_description = models.TextField(blank=True)
     question_image = models.ImageField(upload_to='question_images/', null=True, blank=True)
     question_type = models.CharField(max_length=3, choices=QUESTION_TYPES)
     

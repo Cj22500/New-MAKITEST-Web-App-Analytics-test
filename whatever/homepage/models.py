@@ -17,6 +17,11 @@ class CustomUser(AbstractUser):
         default='student',
         help_text='User role for access control'
     )
+
+    authorized = models.BooleanField(
+        default=False,
+        help_text='Whether this account is authorized to use teacher features',
+    )
     
     class_designation = models.CharField(
         max_length=100,
@@ -35,4 +40,4 @@ class CustomUser(AbstractUser):
         return self.role == 'teacher'
     
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role == 'admin' or self.is_superuser

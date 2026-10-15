@@ -1,13 +1,97 @@
 ## MAKITEST : Suspicious Exam Behaviour Detection System
 
+For the redesigned Django web app, use **Python 3.12** and follow
+[Web app setup and validation](docs/WEB_UI_AND_VALIDATION.md). The web app uses
+browser camera permissions and guided Space-key calibration; the desktop tracker
+instructions below describe the separate native research pipeline.
+
 This serves as a guide to the usage, setup, and system framework and architecture of the dual gaze tracking system of MAKITEST. The system monitors exam takers via webcam, tracking head pose and eye gaze to detect and log suspicious behaviours in real time.
+
+---
+
+## End-to-End Process
+
+The project works in two connected phases: it first records and analyses an
+exam session, then converts the saved session into data that can be used to
+train or apply a machine-learning classifier. The process begins when
+`main_trackerprocess.py` opens the webcam and asks whether the session should
+be labelled `non_cheating` or `cheating`. Every session is saved in a unique
+directory under the corresponding folder in `sessions/`. This directory is
+the unit used by the rest of the pipeline.
+
+During each frame, `FrameBufferProcessor` obtains the newest camera image,
+while the face and eye processors detect landmarks, estimate head pose, track
+iris movement, and calculate eye-based gaze. Calibration establishes the
+subject's centre, up, down, left, and right eye measurements. The calibrated
+eye position is smoothed and combined with the head-based screen position by
+`GazeDirectionProcessor`, producing both an estimated screen coordinate and a
+discrete gaze direction such as `Center`, `Left`, or `Down`.
+
+The resulting gaze direction is passed to `SuspicionScoringProcessor`, which
+tracks how long the subject looks away, looks down, moves their eyes rapidly,
+or leaves the camera view. `KeypressTrackProcessor` supplies suspicious global
+keyboard events such as application switching or clipboard shortcuts. When a
+rule is triggered, the scorer records an event in
+`session_log_<timestamp>.csv` and saves video evidence with a pre-roll and
+post-roll. At the same time, `HeatmapProcessor` accumulates screen-position
+points. When the session ends, it turns those points into a blurred,
+colour-mapped `session_heatmap_<timestamp>.png`.
+
+The two files required by the machine-learning pipeline are therefore the
+session heatmap and the suspicion-scoring CSV. `dataset_builder.py` visits
+every `session_*` directory in both label folders. For each session it calls
+`extract_session_features()`; sessions missing either required file are
+skipped. A valid session becomes one row containing numeric heatmap features,
+numeric behaviour features, its folder name as `session_id`, and its folder
+label (`1` for cheating or `0` for non-cheating). These rows are written to
+`features.csv`.
+
+When `heatmap_feature_extractor.py` processes the PNG, it first reconstructs
+an approximate intensity map. The heatmap was saved using OpenCV's JET colour
+map, so `build_jet_lut()` recreates the 256-colour lookup table and
+`recover_intensity_map()` uses a nearest-colour `cKDTree` search to convert
+each pixel back to an intensity from 0 to 255. Pure black pixels are treated
+as zero density because they represent areas where no gaze points were
+recorded.
+
+`extract_heatmap_features()` then describes the spatial distribution of gaze.
+It calculates the normalised gaze centroid, horizontal and vertical spread,
+the elongation of the distribution, entropy, the concentration of the
+strongest 5 percent of pixels (`peak_ratio`), and the proportion of pixels
+above intensity 25 (`coverage_ratio`). It also resizes the map to an 8x8 grid
+and normalises the 64 cells as probabilities, producing
+`grid_cell_0` through `grid_cell_63`. If the recovered map has no density, a
+complete set of zero-valued heatmap features is returned instead.
+
+`extract_csv_features()` reads the event log and categorises each violation
+label as `frantic_eye_movement`, `forbidden_key`, `off_screen`, `duration`,
+or `normal`. It parses each event's timestamps, counts the categories,
+counts the total transitions, adds the duration of non-`Center` gaze, and
+calculates the non-centre percentage over the session span. It also calculates
+`violation_rate` as the number of violation rows divided by the total number
+of log rows. The heatmap and CSV dictionaries are combined into the single
+feature row used by the dataset builder.
+
+After `features.csv` has been built, `train_model.py` removes `session_id` and
+`label` from the input features and trains a calibrated random forest. Five-
+fold stratified cross-validation reports accuracy, ROC-AUC, and a
+classification report. The final model is then refitted using all available
+session rows and saved as `suspicion_model.joblib`; the exact feature order is
+saved in `feature_columns.json`.
+
+Finally, `predict_session.py` loads those two model artifacts, extracts the
+features from one selected session, rebuilds a one-row pandas DataFrame in the
+stored feature order, and obtains probabilities from the classifier. A
+cheating probability of at least 0.5 produces the `cheating` label; otherwise
+the result is `non_cheating`. The script prints both class probabilities and
+the confidence of the selected label.
 
 ---
 
 ## Step-by-Step Setup
 
 ### Prerequisites
-- **Python 3.10 or higher** — [Download Python](https://www.python.org/downloads/)
+- **Python 3.12** — the supported, validated version for the pinned dependencies.
 - **A webcam** connected and accessible (index `0` or `1`)
 - **Windows OS** recommended (the `keyboard` library requires it for global hotkey hooks)
 
@@ -19,6 +103,10 @@ Download all project files into a single folder. Ensure the following files are 
 
 ```
 main_trackerprocess.py          ← entry point (run this)
+dataset_builder.py              ← build ML features from saved sessions
+train_model.py                  ← train and save the suspicion classifier
+predict_session.py              ← classify one saved session
+heatmap_feature_extractor.py    ← extract heatmap and behaviour features
 face_trackprocessor.py
 face_distanceprocessor.py
 face_axisprocessor.py
@@ -79,6 +167,10 @@ This installs the following libraries:
 | `keyboard` | Global keyboard hotkey monitoring |
 | `sounddevice` | Audio support (reserved for future alerts) |
 | `pillow` | Image processing utilities |
+| `pandas` | Tabular feature construction and model input |
+| `scikit-learn` | Random forest training, calibration, validation, and metrics |
+| `scipy` | Efficient heatmap colour-map lookup with `cKDTree` |
+| `joblib` | Save and load the trained model |
 
 ---
 
@@ -102,6 +194,20 @@ Run the main tracker from the terminal:
 
 ```bash
 python main_trackerprocess.py
+```
+
+Before tracking starts, select the session type when prompted:
+- `1` — non-cheating session
+- `2` — cheating session
+
+Session files are saved in a uniquely named folder under the selected category:
+
+```
+sessions/
+├── non_cheating/
+│   └── session_<id>/
+└── cheating/
+      └── session_<id>/
 ```
 
 Two windows will open:
@@ -137,8 +243,11 @@ After the session ends (`}` to quit), the following output files are generated i
 | File | Description |
 |---|---|
 | `session_log_<timestamp>.csv` | Event-based log of all gaze directions, violations, and durations |
-| `heatmap_<timestamp>.png` | Visual heatmap of screen gaze positions over the session |
-| `clip_<timestamp>.avi` | Video clip recorded around any detected suspicious behaviour event |
+| `session_heatmap_<timestamp>.png` | Colour-mapped heatmap of screen gaze positions over the session |
+| `<timestamp>_violation_<reason>.mp4` | Video evidence with pre-roll and post-roll around a suspicious event |
+
+Each session is self-contained under its category directory, which allows the
+same files to be reviewed manually or used by the machine-learning pipeline.
 
 ---
 
@@ -252,7 +361,7 @@ When a violation is detected, it:
 ---
 
 ### `heatmap_processor.py` — Heatmap Processor
-Accumulates all gaze screen-position points recorded during the session. On exit, generates a Gaussian-blurred heatmap image showing where the subject looked most frequently. The output is saved as a colour-mapped PNG file (`heatmap_<timestamp>.png`).
+Accumulates all gaze screen-position points recorded during the session. On exit, generates a Gaussian-blurred heatmap image showing where the subject looked most frequently. The output is saved as a colour-mapped PNG file (`session_heatmap_<timestamp>.png`).
 
 ---
 
@@ -272,3 +381,289 @@ Detections are stored in a thread-safe buffer and retrieved each frame by the ma
 ### `frame_bufferprocessor.py` — Frame Buffer Processor
 Runs a dedicated background thread that continuously reads frames from the OpenCV `VideoCapture` object and stores the latest frame in a thread-safe buffer. This decouples frame acquisition from the processing loop, preventing the main loop from blocking on camera I/O and ensuring the freshest possible frame is always available.
 
+---
+
+## Machine-Learning Pipeline
+
+The repository includes a session-level classifier that combines spatial gaze
+patterns from the heatmap with behavioural events from the suspicion-scoring
+CSV. Sessions must contain both a `session_heatmap_*.png` file and a
+`session_log_*.csv` file to be included.
+
+### Build the feature dataset
+
+After collecting labelled sessions under `sessions/cheating/` and
+`sessions/non_cheating/`, run:
+
+```bash
+python dataset_builder.py
+```
+
+`dataset_builder.py` scans both category folders and writes `features.csv`.
+Each row represents one session and contains the extracted features, the
+session ID, and the numeric label (`1` for cheating, `0` for non-cheating).
+Sessions missing either required artifact are skipped. The output contains
+one row per usable session, with 79 extracted numeric features followed by
+the session metadata columns.
+
+The current feature dataset contains 186 sessions in 81 columns: 79 numeric
+predictors, `session_id`, and `label`. The classes are balanced with 93
+non-cheating sessions and 93 cheating sessions. The dataset currently has no
+missing values or duplicate session IDs.
+
+### Average gaze-direction duration across all testers
+
+The following summaries use all 93 sessions in each class. `Total Duration`
+is the summed duration for a direction, `Normalized Seconds` is that duration
+ divided by the total duration for the class, and `Average Duration per Tester` is
+the total direction duration divided by the 93 testers in that class. Because
+the denominator is the number of testers, this value represents average
+seconds spent in a direction per tester, not the duration of an individual
+transition run.
+
+#### Non-cheating
+
+| Gaze direction | Total Duration (seconds) | Normalized Seconds based on Total | Average Duration per Tester (seconds) |
+|---|---:|---:|---:|
+| Center | 9114.97 | 0.5319 | 98.01 |
+| Down-Right | 265.09 | 0.0155 | 2.85 |
+| Center-Right | 680.70 | 0.0397 | 7.32 |
+| Down-Center | 2607.64 | 0.1522 | 28.04 |
+| Up-Center | 2836.47 | 0.1655 | 30.50 |
+| Up-Right | 372.22 | 0.0217 | 4.00 |
+| Up-Left | 677.19 | 0.0395 | 7.28 |
+| Center-Left | 424.00 | 0.0247 | 4.56 |
+| Down-Left | 158.86 | 0.0093 | 1.71 |
+| **Summary standard deviation** |  |  | **31.03** |
+| **Summary coefficient of variation** |  |  | **1.52** |
+
+#### Cheating
+
+| Gaze direction | Total Duration (seconds) | Normalized Seconds based on Total | Average Duration per Tester (seconds) |
+|---|---:|---:|---:|
+| Center | 7481.27 | 0.2777 | 80.44 |
+| Down-Right | 1207.28 | 0.0448 | 12.98 |
+| Center-Right | 1798.47 | 0.0668 | 19.34 |
+| Down-Center | 5042.07 | 0.1872 | 54.22 |
+| Up-Center | 2899.42 | 0.1076 | 31.18 |
+| Up-Right | 1394.79 | 0.0518 | 15.00 |
+| Up-Left | 2800.20 | 0.1039 | 30.11 |
+| Center-Left | 3096.81 | 0.1150 | 33.30 |
+| Down-Left | 1219.12 | 0.0453 | 13.11 |
+| **Summary standard deviation** |  |  | **22.40** |
+| **Summary coefficient of variation** |  |  | **0.70** |
+
+### Train the model
+
+```bash
+python train_model.py
+```
+
+Training first searches a grid of `n_estimators` values (50, 100, 200, 400,
+800) and `max_depth` values (2, 4, 6, 8, 10, `None`) using stratified five-fold
+cross-validation. It then evaluates the winning configuration with the
+configured split counts (3, 5, and 10 by default), refits on all available
+sessions, and saves:
+
+| File | Description |
+|---|---|
+| `suspicion_model.joblib` | Trained calibrated classifier used for inference |
+| `feature_columns.json` | Feature names and the order expected by the model |
+
+Run training again whenever `features.csv` changes.
+
+The current trained artifact was produced from the dataset described above.
+Grid search selected `n_estimators=100` and `max_depth=4`, with mean five-fold
+CV accuracy of 0.930. This configuration had the best mean accuracy among the
+tested candidates and was used for the split-count comparisons below:
+
+| CV folds | Mean fold accuracy (std. dev.) | OOF accuracy | OOF ROC-AUC |
+|---:|---:|---:|---:|
+| 3 | 0.903 (0.013) | 0.903 | 0.965 |
+| 5 | 0.930 (0.040) | 0.930 | 0.973 |
+| 10 | 0.913 (0.051) | 0.914 | 0.972 |
+
+An additional five-fold comparison evaluated the model with and without the 64
+grid-cell features:
+
+| Feature set | OOF accuracy | ROC-AUC | Non-cheating precision / recall / F1 | Cheating precision / recall / F1 |
+|---|---:|---:|---|---|
+| Without grid cells | 0.919 | 0.975 | 0.91 / 0.92 / 0.92 | 0.92 / 0.91 / 0.92 |
+| With grid cells | 0.930 | 0.973 | 0.92 / 0.95 / 0.93 | 0.94 / 0.91 / 0.93 |
+
+Grid-cell inclusion increased accuracy by about 1.1 percentage points and
+slightly improved class-level precision and F1. Non-cheating recall rose by
+0.03, while cheating recall remained 0.91. ROC-AUC was nearly unchanged and
+was 0.002 higher without grid cells. These are comparisons on the same
+cross-validation dataset, not independent test results.
+
+The selected configuration's five-fold per-fold accuracies were 0.895, 0.919,
+1.000, 0.946, and 0.892. Its classification report was:
+
+| Class | Precision | Recall | F1-score | Support |
+|---|---:|---:|---:|---:|
+| Non-cheating | 0.92 | 0.95 | 0.93 | 93 |
+| Cheating | 0.94 | 0.91 | 0.93 | 93 |
+
+The fold-count comparisons are sensitivity checks on the same dataset, not
+independent test results. Hyperparameter selection and these CV estimates may
+be optimistic; participant-level or future-session validation is still
+required before deployment.
+
+### Predict one session
+
+```bash
+python predict_session.py sessions/cheating/session_<id>
+```
+
+The predictor loads the saved model and feature-column order, extracts the
+session features, supplies them as a named pandas `DataFrame`, and prints the
+predicted label and confidence. It returns `(label, confidence)` when called
+from Python, or `None` when the session is missing a heatmap or CSV log. After
+a successful prediction, it also creates a unique output directory:
+
+```text
+predicted_sessions/
+└── predicted_session_<uuid>/
+      ├── gaze_grid_8x8.png
+      └── predicted_values.json
+```
+
+`gaze_grid_8x8.png` is a colour-mapped visualisation of the 64 extracted grid
+probabilities. `predicted_values.json` stores the source session, predicted
+label, confidence, both class probabilities, grid size, all 64 grid values,
+and the feature-column order used for prediction. The original return value
+of `predict_session()` is unchanged.
+
+## Feature Extraction Reference
+
+The functions in `heatmap_feature_extractor.py` can also be imported directly:
+
+| Function | Purpose |
+|---|---|
+| `build_jet_lut()` | Build the lookup table for OpenCV's JET colour map |
+| `recover_intensity_map(heatmap_img)` | Recover a density surrogate from a saved heatmap image |
+| `extract_heatmap_features(intensity_map, grid_size=8)` | Calculate centroid, spread, elongation, entropy, peak, coverage, and grid-cell features |
+| `extract_csv_features(csv_path)` | Calculate violation counts, gaze transitions, non-centre time, and violation rate |
+| `extract_session_features(session_dir)` | Combine heatmap and CSV features for one session |
+
+The generated heatmap features include normalised centroid coordinates,
+normalised spread on both axes, an elongation ratio, entropy, peak ratio,
+coverage ratio, and an 8x8 occupancy grid. CSV features include counts for
+`frantic_eye_movement`, `forbidden_key`, `off_screen`, and `duration`, plus
+transition count, percentage of non-centre gaze time, and violation rate.
+The extractor uses the first file returned for each matching heatmap or CSV
+pattern; a session should therefore contain one corresponding heatmap and one
+corresponding log.
+
+### Heatmap feature calculations
+
+`extract_heatmap_features()` receives a two-dimensional intensity map. Each
+pixel is treated as a weighted gaze observation: a brighter pixel contributes
+more strongly to the calculations than a darker pixel. The function first
+converts the values to `float64` and calculates `total_mass`, the sum of all
+pixel intensities. If this value is zero, the function returns a complete set
+of zero-valued features because there is no gaze density from which to
+calculate a position or distribution.
+
+For a usable map, OpenCV calculates image moments. The zeroth moment, `m00`,
+is the total weighted intensity and acts as the denominator for the weighted
+averages. The first moments, `m10` and `m01`, give the gaze centroid:
+
+```text
+centroid_x = m10 / m00
+centroid_y = m01 / m00
+```
+
+The centroid is divided by the image width and height to produce
+`centroid_x_norm` and `centroid_y_norm`. These values are resolution-
+independent: `0` represents the left or top edge, `0.5` is approximately the
+middle, and `1` represents the right or bottom edge.
+
+The central moments `mu20` and `mu02` describe the horizontal and vertical
+spread around the centroid. Dividing them by `m00` produces weighted
+variances:
+
+```text
+var_x = mu20 / m00
+var_y = mu02 / m00
+```
+
+The square roots produce standard deviations, which are then normalised by
+the image dimensions to produce `spread_x` and `spread_y`. Small values mean
+the gaze is concentrated near the centroid; larger values mean it is spread
+across more of the screen. The mixed central moment `mu11` measures whether
+horizontal and vertical deviations occur together and is used as the
+covariance value `cov_xy`.
+
+The covariance matrix is formed as:
+
+```text
+[ var_x   cov_xy ]
+[ cov_xy  var_y  ]
+```
+
+`np.linalg.eigvalsh()` calculates its two eigenvalues. Each eigenvalue is the
+variance along one principal direction of the gaze distribution. The smaller
+value represents the narrow direction and the larger value represents the
+widest direction. Their ratio becomes `elongation_ratio`:
+
+```text
+elongation_ratio = largest_eigenvalue / smallest_eigenvalue
+```
+
+A ratio near `1` means the distribution is similarly wide in both directions.
+A large ratio means it is stretched along one direction. Eigenvalues are
+clipped to a minimum of `1e-9` before division so a highly concentrated map
+cannot cause division by zero.
+
+To describe the spatial distribution in a compact and consistent format, the
+intensity map is resized to an 8x8 grid using area interpolation. The 64 grid
+values are divided by their sum, creating probabilities that represent the
+relative gaze activity in each region. They are stored as
+`grid_cell_0` through `grid_cell_63`, in row-major order from the top-left
+cell to the bottom-right cell.
+
+The grid probabilities are also used to calculate entropy:
+
+```text
+entropy = -sum(p * log2(p))
+```
+
+Zero-probability cells are ignored because `log2(0)` is undefined. Low entropy
+means gaze is concentrated in a few grid regions; high entropy means gaze is
+distributed more evenly across the grid.
+
+`peak_ratio` measures hotspot concentration. The intensity pixels are sorted
+from brightest to darkest, the brightest 5 percent are selected, and their
+intensity is divided by `total_mass`:
+
+```text
+peak_ratio = intensity of brightest 5% of pixels / total_mass
+```
+
+A high value indicates that much of the gaze density is concentrated in a
+small number of hotspots. Finally, `coverage_ratio` counts the pixels whose
+intensity is greater than `25` and divides by the total number of pixels. It
+therefore measures how much of the image contains meaningful recovered gaze
+density.
+
+Together, the eight global heatmap features and 64 grid probabilities produce
+72 heatmap features. `extract_csv_features()` adds seven behavioural features,
+so each complete session contributes 79 numeric model features.
+
+## Python API Summary
+
+The main callable entry points are:
+
+| Function | Module | Returns |
+|---|---|---|
+| `build_dataset()` | `dataset_builder.py` | A pandas `DataFrame`, or `None` when no usable sessions are found |
+| `train_model()` | `train_model.py` | Saves the trained model and feature-column metadata |
+| `predict_session(session_dir)` | `predict_session.py` | `(label, confidence)`, or `None` for incomplete sessions |
+| `FaceAxisProcessor.process(avg_direction)` | `face_axisprocessor.py` | Calibrated yaw and pitch |
+| `FaceAxisProcessor.get_estimated_screen_position()` | `face_axisprocessor.py` | Clamped `(x, y)` screen coordinates |
+| `GazeDirectionProcessor.weighted_screen_position(face, eye)` | `gaze_directionprocessor.py` | Blended screen position and 3x3 grid label |
+| `HeatmapProcessor.add_point(screen_pos)` | `heatmap_processor.py` | Adds a bounded gaze point to the session |
+| `HeatmapProcessor.generate_heatmap()` | `heatmap_processor.py` | Saved heatmap path, or `None` when no points exist |
+| `SuspicionScoringProcessor.update(...)` | `suspicion_scoringprocessor.py` | Current recording and violation state |

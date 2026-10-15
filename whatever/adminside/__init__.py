@@ -1,0 +1,1 @@
+"""Admin-side teacher authorization app."""
