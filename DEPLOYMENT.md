@@ -42,16 +42,20 @@ gcloud run deploy makitest \
   --memory 2Gi \
   --cpu 2 \
   --timeout 3600 \
+  --max-instances 1 \
+  --session-affinity \
   --set-env-vars "DEBUG=False,SECRET_KEY=generate-a-secure-secret-key-here,ALLOWED_HOSTS=*"
 ```
 
 **Key Configuration Parameters:**
 - `--source .`: Automatically builds the `Dockerfile` in the root folder using Google Cloud Build.
 - `--allow-unauthenticated`: Makes the web app publicly accessible.
-- `--memory 2Gi` & `--cpu 2`: Recommended resources for handling MediaPipe and OpenCV image processing in Python.
-- `--timeout 3600`: Increases request timeout (useful for long exam proctoring sessions over WebSockets).
+- `--memory 2Gi` & `--cpu 2`: Recommended resources for handling MediaPipe and OpenCV image processing in Python without OOM errors.
+- `--timeout 3600`: Increases request timeout to 1 hour (essential for uninterrupted exam proctoring over WebSockets).
+- `--max-instances 1`: Ensures single-instance execution to maintain in-memory WebSocket tracking state consistently.
+- `--session-affinity`: Routes continuous WebSocket and HTTP connections from the same user to the same container instance.
 
-### Step 3: Set CSRF Trusted Origins
+### Step 3: Set CSRF Trusted Origins and Database URL
 
 Once deployment completes, Google Cloud Run will display your live app URL (e.g., `https://makitest-xyz123-uc.a.run.app`).
 
@@ -61,6 +65,14 @@ Update `CSRF_TRUSTED_ORIGINS` to allow Django form submissions and WebSockets fr
 gcloud run services update makitest \
   --set-env-vars "DEBUG=False,SECRET_KEY=your-secure-key,ALLOWED_HOSTS=*,CSRF_TRUSTED_ORIGINS=https://makitest-xyz123-uc.a.run.app"
 ```
+
+> **Important (Data Persistence)**:
+> By default, the app uses an ephemeral SQLite database inside the container. Whenever Cloud Run scales down to 0, data (users and exams) resets.
+> For persistent storage across container restarts, provision a free PostgreSQL database (e.g., via Supabase or Neon) and pass `DATABASE_URL`:
+> ```bash
+> gcloud run services update makitest \
+>   --update-env-vars "DATABASE_URL=postgres://user:password@ep-host.region.aws.neon.tech/neondb?sslmode=require"
+> ```
 
 ---
 
