@@ -76,7 +76,23 @@ gcloud run services update makitest \
 
 ---
 
-## Deployment Option B: Automatic Continuous Deployment via Google Cloud Console
+## Deployment Option B: Automatic Continuous Deployment via GitHub Actions (Recommended)
+
+MAKITEST includes a fully automated CI/CD pipeline in `.github/workflows/ci.yml`.
+
+Whenever code is merged to `main`:
+1. **Quality Gate**: Runs Ruff linting, Django system checks, WhiteNoise static files check, migrations check, and 27 unit tests.
+2. **Cloud Run Deployment**: If all tests pass, GitHub Actions authenticates via GCP Service Account and deploys a new revision to Google Cloud Run automatically.
+3. **Live Health Probe**: Immediately validates the live URL, static asset delivery, CSRF security, and administrator authentication.
+
+### Required GitHub Secrets:
+Set these under **Settings > Secrets and variables > Actions**:
+- `GCP_PROJECT_ID`: Your GCP Project ID (e.g., `makitestdeployment`)
+- `GCP_SA_KEY`: Complete JSON key of your deployment service account (`cloud-run-admin`)
+
+---
+
+## Deployment Option C: Continuous Deployment via Google Cloud Console
 
 If you want Google Cloud Run to automatically redeploy every time you push changes to your GitHub main branch:
 
