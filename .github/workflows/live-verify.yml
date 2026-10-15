@@ -1,0 +1,34 @@
+name: Live Deployment Health Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_url:
+        description: "Target Cloud Run Service URL"
+        required: false
+        default: "https://new-makitest-web-app-analytics-test-736992802574.asia-east1.run.app"
+  schedule:
+    # Run once daily at 00:00 UTC (8:00 AM PHT) as an automated health heartbeat
+    - cron: "0 0 * * *"
+
+jobs:
+  smoke-test:
+    name: Probe Live Service & Endpoints
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Smoke Verification Probe
+        env:
+          SERVICE_URL: ${{ github.event.inputs.service_url || 'https://new-makitest-web-app-analytics-test-736992802574.asia-east1.run.app' }}
+          ADMIN_USERNAME: "admin"
+          ADMIN_PASSWORD: "MakitestAdmin2026!"
+        run: |
+          python scripts/verify_live_service.py
