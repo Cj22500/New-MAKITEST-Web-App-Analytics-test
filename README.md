@@ -667,3 +667,4 @@ The main callable entry points are:
 | `HeatmapProcessor.add_point(screen_pos)` | `heatmap_processor.py` | Adds a bounded gaze point to the session |
 | `HeatmapProcessor.generate_heatmap()` | `heatmap_processor.py` | Saved heatmap path, or `None` when no points exist |
 | `SuspicionScoringProcessor.update(...)` | `suspicion_scoringprocessor.py` | Current recording and violation state |
+

@@ -1,6 +1,6 @@
 ﻿# Chapter 1: Introduction
 ## Background of the Study
-The COVID-19 pandemic accelerated the adoption of online assessments across schools and certification programs, reshaping how examinations were conducted worldwide (Batool, Mumtaz, Ali, & Chughtai, 2018). Digital platforms offered flexibility and accessibility for remote learners, but they also introduced new challenges to academic integrity (Rettinger & Kramer, 2009; Holden, Norris, & Kuhlmeier, 2021). Without physical invigilators, online exams became vulnerable to misconduct, ranging from cheat sheets and messaging apps to unauthorized access of exam materials (Stuber, 2003; Rogers, 2006; Moten, Fitterer, Brazier, Leonard, & Brown, 2013). In response, researchers explored technological solutions such as webcam monitoring, gaze tracking, head pose estimation, and keystroke dynamics to detect suspicious behaviours (Hylton, Levy, & Dringus, 2016; Zhao & Ye, 2010; Bawarith, Basuhail, Fattouh, & Gamalel-Din, 2017; Matsumoto & Zelinsky, 2000; Dilini, Senaratne, Yasarathna, Warnajith, & Seneviratne, 2021; Danielsen & Gravdal, 2020). While platforms like Kryterion Online Proctoring integrated these tools, they often faced criticism for being costly, rigid, and negatively impacting user experience (Alshammari, 2020; Dimeo, 2017; Reddit, 2022). This highlights the need for systems that balance accuracy with usability, providing proctors actionable insights without overly restrictive measures (Binstein, 2015; Hu, Jing, Wu, & Pang, 2022).
+The COVID-19 pandemic accelerated the adoption of online assessments across schools and certification programs, reshaping how examinations were conducted worldwide (Batool, Mumtaz, Ali, & Chughtai, 2018). Digital platforms offered flexibility and accessibility for remote learners, but they also introduced new challenges to academic integrity (Rettinger & Kramer, 2009; Holden, Norris, & Kuhlmeier, 2021). Without physical invigilators, online exams became vulnerable to misconduct, ranging from cheat sheets and messaging apps to unauthorized access of exam materials (Stuber, 2003; Rogers, 2006; Moten, Fitterer, Brazier, Leonard, & Brown, 2013). In response, researchers explored technological solutions such as webcam monitoring, gaze tracking, head pose estimation, and keystroke dynamics to detect suspicious behaviours (Hylton, Levy, & Dringus, 2016; Zhao & Ye, 2010; Bawarith, Basuhail, Fattouh, & Gamalel-Din, 2017; Matsumoto & Zelinsky, 2000; Dilini, Senaratne, Yasarathna, Warnajith, & Seneviratne, 2021; Danielsen & Gravdal, 2020). While platforms like Kryterion Online Proctoring integrated these tools, they often faced criticism for being costly, rigid, and negatively impacting user experience (Alshammari, 2020; Dimeo, 2017; Reddit, 2022). This highlights the need for systems that balance accuracy with usability, providing proctors actionable insights without overly restrictive measures (Binstein, 2015; Hu, Jing, Wu, & Pang, 2022). 
 Holy Rosary College of Santa Rosa, Laguna (HRCSRL) reflects this broader trend. Like many institutions, it shifted to asynchronous online learning during the pandemic, later adopting hybrid approaches before returning to face-to-face classes in 2025–2026. Despite these transitions, online assessments remain part of its academic practice, particularly for quizzes and activity submissions. Interviews with faculty revealed that cheating through collusion, cheat sheets, and even unauthorized access to teacher workstations has been a persistent issue. This context makes HRCSRL an ideal setting for testing a suspicious exam behaviour detection system. With its computer laboratories and history of both online and traditional assessments, the institution provides a realistic environment to evaluate how such technology can strengthen academic integrity while maintaining usability for students and teachers.
 ## Statement of The Problem
 The study has identified three key issues with current proctoring systems in education. First, existing systems rely on rigid detection mechanisms that often produce binary judgments. These systems typically classify behaviors as either acceptable or suspicious without considering the complexity of human actions. As a result, students may be unfairly flagged for minor or ambiguous movements, leading to false positives that undermine both the accuracy of the system and the overall user experience. Addressing this gap is crucial because false positives erode trust in proctoring technologies, discourage adoption by institutions, and create unnecessary stress for students who may feel penalized despite complying with exam rules.
@@ -11,20 +11,20 @@ To address the rigidity of current detection systems, the study aims to develop 
 To address the lack of contextual understanding in automated proctoring tools, this study will develop a dataset specifically designed to describe suspicious exam behaviour. The dataset will serve as the foundation for exploratory model development, capturing irregular eye movements, head-pose changes, gaze durations, and recorded keyboard or browser events. By categorizing these session-level features, the dataset can help compare controlled normal and simulated suspicious conditions. In addition, the research will design, test, and integrate a gaze tracking system that tracks gaze direction, estimated in-screen gaze position, and gaze duration. This system will quantify visual-attention indicators and provide proctors with structured decision-making support. Presence of unauthorized objects is outside the implemented detection pipeline.
 Finally, to mitigate privacy concerns associated with installed lockdown browsers, the study will develop a prototype web-app exam delivery service that integrates the detection system. Unlike traditional proctoring platforms that require intrusive installations, the web-based prototype will operate within a standard browser environment and will use account-based authentication together with browser-reported monitoring events. The implemented prototype focuses on face and eye landmark tracking, gaze estimation, head-pose analysis, and browser-level event reporting; facial recognition, liveness detection, object detection, and hand tracking are outside the implemented scope. By prioritizing usability and transparency, the system will provide a proof of concept that balances proctor assistance with respect for student data and institutional needs.
 ## Significance of the study
-Cheating in online assessments continues to be a persistent problem despite the existence of current monitoring systems (Binstein, 2015). Many of these platforms rely heavily on automated algorithms that restrict student actions but often fail to account for nuanced behaviors, leading to issues of fairness, usability, and trust. This study is significant because it seeks to address these limitations by developing proctor assisting technologies that emphasize human judgment supported by data driven decision-making. Rather than replacing the role of proctors, the system is designed to provide them with actionable insights derived from quantifiable behavioral data, thereby strengthening their ability to detect and respond to misconduct assisting technologies that emphasize human judgment driven decision making.
+Cheating in online assessments continues to be a persistent problem despite the existence of current monitoring systems (Binstein, 2015). Many of these platforms rely heavily on automated algorithms that restrict student actions but often fail to account for nuanced behaviors, leading to issues of fairness, usability, and trust. This study is significant because it seeks to address these limitations by developing proctor assisting technologies that emphasize human judgment supported by data driven decision-making. Rather than replacing the role of proctors, the system is designed to provide them with actionable insights derived from quantifiable behavioral data, thereby strengthening their ability to detect and respond to misconduct assisting technologies that emphasize human judgment driven decision making. 
 A key contribution to this project is its focus on transparency and accountability in online examinations. By enabling proctors to interpret data and make informed decisions, the system ensures that students understand that monitoring and interventions are guided by human oversight rather than solely by automated algorithms. This approach not only enhances trust between students and exam administrators but also promotes fairness by reducing the risk of false positives
-and overly rigid restrictions. Furthermore, the system provides accountability mechanisms that allow institutions to document and justify proctor interventions whenever necessary.
+and overly rigid restrictions. Furthermore, the system provides accountability mechanisms that allow institutions to document and justify proctor interventions whenever necessary. 
 Lastly, the significance of this study lies in its potential to improve the integrity of online assessments while maintaining a user-friendly experience. By combining technological innovation with human judgment, the proposed system contributes to the ongoing effort to balance security, transparency, and ethical responsibility in digital education environments friendly experience.
 The study aligns with the United Nations Sustainable Development Goals (SDGs),
 particularly Goal 4: Quality Education, which mandates effective learning environments. The system contributes to this goal by restoring assessment of integrity through a non-invasive architecture. By ensuring valid educational outcomes, the system supports the imperative of maintaining high academic standards in a digital context. The study provides significant value to key educational stakeholders. Educational institutions benefit from a scalable method to safeguard academic credibility, while instructors gain a supportive tool that reduces monitoring fatigue and provides objective evidence of misconduct. Importantly, future researchers will have a baseline for creating a browser-based detection algorithm.
 ## Scope and Delimitations
 This study focuses on the development of a Suspicious Exam Behaviour Detection
 System (SEBDS) and the creation of a session-level dataset describing potentially suspicious exam behaviour. The implemented system monitors head pose, iris-based gaze position, gaze direction, gaze duration, and selected keyboard or browser events. It does not implement hand tracking, object detection, facial recognition, or liveness detection. These cues alone cannot confirm academic dishonesty; therefore, the system is designed to issue warnings and provide evidence for proctor review rather than accuse students of cheating.
-The researchers will assess the system’s accuracy and performance through empirical experiments and on-site user testing within a controlled environment in the specific research locale. The findings may not be fully generalizable to different hardware configurations or uncontrolled settings. For the web application development, the scope is further delimited to the implementation of baseline data privacy safeguards, rather than advanced security architecture. Finally, the study acknowledges potential limitations regarding sample size, selection method, response bias, and equipment variables during testing that may influence the results. In addition to this, the scope of this study is also confined to the development and evaluation of a basis and thresholds of a Suspicious Exam Behaviour Detection System.
+The researchers will assess the system’s accuracy and performance through empirical experiments and on-site user testing within a controlled environment in the specific research locale. The findings may not be fully generalizable to different hardware configurations or uncontrolled settings. For the web application development, the scope is further delimited to the implementation of baseline data privacy safeguards, rather than advanced security architecture. Finally, the study acknowledges potential limitations regarding sample size, selection method, response bias, and equipment variables during testing that may influence the results. In addition to this, the scope of this study is also confined to the development and evaluation of a basis and thresholds of a Suspicious Exam Behaviour Detection System. 
 The primary focus is on identifying behaviours that may correlate with cheating or academic misconduct in online examinations. These behaviours include irregular eye movements, unusual head poses, and atypical keypress or browser events that may suggest reliance on external resources. In the browser implementation, reported key events and focus-state changes are sent from the exam page; the system does not provide unrestricted OS-level monitoring in the web path. Given these limitations, and as noted in Garg and Goel (2023), it is difficult to conclusively determine cheating based solely on gaze or head-pose behavior. Such actions may occur naturally and not necessarily indicate misconduct. In recognition of this limitation, the system will not automatically treat these behaviours as proof of cheating. Instead, it generates warnings and session indicators for proctor review.
 The study aims to deliver a functional prototype of the system, and along with it, the dataset created after the creation of the detection system. This is to evaluate its usability, effectiveness, and accuracy in the specified research locale. To achieve this, locale member trial runs and on site system testing will be employed as the primary methods of data collection. These instruments will provide insights into how system outputs and behavioral data correspond to actual test taking conduct, enabling evaluation of the system’s capacity to distinguish normal behavior from suspicious activity. Furthermore, the trial runs and system testing will allow assessors to examine the system’s transparency, fairness, and accuracy, as well as its non intrusiveness for students and practical usefulness for proctors and teachers in maintaining exam integrity.
-Data collection will be limited to the duration of the study and the specific research locale identified by the proponents. The evaluation will be conducted under controlled conditions designed to simulate realistic exam environments. However, the findings may not be generalizable to other contexts, such as different hardware configurations, varied internet connectivity levels, or alternative institutional settings. The scope is therefore restricted to the immediate sample group and environment, acknowledging that broader application would require further testing and validation. The delimitations of the study include several constraints that may influence the outcomes. These include the relatively small sample size, the selection method of participants, and the potential for response bias in self-reported measures. Equipment variables, such as differences in webcams, microphones, or computing devices, may also affect detection of accuracy during on-site testing. Furthermore, there may be undetermined external factors not accounted for in this study that could influence results, such as environmental distractions or variations in student qualities and behaviours unrelated to cheating.
-While the system incorporates baseline safeguards for data privacy and security, these measures are limited to ensuring minimum compliance and operational requirements. The central focus of the project is the design and evaluation of the suspicious exam behaviour detection system, its thresholds and basis, dataset creation as well as a functional web app prototype as a proof of concept, rather than the development of advanced privacy or security frameworks. Issues such as long-term data storage, encryption standards, and institutional data governance policies fall outside the scope of this study and are acknowledged as areas for future research and refinement. The study evaluates the technical performance of the implemented computer vision algorithms in terms of detection accuracy and processing speed strictly within the research testing equipment, and results may vary based on these changes.
+Data collection will be limited to the duration of the study and the specific research locale identified by the proponents. The evaluation will be conducted under controlled conditions designed to simulate realistic exam environments. However, the findings may not be generalizable to other contexts, such as different hardware configurations, varied internet connectivity levels, or alternative institutional settings. The scope is therefore restricted to the immediate sample group and environment, acknowledging that broader application would require further testing and validation. The delimitations of the study include several constraints that may influence the outcomes. These include the relatively small sample size, the selection method of participants, and the potential for response bias in self-reported measures. Equipment variables, such as differences in webcams, microphones, or computing devices, may also affect detection of accuracy during on-site testing. Furthermore, there may be undetermined external factors not accounted for in this study that could influence results, such as environmental distractions or variations in student qualities and behaviours unrelated to cheating. 
+While the system incorporates baseline safeguards for data privacy and security, these measures are limited to ensuring minimum compliance and operational requirements. The central focus of the project is the design and evaluation of the suspicious exam behaviour detection system, its thresholds and basis, dataset creation as well as a functional web app prototype as a proof of concept, rather than the development of advanced privacy or security frameworks. Issues such as long-term data storage, encryption standards, and institutional data governance policies fall outside the scope of this study and are acknowledged as areas for future research and refinement. The study evaluates the technical performance of the implemented computer vision algorithms in terms of detection accuracy and processing speed strictly within the research testing equipment, and results may vary based on these changes. 
 The system’s performance will be examined using the available session-level dataset and reported with appropriate classification metrics. Precision is an important metric because false positives are costly in a proctor-assistance context. During inference, the classifier’s `predict()` output supplies the predicted class label, while the probability assigned to that returned class is recorded as the confidence level. Each detected behaviour is categorized in the event log and may receive a rule-based score, while the later Random Forest inference produces a separate class probability and prediction confidence. These outputs should be treated as decision-support indicators, not as standardized measures of misconduct likelihood.
 ## Research Framework
 Figure 1. Research Framework Diagram
@@ -87,11 +87,12 @@ Recent advancements in computer vision (CV) and artificial intelligence (AI) hav
 In the study conducted by Hu et al. (2024), the researchers proposed a multi perspective automated monitoring system designed to identify cheating behaviors in online examinations. The system utilized three distinct camera viewpoints—overhead, horizontal, and facial—to provide a comprehensive representation of the examinee’s workspace and actions. Cheating behaviors were categorized into two groups: individual cheating, which involves the use of unauthorized tools by the examinee, and assisted cheating, wherein external individuals indirectly support the examinee during the test.
 Figure 2. Gaze Positions
 
+ 
 
 The study further noted that only gazes directed toward the center of the screen were considered “normal” eye positions. Any deviation from this central gaze pattern was treated as potentially irregular. Hu et al. emphasized that an effective automated invigilation system should integrate visual, acoustic, and physiological indicators, with camera based monitoring identified as the most intuitive and reliable approach. Three monitoring configurations were evaluated: single perspective, dual perspective, and multi perspective systems. Although the single perspective system offered lower cost and faster processing, it lacked sufficient evidence for reliable detection. The dual perspective system improved coverage but remained unable to capture peripheral behaviors. Ultimately, the multi perspective configuration demonstrated superior performance by enabling a full assessment of both the examinee and their surrounding environment.
 To operationalize this system, Hu et al. implemented advanced deep learning models, including the Swin Transformer for gaze detection and Lightweight YOLOv5 CA with Group Fast Spatial Pyramid Pooling (GFSPP) for object detection. These models enabled the identification of unauthorized tools from multiple angles. A Backpropagation Neural Network was then used to weigh and classify extracted features, achieving an overall detection accuracy of 95%.
 Figure 3. Neural Network Interpretations of Exam Behaviours and Tracked Environment Entities
-
+  
 Complementing this approach, Dilini et al. (2021) introduced a browser based eye gaze tracking system intended for online cheating detection. Their system implemented a nine point calibration procedure to establish user specific gaze boundaries and employed a One Class Support Vector Machine (OCSVM) to detect anomalous patterns. Because browser level monitoring does not require specialized hardware, this approach highlighted a scalable solution for remote examination monitoring. The system achieved an accuracy of 89.53%, underscoring the viability of lightweight behavioral analysis tools.
 In another study, Oravec (2020) focused on preventing impersonation during online examinations using a deep learning–based facial recognition and liveness detection system. By employing a ResNet 50 architecture, the system attained an average identity verification accuracy of 96.2%, significantly reducing instances of impersonation. These findings highlight the essential role of identity authentication within AI enabled online proctoring frameworks.
 Kabir et al. (2021) developed a smart online exam proctoring system that treated cheating detection as a multivariate time-series classification task. The researchers extracted eye movement, head movement, mouth-opening, and identity-tracking features from 43 exam videos, then compared deep learning and traditional machine learning models. Their best-performing model achieved up to 97.7% accuracy, with eye movement proving the strongest individual indicator and the combined features yielding the best overall results. Although these findings demonstrate the potential of combining behavioral signals, the relatively small dataset limits generalizability and supports the need for broader validation.
@@ -122,7 +123,7 @@ Overly intrusive surveillance may have counterproductive effects on student well
 Technology is most effective when embedded within institutional cultures that promote academic honesty. Proctoring tools should complement, not replace, existing policies and honor codes (Vellanki et al., 2023). By offering transparency and interpretability, the system contributes to a layered integrity ecosystem that supports fairness and trust in digital education (Goff et al., 2020; Benson & Enstroem, 2023).
 # Chapter 3: Methodology
 ## Preface
-Prior to this study, various prototypes were already developed by the researchers, specifically the suspicious exam behavior detection system. The initial prototype does not follow the current thresholds and basis of the current study requiring changes and integration to a more comprehensive system.
+Prior to this study, various prototypes were already developed by the researchers, specifically the suspicious exam behavior detection system. The initial prototype does not follow the current thresholds and basis of the current study requiring changes and integration to a more comprehensive system. 
 ## Limitations of the Web App Prototype
 Although the study developed a prototype web-based examination platform integrating the suspicious exam behaviour detection system, data gathering was conducted through controlled offline stand-in web application simulations, and additionally used a computer-installed software version of the detection system, rather than live deployment of the web application. This methodological choice was made to ensure consistency in testing conditions and to isolate the performance of the detection algorithms from external factors such as network latency, browser compatibility, and server load. By focusing on algorithmic evaluation, the researchers were able to measure detection accuracy, precision, and behavioral thresholds under standardized conditions. The prototype served primarily as a proof of concept to demonstrate integration feasibility, while full-scale usability testing through the web app is recommended for future research to validate system scalability and user experience in real-world environments.
 ## Research Design
@@ -134,7 +135,7 @@ Together, these two approaches provide a balanced framework: the experimental ev
 The project was conducted at Holy Rosary College of Santa Rosa, Laguna, a private educational institution that provides K–12 education. The institution is equipped with computer laboratories and is well prepared to administer online assessments to its students. With these resources, the institution provided an ideal environment for testing the project. This locale was selected for its accessibility, its population’s familiarity with online learning tools, and the presence of ICT focused classes and teaching staff.
 ## Software Methodology
 Figure 4. Software Methodology
-
+ 
 This study employed the Kanban methodology to organize development as small, trackable work items that could be completed and refined incrementally. The work covered two connected but separately maintained components: the standalone gaze-tracking and behaviour-analysis system in `pfftbuh/Setup-and-Testing`, and the Django exam-delivery and web-proctoring application in `pfftbuh/New-MAKITEST-Web-App`. Their commit histories show that these components were developed in overlapping stages and later connected through session artifacts and prediction workflows.
 
 The table below is a plausible reconstruction of how work items could have been organized in Kanban, based on the dated development sequence in both repositories. It is not a record of the original board states.
@@ -158,8 +159,8 @@ The population of this study consists of selected members of Holy Rosary College
 The locale sample consisted of 93 student participants from Grades 8 to 12, representing a range of academic levels and technological familiarity. This participant count is distinct from the 186 session-level observations in the dataset because participants could contribute more than one session. Two teacher participants also provided professional insight and feedback on system usability and proctoring effectiveness.
 The combination of convenience and random sampling provided a balanced approach, leveraging accessibility while minimizing bias through random participant selection. This structure ensured that the data gathered was both relevant to the study’s objectives and representative of the typical users of the system within the institution.
 ## Data Gathering Tools and Procedures
-User privacy, informed consent, and participant interests were carefully considered during the development of the fundamental aspects of the project. To address these concerns, the proponents conducted a trial run orientation as well as written informed data privacy consent forms encompassing the scope of use of the gathered personal data in the research. In addition, participants were asked what specific details they would like to be informed about when using the system, ensuring transparency and accountability throughout the research process.
-	During the initial development of the system and its algorithms. The study used the following hardware relevant to the study:
+User privacy, informed consent, and participant interests were carefully considered during the development of the fundamental aspects of the project. To address these concerns, the proponents conducted a trial run orientation as well as written informed data privacy consent forms encompassing the scope of use of the gathered personal data in the research. In addition, participants were asked what specific details they would like to be informed about when using the system, ensuring transparency and accountability throughout the research process. 
+	During the initial development of the system and its algorithms. The study used the following hardware relevant to the study: 
 
 Table 3. Hardware Specifications During Development
 
@@ -180,14 +181,14 @@ Table 4. Hardware Specifications During Locale Trial Runs
 | RAM | 8 GB |
 
 Figure 6. Locale System Testing Setup
-
+   
 The experimental setup was established within the designated testing area of Holy Rosary College of Santa Rosa, Laguna. Each trial session utilized a 2020 Lenovo ThinkPad laptop connected to a 32 inch external monitor, providing a clear and standardized display environment for all participants. A 1080p 60 fps webcam was mounted above the monitor to capture facial orientation and gaze behavior in real time, ensuring high-resolution input for the computer vision modules.
 To complement the primary camera feed, a smartphone mounted on a tripod was positioned at the back left side of the tester, recording the participant, desk, monitor, and surrounding area to provide contextual footage of the testing environment. Additionally, the screen activity of both the tester’s monitor and the researcher’s monitor was recorded throughout each session. This dual screen recording allowed synchronized observation of the participant’s exam interface and the system’s detection dashboard, enabling precise correlation between gaze behavior, system alerts, and real time events.
 The combination of multiangle video capture and synchronized screen recording ensured comprehensive documentation of each trial, supporting both qualitative and quantitative analysis of the system’s performance under controlled conditions.
 
 
 Figure 7. Exam Interface for Data Gathering
-
+  
 For the data gathering phase, the researchers utilized a separate test taking web application rather than the prototype web app system that integrates the eye-tracking and detection modules. This methodological decision was made to ensure stability and prevent compounded bug-fixing during the testing stage. Because the prototype was still under active development, combining exam delivery and detection functionalities could have introduced overlapping technical issues that might compromise data integrity and delay evaluation.
 The use of a dedicated test taking platform allowed the researchers to isolate the behavioral data collection process from the detection system’s internal testing. This separation ensured that any anomalies encountered during trials could be attributed specifically to the detection algorithms rather than to the exam interface itself. It also provided a controlled environment for participants to complete assessments without interference from prototype debugging or integration errors.
 Furthermore, this approach aligns with the primary and secondary objectives of the thesis: (1) to develop a functional suspicious exam behavior detection system, and (2) to generate a dataset derived from the system’s operation for use by future researchers. By employing a separate test taking system, the study maintained methodological clarity, allowing the detection system to be evaluated independently while ensuring that the resulting dataset accurately reflects behavioral patterns rather than software inconsistencies. This separation ultimately strengthened the reliability, validity, and future applicability of the research outcomes.
@@ -207,11 +208,11 @@ For the trial sessions, the exam content consisted of introductory questions in 
 
 
 Figure 8. Sample Questions
-
+  
 
 
 Figure 9. Cheating Setup
-
+ 
 The cheating setup consists of a printed compiled copy of all questions from every subject examination, which is used as one of the the primary external reference materials during the trials. The test takers were informed to only asnwer up to two questions using their general knowledge, and use external resources such as the paper cheatsheet, the Copilot tab, and additional browser tabs while answering the rest of the exam. This arrangement was designed to simulate realistic cheating behavior under controlled conditions. The printed cheat sheet was allowed to be moved freely within the testing environment, which created a natural and flexible setup that reflected authentic test taking scenarios. This approach ensured that the observed behaviors were representative of genuine cheating tendencies, supporting the study’s goal of analyzing detection accuracy in realistic contexts.
 ## Software Testing Techniques
 To ensure the reliability, accuracy, and overall performance of both the web based exam delivery platform and the Suspicious Exam Behaviour Detection System, the study incorporates a structured multi level software testing approach. This testing process aligns with the KANBAN methodology by allowing iterative refinement based on continuous feedback and observed system behavior.
@@ -227,6 +228,7 @@ This includes:
 Each unit test verified that isolated modules performed as expected under normal and edge case conditions. This ensured that foundational operations, such as facial landmark extraction and gaze coordinate calculations, were accurate before combining them into larger workflows. Early identification of bugs significantly reduced debugging complexity during later stages.
 ## Integration Testing
 Once individual modules were validated, Integration Testing examined how these modules interact when combined into logical subsystems. Integration testing is primarily about how the detection system will be integrated into the web application prototype. The integration testings outside the scope of web application integration are about the gaze tracking system interacting with the SEBDS.
+Once individual modules were validated, Integration Testing examined how these modules interact when combined into logical subsystems. Integration testing is primarily about how the detection system will be integrated into the web application prototype. The integration testings outside the scope of web application integration are about the gaze tracking system interacting with the SEBDS. 
 This phase focused on:
 - Integration of the gaze tracking module with the Django backend, ensuring that calculated gaze coordinates are correctly transmitted, logged, and interpreted in real time.
 - Synchronization between the exam interface and behaviour scoring system, validating that keypress logs, gaze data, and exam timers align without delays.
@@ -235,6 +237,7 @@ This phase focused on:
 Integration Testing ensured that module interactions did not generate inconsistencies; unit module compatibility issues do not arise during runtime and runtime processes which require the system to interact with each individual unit modules.
 ## System Testing
 System Testing assessed the entire service as a cohesive system to evaluate its readiness for real world exam environments.
+System Testing assessed the entire service as a cohesive system to evaluate its readiness for real world exam environments. 
 This evaluation included:
 - End to end exam simulations, where students completed full assessments while the detection system monitored behavior.
 - Functional accuracy evaluation, verifying that suspicious behaviour scores, keypress logs, and gaze tracking outputs were integrated and displayed correctly in the proctor interface.
@@ -297,6 +300,7 @@ These responses will help the researchers identify areas for improvement and ens
 ## Initial Suspicious Exam Behaviour Thresholds
 To identify the initial thresholds of suspicious exam behaviour, the research will define suspicious exam behaviour as an action done by a user while taking the exam that can state that the user is using external resources to answer the exam. With this definition, the research concluded two starting controlled experiments to create a hypothesis on how to calculate the thresholds. These experiments are only initial experiments; more experiments will be conducted to further justify and re-calculate different thresholds and observed data for detection model development.
 As the research take this approach, this method of testing can vary to the limitations given on this approach specifically the difference in behaviour and psychological aspects of test takers. The approach taken in these two experiments is the following: taking a Japanese Language Proficiency Test (JLPT) exam with a time limit, camera feed, and a keyboard and mouse tracker. This is to observe the keypress, gaze and face events.
+As the research take this approach, this method of testing can vary to the limitations given on this approach specifically the difference in behaviour and psychological aspects of test takers. The approach taken in these two experiments is the following: taking a Japanese Language Proficiency Test (JLPT) exam with a time limit, camera feed, and a keyboard and mouse tracker. This is to observe the keypress, gaze and face events. 
 
 	The first experiment was a controlled JLPT N5 Level test which the tester is not allowed to use other resources to help with taking the exam. This is to observe the behaviour of a normal exam-taking behaviour.
 
@@ -321,6 +325,15 @@ One of the observed differences between the two test experiments as well are the
 
 Figure 10.3. Test 2 Recording
 
+ 
+
+Figure 10.2. Test 1 Gaze Durations
+ 
+In the second experiment, the user spends less time looking at the exam browser than the first experiment. The tester spends more time looking at the direction of the location of the exam resources the tester uses to answer the exam. It is also observed that there are rapid changes in gaze shifts with the primary reason of reading the exam questions while checking that it is the same on the exam resources the tester is using. 
+One of the observed differences between the two test experiments as well are the keypresses and browser navigation. The tester tends to use shortcuts and tabs in and out of the exam browser to use and view the resources the tester has on hand. During this recording, the tester inputted a total of 187 keypresses during the exam. In addition to this, since it is possible to navigate the PC without using keypresses, the experiment recorded 28 paired tab-in and tab-outs either by keyboard shortcut or through mouse navigation.
+
+Figure 10.3. Test 2 Recording
+ 
 
 
 
@@ -328,6 +341,7 @@ Figure 10.3. Test 2 Recording
 
 Figure 10.4. Test 2 Alt+Tab Capture
 
+ 
 
 
 
@@ -338,12 +352,12 @@ Figure 10.5. Test 2 Gaze Durations
 To create and conclude the related literature review, the study creates a observational analysis on the experiment concluded on how to create metrics to effectively detect suspicious exam behaviour.
 Using the observed experiment data above, the key factor of detecting suspicious behaviour is the combination of the following: keypresses, gaze direction, gaze position, frequency of actions, intervals of actions, and duration of actions.
 Figure 11.1 Camera Perspective-Based ANN Diagram
-
+ 
 Using the artificial neural network (ANN) diagram done by Hu et al. (2024), the study adopts a similar neural network to justify the possible interpretations and factors that is observed and given varying weights and scoring values based on the research’s findings. In this neural network, the factors are based on any camera perspective data and inputs taken by the system. It involves gaze duration, gaze position, gaze direction, and cheating tools.
 
 
 Figure 11.2 Browser-Based ANN Diagram
-
+ 
 Similarly, this ANN follows the similar format. This ANN focuses on the browser-based events and keylogging that the system will track and add varying weights and scoring values based on the testing and unit testing done by this study.
 
 To define initial thresholds from hypothesis of the two testing experiments, we shall define the following thresholds:
@@ -364,7 +378,7 @@ Outside Screen	Total Area > 25%
 
 
 Figure 12. Screen Visualization
-
+ 
 For the calculation of the short and long duration gaze duration, the study conducted a empirical approach. To define both terms, the study divided the length of the Up Center gaze time length to the total amount of questions in the online test. For the within and outside screen gaze position, the study applied a point to the left, right, upper and lower-most points of the estimated gaze circle of the gaze tracking system. If 25% or over of the total area of the four points is outside of the screen resolution, then it is defined as outside screen, otherwise, it is within screen.
 ## Suspicious Exam Behaviour Detection System
 The Suspicious Exam Behavior Detection System is developed to uphold academic integrity in online examinations by identifying potential misconduct through continuous monitoring of students’ webcam feeds and keyboard inputs. The system employs a lightweight hybrid computer vision architecture combining face landmark tracking (using the Google MediaPipe Face Mesh model via the face_landmarker.task file) and a custom geometric scoring engine to detect anomalies in real time. Its purpose is not to replace human oversight but to provide structured evidence that assists proctors in making informed decisions.
@@ -379,17 +393,17 @@ The session feature dataset contains 186 records, with 93 in each experimental l
 
 The 25% estimated-gaze-area criterion described in Table 8 is a preliminary geometric definition, not the current scorer's runtime test. In the implementation, a coordinate is treated as off-screen when it lies outside the screen bounds, and this state must persist beyond 1.5 seconds to trigger an event. The distinction should be maintained when interpreting the operational results.
 The evaluation of candidate methods is conducted using established performance metrics. Accuracy is measured as the proportion of correctly identified behaviors relative to the total number of test cases, computed as:
-
+ 
 Where TP denotes true positives, TN true negatives, FP false positives, and FN false negatives. Accuracy is chosen because it provides a general measure of overall correctness, which is essential in determining whether the system can reliably distinguish between suspicious and non suspicious behaviors.
 To provide a more detailed assessment, Precision and Recall are also calculated. Precision reflects the proportion of correct positive detections among all positive detections, expressed as:
-
-Recall measures the proportion of actual positive cases correctly identified, defined as:
-
+ 
+Recall measures the proportion of actual positive cases correctly identified, defined as: 
+ 
 Precision is included because it evaluates the system’s ability to minimize false alarms, which is critical in avoiding unnecessary proctor interventions. Recall, on the other hand, ensures that the system does not overlook genuine cases of misconduct, thereby maintaining the integrity of the examination process.
 The system aggregates all mapped gaze coordinates collected throughout the examination session to generate a post-exam gaze concentration heatmap. Utilizing the coordinates processed by the weighted fusion of head pose and iris landmarks, a density-based visualization (using a 2D Gaussian distribution) is plotted onto the screen coordinates.
 In addition to detection accuracy, computational efficiency is assessed in terms of average processing time per frame, while resource utilization is measured through memory and CPU/GPU requirements. These criteria are included because the system must operate in real time under practical hardware constraints. A method that achieves high accuracy but requires excessive computational resources would not be feasible for deployment in typical online examination environments.
 Figure 13. Visualized Eye-Gaze Concentration Heatmap
-
+  
 As shown in Figure 9, the resulting heatmap displays a high-intensity red focal point concentrated near the center of the screen, which represents normal, sustained visual attention on the active test interface. Transient glances or persistent focus shifts away from the questions are rendered as lower-density signatures (green and blue hues) in the outer zones. This visualization provides proctors with a clean, aggregate visual summary of the examinee's visual focus distribution over the course of the assessment, making it easier to identify anomalous, off-screen reading patterns during post-exam audits.
 Figure 14. Suspicious Exam Detection Behaviour Showcase
 ## CV Model Framework Evaluation
@@ -407,6 +421,7 @@ In parallel to the CV models framework evaluations, the proponents have also per
 These are the different keypress strategies that were chosen to be used for the evaluation process:
 - Continuous Tracking – simple recording of the student's keypresses during the entire assessment session.
 - Event-based Tracking – Focusing on shortcut usage detection or high APM (Actions Per Minute)
+- Event-based Tracking – Focusing on shortcut usage detection or high APM (Actions Per Minute) 
 In this strategy evaluation, the proponents have employed a different approach. Since continuous tracking have encompassed more data than event-based tracking, we will be tracking the following criteria:
 Table 10. Keypress Strategies
 	Continuous Tracking	Event-Based Tracking
@@ -441,6 +456,7 @@ This component utilizes five strategically selected facial landmarks stored in t
 
 Figure 15. Face Landmark Points
 
+ 
 These landmarks define a three-dimensional coordinate system representing the face's spatial orientation. The algorithm constructs vectors from the nose bridge (landmark 1) to the lateral landmarks (234 and 454) to compute the yaw angle (horizontal head rotation), and from the nose bridge to the vertical landmarks (10 and 152) to compute the pitch angle (vertical head tilt).
 The mathematical formulation of the system involves several sequential processes. Vector Normalization is first applied, where each directional vector is normalized to unit length to isolate angular information. Following this, Dot Product Calculations are performed to compute the angle between the face forward vector and the reference forward direction. These values are then converted into angular measurements, expressed in degrees, using Inverse Trigonometric Functions, specifically arcsine and arctangent.
 To address high frequency noise and sudden movements, Temporal Smoothing is implemented. In this process, ray origins and directions are stored in deques and averaged using exponential moving averages. The resulting head pose data provides a coarse grained estimate of gaze direction. This approach is particularly effective for detecting large screen position changes, although it remains limited in precision for fine grained tracking
@@ -455,6 +471,9 @@ The mathematical formulation of the correction involves two sequential operation
 
 This produces values in the range [−0.5, 0.5][−0.5, 0.5], where (0,0)(0,0) indicates a perfectly centred face and the extremes represent a face at the edge of the frame. Screen-Space Projection is then performed, scaling the normalised deviation linearly onto the target screen resolution (1920×1080):
 
+ 
+This produces values in the range [−0.5, 0.5][−0.5, 0.5], where (0,0)(0,0) indicates a perfectly centred face and the extremes represent a face at the edge of the frame. Screen-Space Projection is then performed, scaling the normalised deviation linearly onto the target screen resolution (1920×1080):
+ 
 These offsets are added to the angle-derived screen coordinates before the result is clamped to the screen bounds. A face centred in the frame produces a zero offset and leaves the head-pose estimate unchanged; a face displaced toward a frame edge shifts the estimated gaze position in the same direction by a proportional number of screen pixels.
 This correction addresses a systematic bias inherent to head-pose-only gaze estimation: when a subject sits off-axis relative to the camera, their head-rotation angles alone underestimate or overestimate how far across the screen they are looking. By anchoring the estimate to the face's position within the frame, the module compensates for this parallax-like error without requiring additional sensor data. The approach is lightweight and runs per-frame with negligible computational cost, although its accuracy is bounded by the quality of the underlying face-centre detection and assumes a fixed camera-to-screen geometric relationship.
 ## Iris Position Detection Module
@@ -623,6 +642,19 @@ Proctors
 The system provides proctors with a User Profile that serves as the basis for managing their classes and assessments. Through this profile, they can View the class roster, allowing them to monitor enrolled students. Proctors are also able to View their own class assessment scores, ensuring transparency in performance tracking. To maintain accuracy, the platform includes Assessment Score Correction Tools, which allow adjustments when necessary. In addition, instructors can View their own class assessment session analytics, offering insights into student behavior and outcomes during examinations. Finally, the system equips proctors with Assessment Creation and Publishing Tools, enabling them to design, administer, and release assessments directly through the platform.
 
 Admin
+To create our Exam Delivery Application which will implement and integrate our suspicious behaviour detection system, we are using the Python Django framework. 
+Python Django is a high-level web framework which is known for its scalability, security and convenient maintenance. The framework uses the MVT Architecture which means Model, View and Template.
+Model is involved in handling how data is defined and stored; Views are the ones that handle requests and decisions of what data to output; Templates are responsible for what the end users are going to be interacting and experiencing in the browser.
+To start, the homepage content is where the users can login and register before they are able to access the content of the website. Once the user logs in, they will be able to see the contents of the website depending on their roles 
+
+Table 12. System Roles and Access
+Role	Content
+Student	
+The system allows each examinee to maintain a User Profile, which serves as the foundation for personalized access. Through this profile, students can View their own assessment scores to monitor performance and progress. They are also able to View their own assessment session analytics, providing insights into their test taking behavior and outcomes. Finally, the platform enables them to Access and take their own assessments, ensuring a streamlined and secure examination process.
+Proctors	
+The system provides proctors with a User Profile that serves as the basis for managing their classes and assessments. Through this profile, they can View the class roster, allowing them to monitor enrolled students. Proctors are also able to View their own class assessment scores, ensuring transparency in performance tracking. To maintain accuracy, the platform includes Assessment Score Correction Tools, which allow adjustments when necessary. In addition, instructors can View their own class assessment session analytics, offering insights into student behavior and outcomes during examinations. Finally, the system equips proctors with Assessment Creation and Publishing Tools, enabling them to design, administer, and release assessments directly through the platform.
+
+Admin	
 The system provides administrators with CRUD access to the user database, allowing them to create, read, update, and delete user records as needed. In addition, administrators are granted CRUD access to the exam database, enabling them to manage examination data through the same set of operations. These functions ensure that administrators can maintain both user information and exam records efficiently and securely.
 Students will be able to go through the web app to view their respective profile account, assessments grades, assessments session analytics and assessments they need to take; Proctors will be able to see their class rosters, exam scores, exam session analytics, and assessment creation, publishing and modification tools; Administrators will have access to user databases and exam databases, which they have Create-Read-Update-Delete (CRUD) access to.
 ## Exam Delivery Module
@@ -638,6 +670,15 @@ The system enables instructors to Generate an exam using a selected question ban
 Password-Locked Assessments
 Generate a computer-generated key to proctors for better security of assessment
 Assessment Customization Tools
+Import Question Banks	
+Accept formatted Excel sheets that consists of a question and an answer by batch / individually
+Assessment Creation and Modification Tools	
+The system enables instructors to Generate an exam using a selected question bank, ensuring that assessments are drawn from predefined and relevant materials. In addition, instructors can Modify the type of each question individually, allowing flexibility in tailoring the format of the assessment. They are also able to Modify the score weight of each question, providing control over how each item contributes to the overall evaluation.
+
+
+Password-Locked Assessments	
+Generate a computer-generated key to proctors for better security of assessment
+Assessment Customization Tools	
 The system allows instructors to Set due dates, start times, and end times for assessments. They can also Set an exam timer to regulate duration and Assign class designations to ensure proper distribution of exams.
 ## Proctor-Side Interface
 ## Authentication Process
@@ -647,6 +688,7 @@ Upon successful login, users are redirected to their respective dashboards, whic
 Exam Summary Cards: Display exam status (active, completed), schedule, and quick-access buttons.
 Submission Management: Allows proctors to view student names, scores, and detailed answer sheets. A return navigation button ensures seamless movement between submission views and the main dashboard.
 Navigation Tabs:
+Navigation Tabs: 
 Dashboard - Default landing page post-login.
 Exams - Central hub for exam lifecycle management.
 Help - Provides FAQs and integrated support channels for technical assistance.
@@ -668,6 +710,7 @@ The module is engineered for scalability, allowing concurrent operations without
 1.	Unified UML Class Diagram (Eye Tracking with Integrated Behaviour Detection System)
 Figure 17. Class Diagram
 
+ 
 The Unified UML Class Diagram represents a highly modular, multi-threaded object-oriented architecture designed for real-time computer vision processing, sensor fusion, and behavioral anomaly detection. The system's execution lifecycle is driven by the central orchestration process, main_trackerprocess.py, which instantiates the component processors and coordinates data passing within a high-frequency main processing loop.
 The architecture is divided into four main operational layers:
 Concurrency and Input Ingestion: The FrameBufferProcessor leverages a dedicated background capture thread to continually update a thread-locked video buffer from the physical camera device, eliminating primary thread blocking. Concurrently, the KeypressTrackProcessor registers low-level OS hotkey hooks via the keyboard library, storing unauthorized combinations (e.g., app-switching shortcuts) in a synchronized buffer to log cheating vectors.
@@ -683,12 +726,17 @@ Figure 18. Core Orchestration and Input Subsystem
 The Core Orchestration and Input Subsystem is responsible for camera initialization, non-blocking frame buffer ingestion, and system-level hotkey hook monitoring. By utilizing multi-threading, the `FrameBufferProcessor` executes an asynchronous capture loop to continuously update a thread-locked frame buffer, eliminating main-loop latency associated with raw webcam input reads. Simultaneously, the `KeypressTrackProcessor` registers low-level operating system hooks via the `keyboard` library, intercepting unauthorized shortcuts (e.g., `alt+tab` or `print screen`) in a thread-safe list to identify system evasion. The central `main_trackerprocess` acts as the orchestrator, coordinating the lifecycle of these input streams and driving the downstream gaze-estimation and proctoring algorithms.
 Figure 19. Face Tracking and Head Pose Subsystem
 
+ 
+The Core Orchestration and Input Subsystem is responsible for camera initialization, non-blocking frame buffer ingestion, and system-level hotkey hook monitoring. By utilizing multi-threading, the `FrameBufferProcessor` executes an asynchronous capture loop to continuously update a thread-locked frame buffer, eliminating main-loop latency associated with raw webcam input reads. Simultaneously, the `KeypressTrackProcessor` registers low-level operating system hooks via the `keyboard` library, intercepting unauthorized shortcuts (e.g., `alt+tab` or `print screen`) in a thread-safe list to identify system evasion. The central `main_trackerprocess` acts as the orchestrator, coordinating the lifecycle of these input streams and driving the downstream gaze-estimation and proctoring algorithms.
+Figure 19. Face Tracking and Head Pose Subsystem
+ 
 The Face Tracking and Head Pose Subsystem handles the spatial geometry of the user’s face to estimate head orientation angles. The `FaceLandmarkerProcessor` passes captured frame arrays to MediaPipe’s FaceMesh model, utilizing temple, chin, and forehead landmarks to compute a smoothed face-forward direction vector. The standalone tracking path also contains a `FaceDistanceProcessor` for polynomial distance estimation. The `FaceAxisProcessor` computes horizontal yaw and vertical pitch angles from the head direction vector, applying user calibration offsets to project a head-pose-based gaze point onto the monitor coordinates.
 
 
 Figure 20. Eye Tracking and Calibration Subsystem
 
 
+ 
 The Eye Tracking and Calibration Subsystem is responsible for high-precision pupil/iris contour tracking, multi-stage user threshold calibration, and mapping pupil offsets to screen coordinate positions. The `EyeLandmarkerProcessor` isolates eyelid margins and irises, delegating geometry tasks to the `EyeGazeProcessor` which computes scale-invariant pupil offsets and vertical eyelid opening heights. During calibration, the `EyeCalibrationProcessor` records 60 coordinate samples across five target quadrants to generate user-specific threshold maps in a session configuration dictionary. Finally, the `EyeScreenPosProcessor` interpolates these thresholds using an Exponential Moving Average (EMA) filter to convert raw iris coordinates into smoothed, jitter-free $(X,Y)$ pixel screen coordinates.
 
 
@@ -711,6 +759,10 @@ Figure 21. Gaze Fusion and Heatmap Subsystem
 The Gaze Fusion and Heatmap Subsystem combines independent directional coordinates to produce a single stabilized focus coordinate and records long-term visual attention charts. The `GazeDirectionProcessor` takes the raw coordinates from the head pose and eye-tracking modules, calculating a weighted average ($40\%$ head weight, $60\%$ eye weight) to output a fused focus coordinate. The `HeatmapProcessor` continuously appends these fused points to a coordinate list throughout the exam. Upon session completion, it applies a large Gaussian blur kernel to smooth the points and maps them to a JET thermal color spectrum (masking empty areas to pure black) to generate a visual attention heatmap file.
 Figure 22. Sample Generated Gaze Attention Heatmap Output (session_heatmap_TIMESTAMP.png)
 
+ 
+The Gaze Fusion and Heatmap Subsystem combines independent directional coordinates to produce a single stabilized focus coordinate and records long-term visual attention charts. The `GazeDirectionProcessor` takes the raw coordinates from the head pose and eye-tracking modules, calculating a weighted average ($40\%$ head weight, $60\%$ eye weight) to output a fused focus coordinate. The `HeatmapProcessor` continuously appends these fused points to a coordinate list throughout the exam. Upon session completion, it applies a large Gaussian blur kernel to smooth the points and maps them to a JET thermal color spectrum (masking empty areas to pure black) to generate a visual attention heatmap file.
+Figure 22. Sample Generated Gaze Attention Heatmap Output (session_heatmap_TIMESTAMP.png)
+ 
 
 
 
@@ -722,6 +774,11 @@ The Behavior Scoring and Proctoring Engine Subsystem operates as the central dec
 Figure 24. Sample Generated Session Log Entry
 (session_log_TIMESTAMP.csv)
 
+ 
+The Behavior Scoring and Proctoring Engine Subsystem operates as the central decision-making unit, validating user actions against behavioral thresholds and recording visual evidence of violations. When the `update()` method evaluates a threshold transgression, such as a forbidden shortcut, an off-screen gaze duration limit, or frequent center-to-off-center transitions, it registers a violation, logs it to a session CSV file, and activates the video capture sequence. To capture context, a circular `frame_buffer` queue stores 30 frames before a trigger, and the scorer accumulates 30 post-trigger frames. A background daemon thread is then spawned to execute `_save_video_async()`, merging the frames into an MP4 video clip using the configured `avc1` codec. The CSV stores the event timestamp and video filename, while the temporal duration of the clip depends on the actual input frame rate.
+Figure 24. Sample Generated Session Log Entry 
+(session_log_TIMESTAMP.csv)
+ 
 
 
 
@@ -730,6 +787,10 @@ Figure 25. Sample Generated Violation Video Clip Frame (TIMESTAMP_violation_REAS
 3. Web Application System Architecture and Design
 Figure 26. Web Application System UML Diagram
 
+ 
+3. Web Application System Architecture and Design
+Figure 26. Web Application System UML Diagram
+ 
 The web application architecture integrates several subsystems which are designed to work together within a modular Django framework. Each subsystem performs a distinct function such as data persistence, identity management, routing, business logic, and computer vision, so that the entire system operates securely and efficiently. This structure ensures scalability and maintainability, which is essential for managing examinations and proctoring activities. The UML diagram below presents how these subsystems interact, which is through coordinated data flow and role based operations that form a unified and intelligent exam management environment.
 3.1 Persistence and Domain Modeling
 The Persistence and Domain Modeling Subsystem establishes the data schema through Django’s ORM. `homepage.CustomUser` stores account roles and class designation; `StudentExamAttempt` stores exam attempts, grades, proctoring identifiers, violation counts, and prediction fields; `StudentTrackingThresholds` stores student calibration thresholds; and `ProctoringSessionFiles` registers calibration files, heatmaps, CSV logs, and violation videos. Exam and question entities are owned by the `teacherside` application. These models provide the persistence structure for exam delivery and proctoring artifacts.
@@ -745,6 +806,7 @@ The Persistence and Domain Modeling Subsystem establishes the data schema throug
 
 Figure 27. Persistence and Domain Modeling UML Diagram
 
+ 
 ### High-Level Entity Relationship Diagram
 The ERD below summarizes the web application's main stored records and their relationships. It focuses on accounts, exam content, student attempts and answers, calibration settings, and proctoring artifact references rather than every database field.
 
@@ -819,6 +881,7 @@ The Identity and Access Control Subsystem governs secure registration and role b
 
 Figure 28. Identity, Authentication, and Access Control
 
+ 
 3.3 Request Routing and URL Dispatch
 The Routing and Dispatch Subsystem partitions the application’s URL namespace to enforce role boundaries and prevent route collisions. The Django project delegates public authentication and landing pages to `homepage`, student operations to `studentside`, camera calibration and WebSocket handling to `camera`, and exam management to `teacherside`. The Django admin interface is mounted separately at `/admin/`. This structured delegation isolates functional domains while maintaining a coherent global routing strategy.
 
@@ -828,6 +891,11 @@ Figure 29. Request Routing and URL Dispatch
 The View and Business Logic Subsystem orchestrates the request response cycle across role specific modules. Public pages such as home, about, and contact are served unconditionally, while registration is handled by site_signup, which validates and persists new accounts. Teacher facing controllers manage the full exam lifecycle, including authoring, modification, and deletion, with helper functions (update_exam_question_count, update_exam_scores, update_exam_details) maintaining consistency across derived fields and student submissions. Student facing controllers provide dashboards, exam taking interfaces, and results views, ensuring seamless interaction with assigned exams. Each controller is guarded by role specific decorators, reinforcing the principle of least privilege and aligning business logic with identity constraints.
 Figure 30. View Controllers and Business Logic
 
+ 
+3.4 View Controllers and Business Logic
+The View and Business Logic Subsystem orchestrates the request response cycle across role specific modules. Public pages such as home, about, and contact are served unconditionally, while registration is handled by site_signup, which validates and persists new accounts. Teacher facing controllers manage the full exam lifecycle, including authoring, modification, and deletion, with helper functions (update_exam_question_count, update_exam_scores, update_exam_details) maintaining consistency across derived fields and student submissions. Student facing controllers provide dashboards, exam taking interfaces, and results views, ensuring seamless interaction with assigned exams. Each controller is guarded by role specific decorators, reinforcing the principle of least privilege and aligning business logic with identity constraints.
+Figure 30. View Controllers and Business Logic
+ 
 3.5 Computer Vision and Camera Streaming
 The Computer Vision and Streaming Subsystem delivers real-time gaze tracking and optional annotated frames to support behavioral analysis. In the browser implementation, JPEG frames are sent to a Django Channels WebSocket, where `GazeSession` processes face and eye landmarks and returns `frame_result` JSON messages. These messages can include gaze positions, gaze direction, head-pose values, suspicion state, and optional debug frames. This WebSocket design provides the data needed to correlate gaze estimates with session events.
 Figure 31. Computer Vision and Camera Streaming
@@ -849,6 +917,7 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 Table 16. SEBD and Logging
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Directional Gaze Duration Triggers	Ensure that brief tracking dropouts (e.g., blinks, quick posture adjustments) do not trigger false alerts, while sustained absences do.	Cover the webcam or close eyes for a brief moment (< 1s), then block the webcam or close eyes for a sustained period (> 2s) and check for alerts.	Successful
+1	Directional Gaze Duration Triggers	Ensure that brief tracking dropouts (e.g., blinks, quick posture adjustments) do not trigger false alerts, while sustained absences do.	Cover the webcam or close eyes for a brief moment (< 1s), then block the webcam or close eyes for a sustained period (> 2s) and check for alerts.	Successful	
 The implementation of a 1.5-second buffer successfully eliminated false positives from rapid eye blinks and natural head movement, only logging a violation when sustained off-screen behavior occurred.
 2	Directional Gaze Duration Triggers	Verify that different look-away directions (Down vs. Up/Left/Right) trigger using their respective configured time thresholds.	Look down at the desk continuously for 6.0 seconds, then repeat looking sideways (e.g., Left) for 4.0 seconds.	Successful with comments	Validates that looking down uses a higher threshold (5.0s) to accommodate typing or looking at scratch paper, while side directions use a tighter threshold (3.0s). The logged violation names correctly map to <gaze_direction>_duration.
 3	Frantic Eye Movement Frequency	Verify that rapid, repetitive shifts of gaze away from the screen are flagged.	Shift gaze from Center to off-screen zones and back 7 times within a 30-second window.	Successful	Successfully flags frantic scanning patterns using a rolling 60-second queue of transition timestamps. The queue is cleared immediately after a trigger to avoid duplicate alerts.
@@ -866,6 +935,12 @@ Table 18. Integration Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	SEBDS integration testing with Gaze Tracking System	Verify that the SEBDS accomplishes its processes correctly when direction data from Gaze Tracking System is given.  	Ran the full system, calibrated the gaze tracking system and looked in every direction for 5 seconds each.	Successful
 2	SEBDS integration testing with Keypress Tracking System	Verify that SEBDS accomplishes its processes correctly when keypress logging data from the Keypress Tracking System is given.	Ran the full system, calibrated the gaze tracking system and took a mock test while only using books, browser search, and browser AI chat sidebars.	Successful
+4	Role-Restricted Access to Role-Specific Webpages	Verify that users with “Student” and “Teacher” roles can only view their own respective 	Done by copying the URL address of respective opposite roles while logged in to accounts with opposite roles. Testing while not logged in was also checked in this test case.  	Successful	
+
+Table 18. Integration Test
+No.	Test Case	Objective	Testing Procedure	Outcome	Comments
+1	SEBDS integration testing with Gaze Tracking System	Verify that the SEBDS accomplishes its processes correctly when direction data from Gaze Tracking System is given.  	Ran the full system, calibrated the gaze tracking system and looked in every direction for 5 seconds each.	Successful	
+2	SEBDS integration testing with Keypress Tracking System	Verify that SEBDS accomplishes its processes correctly when keypress logging data from the Keypress Tracking System is given.	Ran the full system, calibrated the gaze tracking system and took a mock test while only using books, browser search, and browser AI chat sidebars.	Successful	
 3	Exam Delivery App integrated with the SEBDS	Verify that the SEBDS can be initialized and used in a web app format	Used an earlier version of the SEBDS to be integrated with the Exam Delivery Web App Prototype developed,	Successful with comments	Since the SEBDS version used is an earlier rendition, there will be a need to update some aspects of the web app framework. This is accounted for by encapsulating each module and its processes in their separate code files compared to the all-in-one packaged version of the initial SEBDS versions.
 
 
@@ -880,6 +955,7 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 Table 20. Compatibility Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Windows 11 Compatibility	To ensure that the system runs on Windows 11	Run the SEBDS and Web App prototype on a Windows 11 device.	Successful
+1	Windows 11 Compatibility	To ensure that the system runs on Windows 11	Run the SEBDS and Web App prototype on a Windows 11 device.	Successful	
 # Chapter 4: Results and Discussion
 Fifteen participants completed the User Acceptance Testing (UAT) survey, which indicated high self-reported satisfaction across the listed categories. These responses describe participant perceptions of the prototype rather than independent measurements of detection accuracy or proof of minimal false positives. Under Detection Accuracy and Reliability, respondents evaluated their experience with gaze direction, head pose, and keypress outputs; the results are interpreted together with the system tests and implementation limitations.
 For Behavioral Data Output and Interpretation, participants reported positive perceptions of the clarity of the generated data. The behavioral outputs, such as gaze heatmaps, event logs, and violation counts, were perceived as useful for comparing the reported experimental conditions. Respondents also recognized the overlap between normal and suspicious behaviors, which supports the system’s design as an aid to human interpretation rather than an autonomous judge.
@@ -986,6 +1062,7 @@ Figure 32.2 Cheating Heatmap
 ## Video Clipping System Observations
 Table 23. VCS Observations
 
+ 
 Clip totals and per-session averages are not used as primary outcome measures because the source video files must first be matched to their session identifiers. In the system, clips are triggered by rule-based event activations such as irregular gaze, off-screen focus, or forbidden events reported by the monitoring path.
 ## Gaze Direction Duration Observations
 Table 24. Gaze Observations

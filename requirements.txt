@@ -26,7 +26,4 @@ scipy==1.14.1
 python-dateutil==2.9.0.post0
 six==1.17.0
 sounddevice==0.5.5
-whitenoise==6.9.0
-dj-database-url==3.0.1
-gunicorn==23.0.0
-openpyxl>=3.0.0
+
