@@ -1,10 +1,11 @@
-name: CI Quality Gate
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ main, "feat/**", "fix/**" ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   django-quality-check:
@@ -61,3 +62,45 @@ jobs:
         run: |
           cd whatever
           python manage.py test teacherside adminside homepage
+
+  deploy-to-cloud-run:
+    name: Deploy to Google Cloud Run & Live Health Probe
+    needs: django-quality-check
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy Revision to Google Cloud Run
+        run: |
+          gcloud run deploy new-makitest-web-app-analytics-test \
+            --source . \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --region asia-east1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --quiet
+
+      - name: Set up Python 3.12 for Smoke Verification
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Live Verification Probe
+        env:
+          SERVICE_URL: "https://new-makitest-web-app-analytics-test-736992802574.asia-east1.run.app"
+          ADMIN_USERNAME: "admin"
+          ADMIN_PASSWORD: "MakitestAdmin2026!"
+        run: |
+          python scripts/verify_live_service.py
+
