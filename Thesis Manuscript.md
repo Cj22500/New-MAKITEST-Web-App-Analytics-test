@@ -86,6 +86,7 @@ In response to these challenges, institutions increasingly deploy artificial int
 Recent advancements in computer vision (CV) and artificial intelligence (AI) have enabled the development of automated cheating detection systems capable of monitoring examinee behaviors during online assessments. These systems frequently integrate object detection, facial recognition, eye gaze tracking, and facial movement analysis to identify suspicious activities that may compromise examination integrity (Matsumoto & Zelinsky, 2000; Hu et al., 2024; Dilini et al., 2021).
 In the study conducted by Hu et al. (2024), the researchers proposed a multi perspective automated monitoring system designed to identify cheating behaviors in online examinations. The system utilized three distinct camera viewpoints—overhead, horizontal, and facial—to provide a comprehensive representation of the examinee’s workspace and actions. Cheating behaviors were categorized into two groups: individual cheating, which involves the use of unauthorized tools by the examinee, and assisted cheating, wherein external individuals indirectly support the examinee during the test.
 Figure 2. Gaze Positions
+
  
 
 The study further noted that only gazes directed toward the center of the screen were considered “normal” eye positions. Any deviation from this central gaze pattern was treated as potentially irregular. Hu et al. emphasized that an effective automated invigilation system should integrate visual, acoustic, and physiological indicators, with camera based monitoring identified as the most intuitive and reliable approach. Three monitoring configurations were evaluated: single perspective, dual perspective, and multi perspective systems. Although the single perspective system offered lower cost and faster processing, it lacked sufficient evidence for reliable detection. The dual perspective system improved coverage but remained unable to capture peripheral behaviors. Ultimately, the multi perspective configuration demonstrated superior performance by enabling a full assessment of both the examinee and their surrounding environment.
@@ -226,6 +227,7 @@ This includes:
 - Django Fullstack Web Application
 Each unit test verified that isolated modules performed as expected under normal and edge case conditions. This ensured that foundational operations, such as facial landmark extraction and gaze coordinate calculations, were accurate before combining them into larger workflows. Early identification of bugs significantly reduced debugging complexity during later stages.
 ## Integration Testing
+Once individual modules were validated, Integration Testing examined how these modules interact when combined into logical subsystems. Integration testing is primarily about how the detection system will be integrated into the web application prototype. The integration testings outside the scope of web application integration are about the gaze tracking system interacting with the SEBDS.
 Once individual modules were validated, Integration Testing examined how these modules interact when combined into logical subsystems. Integration testing is primarily about how the detection system will be integrated into the web application prototype. The integration testings outside the scope of web application integration are about the gaze tracking system interacting with the SEBDS. 
 This phase focused on:
 - Integration of the gaze tracking module with the Django backend, ensuring that calculated gaze coordinates are correctly transmitted, logged, and interpreted in real time.
@@ -234,6 +236,7 @@ This phase focused on:
 - Communication between frontend and backend, especially during high frequency events such as rapid gaze updates or continuous keypress detection.
 Integration Testing ensured that module interactions did not generate inconsistencies; unit module compatibility issues do not arise during runtime and runtime processes which require the system to interact with each individual unit modules.
 ## System Testing
+System Testing assessed the entire service as a cohesive system to evaluate its readiness for real world exam environments.
 System Testing assessed the entire service as a cohesive system to evaluate its readiness for real world exam environments. 
 This evaluation included:
 - End to end exam simulations, where students completed full assessments while the detection system monitored behavior.
@@ -296,6 +299,7 @@ Table 6. Likert Scale Reference
 These responses will help the researchers identify areas for improvement and ensure that the system meets academic and ethical standards for online examination monitoring. All feedback will be treated confidentially and used solely for research and system enhancement purposes.
 ## Initial Suspicious Exam Behaviour Thresholds
 To identify the initial thresholds of suspicious exam behaviour, the research will define suspicious exam behaviour as an action done by a user while taking the exam that can state that the user is using external resources to answer the exam. With this definition, the research concluded two starting controlled experiments to create a hypothesis on how to calculate the thresholds. These experiments are only initial experiments; more experiments will be conducted to further justify and re-calculate different thresholds and observed data for detection model development.
+As the research take this approach, this method of testing can vary to the limitations given on this approach specifically the difference in behaviour and psychological aspects of test takers. The approach taken in these two experiments is the following: taking a Japanese Language Proficiency Test (JLPT) exam with a time limit, camera feed, and a keyboard and mouse tracker. This is to observe the keypress, gaze and face events.
 As the research take this approach, this method of testing can vary to the limitations given on this approach specifically the difference in behaviour and psychological aspects of test takers. The approach taken in these two experiments is the following: taking a Japanese Language Proficiency Test (JLPT) exam with a time limit, camera feed, and a keyboard and mouse tracker. This is to observe the keypress, gaze and face events. 
 
 	The first experiment was a controlled JLPT N5 Level test which the tester is not allowed to use other resources to help with taking the exam. This is to observe the behaviour of a normal exam-taking behaviour.
@@ -312,6 +316,15 @@ Table 7. Recorded Observations
 ## Observation
 In the research’s observation, there are key differences with taking the exam without external resources and taking the with external resources. The biggest differences are the duration length of gaze to a certain direction and keypresses. With the first experiment, the research has found there are only three notable lengths of gaze positions: “Up Center”, “Down Center” and “Up Left.” The primary reason for gaze changes is looking at questions, choices, and moving to the next question. Other lengthy duration of gaze changes is averting gaze from the screen or thinking deeply/recalling memory. The research has also shown that the user looks at the same position of the screen for most of the test duration.
 Figure 10.1 Test 1 Recording
+
+
+Figure 10.2. Test 1 Gaze Durations
+
+In the second experiment, the user spends less time looking at the exam browser than the first experiment. The tester spends more time looking at the direction of the location of the exam resources the tester uses to answer the exam. It is also observed that there are rapid changes in gaze shifts with the primary reason of reading the exam questions while checking that it is the same on the exam resources the tester is using.
+One of the observed differences between the two test experiments as well are the keypresses and browser navigation. The tester tends to use shortcuts and tabs in and out of the exam browser to use and view the resources the tester has on hand. During this recording, the tester inputted a total of 187 keypresses during the exam. In addition to this, since it is possible to navigate the PC without using keypresses, the experiment recorded 28 paired tab-in and tab-outs either by keyboard shortcut or through mouse navigation.
+
+Figure 10.3. Test 2 Recording
+
  
 
 Figure 10.2. Test 1 Gaze Durations
@@ -327,6 +340,7 @@ Figure 10.3. Test 2 Recording
 
 
 Figure 10.4. Test 2 Alt+Tab Capture
+
  
 
 
@@ -406,6 +420,7 @@ Instead, our system utilizes a dual-component tracking framework. The face landm
 In parallel to the CV models framework evaluations, the proponents have also performed an analysis on the different strategies of Keypress tracking. As there are different ways to track and observe keypresses of a student during an online assessment, it is important to assess which strategies are most effective in online assessments.
 These are the different keypress strategies that were chosen to be used for the evaluation process:
 - Continuous Tracking – simple recording of the student's keypresses during the entire assessment session.
+- Event-based Tracking – Focusing on shortcut usage detection or high APM (Actions Per Minute)
 - Event-based Tracking – Focusing on shortcut usage detection or high APM (Actions Per Minute) 
 In this strategy evaluation, the proponents have employed a different approach. Since continuous tracking have encompassed more data than event-based tracking, we will be tracking the following criteria:
 Table 10. Keypress Strategies
@@ -440,6 +455,7 @@ This component utilizes five strategically selected facial landmarks stored in t
 - Landmark 1: Anterior facial reference (nose bridge)
 
 Figure 15. Face Landmark Points
+
  
 These landmarks define a three-dimensional coordinate system representing the face's spatial orientation. The algorithm constructs vectors from the nose bridge (landmark 1) to the lateral landmarks (234 and 454) to compute the yaw angle (horizontal head rotation), and from the nose bridge to the vertical landmarks (10 and 152) to compute the pitch angle (vertical head tilt).
 The mathematical formulation of the system involves several sequential processes. Vector Normalization is first applied, where each directional vector is normalized to unit length to isolate angular information. Following this, Dot Product Calculations are performed to compute the angle between the face forward vector and the reference forward direction. These values are then converted into angular measurements, expressed in degrees, using Inverse Trigonometric Functions, specifically arcsine and arctangent.
@@ -452,6 +468,9 @@ This component corrects the head-pose-derived screen position estimate based on 
 - frame_height — Total height of the camera frame in pixels
 These inputs are consumed each frame by update_anchor_from_face_position(), which computes a pair of screen-space offset values (_anchor_offset_x, _anchor_offset_y) that are subsequently applied inside get_estimated_screen_position().
 The mathematical formulation of the correction involves two sequential operations. Spatial Normalisation is first applied, mapping the face centre from absolute pixel coordinates into a normalised deviation relative to the frame centre:
+
+This produces values in the range [−0.5, 0.5][−0.5, 0.5], where (0,0)(0,0) indicates a perfectly centred face and the extremes represent a face at the edge of the frame. Screen-Space Projection is then performed, scaling the normalised deviation linearly onto the target screen resolution (1920×1080):
+
  
 This produces values in the range [−0.5, 0.5][−0.5, 0.5], where (0,0)(0,0) indicates a perfectly centred face and the extremes represent a face at the edge of the frame. Screen-Space Projection is then performed, scaling the normalised deviation linearly onto the target screen resolution (1920×1080):
  
@@ -610,6 +629,19 @@ $$
 These calculations produce the eight global heatmap features and 64 grid-cell probabilities. The feature-count calculation is therefore $8+64=72$ heatmap features, and adding the seven CSV behavioral features gives $72+7=79$ numeric predictors for the Random Forest model.
 
 ## Web Application Framework and Architecture
+To create our Exam Delivery Application which will implement and integrate our suspicious behaviour detection system, we are using the Python Django framework.
+Python Django is a high-level web framework which is known for its scalability, security and convenient maintenance. The framework uses the MVT Architecture which means Model, View and Template.
+Model is involved in handling how data is defined and stored; Views are the ones that handle requests and decisions of what data to output; Templates are responsible for what the end users are going to be interacting and experiencing in the browser.
+To start, the homepage content is where the users can login and register before they are able to access the content of the website. Once the user logs in, they will be able to see the contents of the website depending on their roles
+
+Table 12. System Roles and Access
+Role	Content
+Student
+The system allows each examinee to maintain a User Profile, which serves as the foundation for personalized access. Through this profile, students can View their own assessment scores to monitor performance and progress. They are also able to View their own assessment session analytics, providing insights into their test taking behavior and outcomes. Finally, the platform enables them to Access and take their own assessments, ensuring a streamlined and secure examination process.
+Proctors
+The system provides proctors with a User Profile that serves as the basis for managing their classes and assessments. Through this profile, they can View the class roster, allowing them to monitor enrolled students. Proctors are also able to View their own class assessment scores, ensuring transparency in performance tracking. To maintain accuracy, the platform includes Assessment Score Correction Tools, which allow adjustments when necessary. In addition, instructors can View their own class assessment session analytics, offering insights into student behavior and outcomes during examinations. Finally, the system equips proctors with Assessment Creation and Publishing Tools, enabling them to design, administer, and release assessments directly through the platform.
+
+Admin
 To create our Exam Delivery Application which will implement and integrate our suspicious behaviour detection system, we are using the Python Django framework. 
 Python Django is a high-level web framework which is known for its scalability, security and convenient maintenance. The framework uses the MVT Architecture which means Model, View and Template.
 Model is involved in handling how data is defined and stored; Views are the ones that handle requests and decisions of what data to output; Templates are responsible for what the end users are going to be interacting and experiencing in the browser.
@@ -629,6 +661,15 @@ Students will be able to go through the web app to view their respective profile
 This module will allow the proctors to create assessments, customize exam access, import question banks and designate to the students/class.
 Table 13. System Features
 Feature	Description
+Import Question Banks
+Accept formatted Excel sheets that consists of a question and an answer by batch / individually
+Assessment Creation and Modification Tools
+The system enables instructors to Generate an exam using a selected question bank, ensuring that assessments are drawn from predefined and relevant materials. In addition, instructors can Modify the type of each question individually, allowing flexibility in tailoring the format of the assessment. They are also able to Modify the score weight of each question, providing control over how each item contributes to the overall evaluation.
+
+
+Password-Locked Assessments
+Generate a computer-generated key to proctors for better security of assessment
+Assessment Customization Tools
 Import Question Banks	
 Accept formatted Excel sheets that consists of a question and an answer by batch / individually
 Assessment Creation and Modification Tools	
@@ -646,6 +687,7 @@ The system is designed to use role-based access control for a secure and persona
 Upon successful login, users are redirected to their respective dashboards, which function as the primary interface for system interaction. The dashboard is designed to provide a view for ongoing and completed examinations, leveraging dynamic content rendering for efficiency. Each exam entry includes a redirect button to the exam submission list of the selected exam, enabling proctors to review student performance comprehensively. Features include:
 Exam Summary Cards: Display exam status (active, completed), schedule, and quick-access buttons.
 Submission Management: Allows proctors to view student names, scores, and detailed answer sheets. A return navigation button ensures seamless movement between submission views and the main dashboard.
+Navigation Tabs:
 Navigation Tabs: 
 Dashboard - Default landing page post-login.
 Exams - Central hub for exam lifecycle management.
@@ -667,6 +709,7 @@ The module is engineered for scalability, allowing concurrent operations without
 
 1.	Unified UML Class Diagram (Eye Tracking with Integrated Behaviour Detection System)
 Figure 17. Class Diagram
+
  
 The Unified UML Class Diagram represents a highly modular, multi-threaded object-oriented architecture designed for real-time computer vision processing, sensor fusion, and behavioral anomaly detection. The system's execution lifecycle is driven by the central orchestration process, main_trackerprocess.py, which instantiates the component processors and coordinates data passing within a high-frequency main processing loop.
 The architecture is divided into four main operational layers:
@@ -679,6 +722,10 @@ Behavior Scoring and Proctoring: The SuspicionScoringProcessor applies rule-base
 2. UML Subsystem Diagrams
 Figure 18. Core Orchestration and Input Subsystem
 
+
+The Core Orchestration and Input Subsystem is responsible for camera initialization, non-blocking frame buffer ingestion, and system-level hotkey hook monitoring. By utilizing multi-threading, the `FrameBufferProcessor` executes an asynchronous capture loop to continuously update a thread-locked frame buffer, eliminating main-loop latency associated with raw webcam input reads. Simultaneously, the `KeypressTrackProcessor` registers low-level operating system hooks via the `keyboard` library, intercepting unauthorized shortcuts (e.g., `alt+tab` or `print screen`) in a thread-safe list to identify system evasion. The central `main_trackerprocess` acts as the orchestrator, coordinating the lifecycle of these input streams and driving the downstream gaze-estimation and proctoring algorithms.
+Figure 19. Face Tracking and Head Pose Subsystem
+
  
 The Core Orchestration and Input Subsystem is responsible for camera initialization, non-blocking frame buffer ingestion, and system-level hotkey hook monitoring. By utilizing multi-threading, the `FrameBufferProcessor` executes an asynchronous capture loop to continuously update a thread-locked frame buffer, eliminating main-loop latency associated with raw webcam input reads. Simultaneously, the `KeypressTrackProcessor` registers low-level operating system hooks via the `keyboard` library, intercepting unauthorized shortcuts (e.g., `alt+tab` or `print screen`) in a thread-safe list to identify system evasion. The central `main_trackerprocess` acts as the orchestrator, coordinating the lifecycle of these input streams and driving the downstream gaze-estimation and proctoring algorithms.
 Figure 19. Face Tracking and Head Pose Subsystem
@@ -687,6 +734,7 @@ The Face Tracking and Head Pose Subsystem handles the spatial geometry of the us
 
 
 Figure 20. Eye Tracking and Calibration Subsystem
+
 
  
 The Eye Tracking and Calibration Subsystem is responsible for high-precision pupil/iris contour tracking, multi-stage user threshold calibration, and mapping pupil offsets to screen coordinate positions. The `EyeLandmarkerProcessor` isolates eyelid margins and irises, delegating geometry tasks to the `EyeGazeProcessor` which computes scale-invariant pupil offsets and vertical eyelid opening heights. During calibration, the `EyeCalibrationProcessor` records 60 coordinate samples across five target quadrants to generate user-specific threshold maps in a session configuration dictionary. Finally, the `EyeScreenPosProcessor` interpolates these thresholds using an Exponential Moving Average (EMA) filter to convert raw iris coordinates into smoothed, jitter-free $(X,Y)$ pixel screen coordinates.
@@ -707,6 +755,10 @@ The Eye Tracking and Calibration Subsystem is responsible for high-precision pup
 
 
 Figure 21. Gaze Fusion and Heatmap Subsystem
+
+The Gaze Fusion and Heatmap Subsystem combines independent directional coordinates to produce a single stabilized focus coordinate and records long-term visual attention charts. The `GazeDirectionProcessor` takes the raw coordinates from the head pose and eye-tracking modules, calculating a weighted average ($40\%$ head weight, $60\%$ eye weight) to output a fused focus coordinate. The `HeatmapProcessor` continuously appends these fused points to a coordinate list throughout the exam. Upon session completion, it applies a large Gaussian blur kernel to smooth the points and maps them to a JET thermal color spectrum (masking empty areas to pure black) to generate a visual attention heatmap file.
+Figure 22. Sample Generated Gaze Attention Heatmap Output (session_heatmap_TIMESTAMP.png)
+
  
 The Gaze Fusion and Heatmap Subsystem combines independent directional coordinates to produce a single stabilized focus coordinate and records long-term visual attention charts. The `GazeDirectionProcessor` takes the raw coordinates from the head pose and eye-tracking modules, calculating a weighted average ($40\%$ head weight, $60\%$ eye weight) to output a fused focus coordinate. The `HeatmapProcessor` continuously appends these fused points to a coordinate list throughout the exam. Upon session completion, it applies a large Gaussian blur kernel to smooth the points and maps them to a JET thermal color spectrum (masking empty areas to pure black) to generate a visual attention heatmap file.
 Figure 22. Sample Generated Gaze Attention Heatmap Output (session_heatmap_TIMESTAMP.png)
@@ -717,6 +769,11 @@ Figure 22. Sample Generated Gaze Attention Heatmap Output (session_heatmap_TIMES
 
 
 Figure 23. Behavior Scoring and Proctoring Engine Subsystem
+
+The Behavior Scoring and Proctoring Engine Subsystem operates as the central decision-making unit, validating user actions against behavioral thresholds and recording visual evidence of violations. When the `update()` method evaluates a threshold transgression, such as a forbidden shortcut, an off-screen gaze duration limit, or frequent center-to-off-center transitions, it registers a violation, logs it to a session CSV file, and activates the video capture sequence. To capture context, a circular `frame_buffer` queue stores 30 frames before a trigger, and the scorer accumulates 30 post-trigger frames. A background daemon thread is then spawned to execute `_save_video_async()`, merging the frames into an MP4 video clip using the configured `avc1` codec. The CSV stores the event timestamp and video filename, while the temporal duration of the clip depends on the actual input frame rate.
+Figure 24. Sample Generated Session Log Entry
+(session_log_TIMESTAMP.csv)
+
  
 The Behavior Scoring and Proctoring Engine Subsystem operates as the central decision-making unit, validating user actions against behavioral thresholds and recording visual evidence of violations. When the `update()` method evaluates a threshold transgression, such as a forbidden shortcut, an off-screen gaze duration limit, or frequent center-to-off-center transitions, it registers a violation, logs it to a session CSV file, and activates the video capture sequence. To capture context, a circular `frame_buffer` queue stores 30 frames before a trigger, and the scorer accumulates 30 post-trigger frames. A background daemon thread is then spawned to execute `_save_video_async()`, merging the frames into an MP4 video clip using the configured `avc1` codec. The CSV stores the event timestamp and video filename, while the temporal duration of the clip depends on the actual input frame rate.
 Figure 24. Sample Generated Session Log Entry 
@@ -726,6 +783,10 @@ Figure 24. Sample Generated Session Log Entry
 
 
 Figure 25. Sample Generated Violation Video Clip Frame (TIMESTAMP_violation_REASON.mp4)
+
+3. Web Application System Architecture and Design
+Figure 26. Web Application System UML Diagram
+
  
 3. Web Application System Architecture and Design
 Figure 26. Web Application System UML Diagram
@@ -744,6 +805,7 @@ The Persistence and Domain Modeling Subsystem establishes the data schema throug
 
 
 Figure 27. Persistence and Domain Modeling UML Diagram
+
  
 ### High-Level Entity Relationship Diagram
 The ERD below summarizes the web application's main stored records and their relationships. It focuses on accounts, exam content, student attempts and answers, calibration settings, and proctoring artifact references rather than every database field.
@@ -818,11 +880,17 @@ The supporting entities capture proctoring data without expanding the diagram to
 The Identity and Access Control Subsystem governs secure registration and role based authorization. The SignUpForm extends Django’s UserCreationForm with application specific fields such as email, birthday, and LRN_number, enforcing role dependent validation rules during submission. Its atomic save() method guarantees synchronized creation of both the base User record and the corresponding role extension. Access control is further reinforced by the login_required_role decorator, which validates both authentication and administrator authorization before permitting entry into protected views. This dual factor gate ensures that newly registered accounts remain inactive until explicitly approved, thereby safeguarding sensitive exam delivery surfaces against unauthorized access.
 
 Figure 28. Identity, Authentication, and Access Control
+
  
 3.3 Request Routing and URL Dispatch
 The Routing and Dispatch Subsystem partitions the application’s URL namespace to enforce role boundaries and prevent route collisions. The Django project delegates public authentication and landing pages to `homepage`, student operations to `studentside`, camera calibration and WebSocket handling to `camera`, and exam management to `teacherside`. The Django admin interface is mounted separately at `/admin/`. This structured delegation isolates functional domains while maintaining a coherent global routing strategy.
 
 Figure 29. Request Routing and URL Dispatch
+
+3.4 View Controllers and Business Logic
+The View and Business Logic Subsystem orchestrates the request response cycle across role specific modules. Public pages such as home, about, and contact are served unconditionally, while registration is handled by site_signup, which validates and persists new accounts. Teacher facing controllers manage the full exam lifecycle, including authoring, modification, and deletion, with helper functions (update_exam_question_count, update_exam_scores, update_exam_details) maintaining consistency across derived fields and student submissions. Student facing controllers provide dashboards, exam taking interfaces, and results views, ensuring seamless interaction with assigned exams. Each controller is guarded by role specific decorators, reinforcing the principle of least privilege and aligning business logic with identity constraints.
+Figure 30. View Controllers and Business Logic
+
  
 3.4 View Controllers and Business Logic
 The View and Business Logic Subsystem orchestrates the request response cycle across role specific modules. Public pages such as home, about, and contact are served unconditionally, while registration is handled by site_signup, which validates and persists new accounts. Teacher facing controllers manage the full exam lifecycle, including authoring, modification, and deletion, with helper functions (update_exam_question_count, update_exam_scores, update_exam_details) maintaining consistency across derived fields and student submissions. Student facing controllers provide dashboards, exam taking interfaces, and results views, ensuring seamless interaction with assigned exams. Each controller is guarded by role specific decorators, reinforcing the principle of least privilege and aligning business logic with identity constraints.
@@ -848,6 +916,7 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 
 Table 16. SEBD and Logging
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
+1	Directional Gaze Duration Triggers	Ensure that brief tracking dropouts (e.g., blinks, quick posture adjustments) do not trigger false alerts, while sustained absences do.	Cover the webcam or close eyes for a brief moment (< 1s), then block the webcam or close eyes for a sustained period (> 2s) and check for alerts.	Successful
 1	Directional Gaze Duration Triggers	Ensure that brief tracking dropouts (e.g., blinks, quick posture adjustments) do not trigger false alerts, while sustained absences do.	Cover the webcam or close eyes for a brief moment (< 1s), then block the webcam or close eyes for a sustained period (> 2s) and check for alerts.	Successful	
 The implementation of a 1.5-second buffer successfully eliminated false positives from rapid eye blinks and natural head movement, only logging a violation when sustained off-screen behavior occurred.
 2	Directional Gaze Duration Triggers	Verify that different look-away directions (Down vs. Up/Left/Right) trigger using their respective configured time thresholds.	Look down at the desk continuously for 6.0 seconds, then repeat looking sideways (e.g., Left) for 4.0 seconds.	Successful with comments	Validates that looking down uses a higher threshold (5.0s) to accommodate typing or looking at scratch paper, while side directions use a tighter threshold (3.0s). The logged violation names correctly map to <gaze_direction>_duration.
@@ -860,6 +929,12 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 1	Integration Compatibility with SEBDS	Verify that the web-app structure will easily be able to incorporate changes to the SEBDS	In parallel with the Exam Delivery Web app development, a prototype SEBDS version was developed with web app integration in mind 	Successful with comments	The web app and the integration of the SEBDS system was successful. To note however, any changes to the SEBDS will still require knowledge of the web app structure to integrate the system properly.
 2	Student-specific dashboards and tools	Verify that the “Student” accounts can access and manage the actions and data stated in the web app development documentation.	Ran a full test of usage of the actions, views, and access the role are documented to be able to do.	Successful with comments	As this is a proof of concept of a full web-based exam delivery app, recommendations will need to be recorded for future researchers.
 3	Proctor/Teacher-specific dashboards and tools	Verify that the “Teacher” accounts can access and manage the actions and data stated in the web app development documentation. 	Ran a full test of usage of the actions, views, and access to the role are documented to be able to do.	Successful with comments	As this is proof of the concept of a full web-based exam delivery app, recommendations will need to be recorded for future researchers.
+4	Role-Restricted Access to Role-Specific Webpages	Verify that users with “Student” and “Teacher” roles can only view their own respective 	Done by copying the URL address of respective opposite roles while logged in to accounts with opposite roles. Testing while not logged in was also checked in this test case.  	Successful
+
+Table 18. Integration Test
+No.	Test Case	Objective	Testing Procedure	Outcome	Comments
+1	SEBDS integration testing with Gaze Tracking System	Verify that the SEBDS accomplishes its processes correctly when direction data from Gaze Tracking System is given.  	Ran the full system, calibrated the gaze tracking system and looked in every direction for 5 seconds each.	Successful
+2	SEBDS integration testing with Keypress Tracking System	Verify that SEBDS accomplishes its processes correctly when keypress logging data from the Keypress Tracking System is given.	Ran the full system, calibrated the gaze tracking system and took a mock test while only using books, browser search, and browser AI chat sidebars.	Successful
 4	Role-Restricted Access to Role-Specific Webpages	Verify that users with “Student” and “Teacher” roles can only view their own respective 	Done by copying the URL address of respective opposite roles while logged in to accounts with opposite roles. Testing while not logged in was also checked in this test case.  	Successful	
 
 Table 18. Integration Test
@@ -879,6 +954,7 @@ No.	Test Case	Objective	Testing Procedure	Outcome	Comments
 
 Table 20. Compatibility Test
 No.	Test Case	Objective	Testing Procedure	Outcome	Comments
+1	Windows 11 Compatibility	To ensure that the system runs on Windows 11	Run the SEBDS and Web App prototype on a Windows 11 device.	Successful
 1	Windows 11 Compatibility	To ensure that the system runs on Windows 11	Run the SEBDS and Web App prototype on a Windows 11 device.	Successful	
 # Chapter 4: Results and Discussion
 Fifteen participants completed the User Acceptance Testing (UAT) survey, which indicated high self-reported satisfaction across the listed categories. These responses describe participant perceptions of the prototype rather than independent measurements of detection accuracy or proof of minimal false positives. Under Detection Accuracy and Reliability, respondents evaluated their experience with gaze direction, head pose, and keypress outputs; the results are interpreted together with the system tests and implementation limitations.
@@ -985,6 +1061,7 @@ The heatmaps generated from label-1 sessions showed more dispersed gaze clusters
 Figure 32.2 Cheating Heatmap
 ## Video Clipping System Observations
 Table 23. VCS Observations
+
  
 Clip totals and per-session averages are not used as primary outcome measures because the source video files must first be matched to their session identifiers. In the system, clips are triggered by rule-based event activations such as irregular gaze, off-screen focus, or forbidden events reported by the monitoring path.
 ## Gaze Direction Duration Observations
