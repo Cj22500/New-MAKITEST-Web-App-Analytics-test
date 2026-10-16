@@ -29,6 +29,7 @@ class EyeLandmarkerProcessor:
         )
 
         self.eye_landmarker = EyeLandmarker.create_from_options(options)
+        self._last_timestamp_ms = 0
 
         # left and right eyelid landmark indices
         self.left_eye_indices = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 130]
@@ -60,7 +61,8 @@ class EyeLandmarkerProcessor:
         # Process the frame to detect eye landmarks and return the results.
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-        timestamp_ms = int(time.time() * 1000)
+        timestamp_ms = max(int(time.time() * 1000), self._last_timestamp_ms + 1)
+        self._last_timestamp_ms = timestamp_ms
         try:
             results = self.eye_landmarker.detect_for_video(mp_image, timestamp_ms)
         except Exception:

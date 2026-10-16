@@ -21,6 +21,7 @@ class FaceLandmarkerProcessor:
             self.ray_origins = deque(maxlen=10)
             self.ray_directions = deque(maxlen=10)
             self.ray_lengths = 50
+            self._last_timestamp_ms = 0
             
             options = FaceLandmarkerOptions(
                 base_options=BaseOptions(model_asset_path=str(self.model_path)),
@@ -36,7 +37,8 @@ class FaceLandmarkerProcessor:
             # Convert the frame to RGB format for processing.
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-            timestamp_ms = int(time.time() * 1000)
+            timestamp_ms = max(int(time.time() * 1000), self._last_timestamp_ms + 1)
+            self._last_timestamp_ms = timestamp_ms
             try:
                 results = self.face_landmarker.detect_for_video(mp_image, timestamp_ms)
             except Exception:

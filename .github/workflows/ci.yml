@@ -27,6 +27,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             libgl1 \
+            libegl1 \
+            libgles2 \
             libglib2.0-0 \
             libsm6 \
             libxext6 \
@@ -61,7 +63,7 @@ jobs:
       - name: Run Django Unit Tests
         run: |
           cd whatever
-          python manage.py test teacherside adminside homepage
+          python manage.py test homepage adminside teacherside studentside camera
 
   deploy-to-cloud-run:
     name: Deploy to Google Cloud Run & Live Health Probe
@@ -89,6 +91,11 @@ jobs:
             --region asia-east1 \
             --platform managed \
             --allow-unauthenticated \
+            --memory 2Gi \
+            --cpu 2 \
+            --timeout 3600 \
+            --max-instances 1 \
+            --session-affinity \
             --quiet
 
       - name: Set up Python 3.12 for Smoke Verification

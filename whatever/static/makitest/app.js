@@ -131,8 +131,16 @@ class CameraLink {
         this.onstatus(
           "Camera stopped. Reconnect your camera and choose Retry camera.",
         );
+      if (
+        !this.ws ||
+        ![WebSocket.OPEN, WebSocket.CONNECTING].includes(this.ws.readyState)
+      ) {
+        this.connect();
+      }
       if (!this.pump) this.pump = setInterval(() => this.capture(), 100);
-      this.onstatus("Camera connected");
+      this.onstatus(
+        this.serverReady ? "Camera connected" : "Connecting to monitoring…",
+      );
       return true;
     } catch (error) {
       const messages = {
