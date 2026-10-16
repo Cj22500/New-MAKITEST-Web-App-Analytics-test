@@ -1,4 +1,5 @@
 import json
+import logging
 from urllib.parse import parse_qs
 
 from asgiref.sync import sync_to_async
@@ -12,6 +13,8 @@ from studentside.models import (
 )
 
 from . import registry
+
+logger = logging.getLogger(__name__)
 
 
 class ProctorConsumer(AsyncWebsocketConsumer):
@@ -40,6 +43,11 @@ class ProctorConsumer(AsyncWebsocketConsumer):
                 }
             )
         except Exception:
+            logger.exception(
+                "Failed to attach proctoring session %s (phase=%s)",
+                self.session_id,
+                self.phase,
+            )
             await sync_to_async(self.mark_interrupted)()
             await self.send_json(
                 {

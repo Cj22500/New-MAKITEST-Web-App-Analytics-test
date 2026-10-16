@@ -232,3 +232,36 @@ class FreshCalibrationTests(SimpleTestCase):
         session.axis_processor = Mock()
         self.assertFalse(session.begin_calibration_stage()["ok"])
         session.axis_processor.calibrate.assert_not_called()
+
+    def test_monotonic_video_timestamps_on_same_millisecond_frames(self):
+        import eye_trackprocessor as etp
+        import face_trackprocessor as ftp
+        import numpy as np
+
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+        face_proc = ftp.FaceLandmarkerProcessor.__new__(ftp.FaceLandmarkerProcessor)
+        face_proc._last_timestamp_ms = 0
+        face_proc.face_landmarker = Mock()
+        face_proc.face_landmarker.detect_for_video.return_value = "face-ok"
+
+        eye_proc = etp.EyeLandmarkerProcessor.__new__(etp.EyeLandmarkerProcessor)
+        eye_proc._last_timestamp_ms = 0
+        eye_proc.eye_landmarker = Mock()
+        eye_proc.eye_landmarker.detect_for_video.return_value = "eye-ok"
+
+        with patch("time.time", return_value=1700000000.123):
+            self.assertEqual(face_proc.process_frame(frame), "face-ok")
+            self.assertEqual(face_proc.process_frame(frame), "face-ok")
+            self.assertEqual(eye_proc.process_frame(frame), "eye-ok")
+            self.assertEqual(eye_proc.process_frame(frame), "eye-ok")
+
+        face_ts = [
+            call.args[1]
+            for call in face_proc.face_landmarker.detect_for_video.call_args_list
+        ]
+        eye_ts = [
+            call.args[1]
+            for call in eye_proc.eye_landmarker.detect_for_video.call_args_list
+        ]
+        self.assertLess(face_ts[0], face_ts[1])
+        self.assertLess(eye_ts[0], eye_ts[1])

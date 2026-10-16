@@ -296,7 +296,7 @@ class ExamFlowTests(TestCase):
         session["current_attempt_id"] = attempt.pk
         session.save()
         response = self.client.get(reverse("exam_session"))
-        self.assertContains(response, "Review and submit")
+        self.assertContains(response, "Review And Submit")
         self.assertNotContains(response, "weighted_screen_pos")
         self.assertNotContains(response, "Suspicion score")
         for name in ("student_home", "my_scores"):
@@ -318,10 +318,12 @@ class ExamFlowTests(TestCase):
 class LegacyMigrationTests(TransactionTestCase):
     def test_existing_duplicate_answers_and_running_attempt_upgrade(self):
         before = [
+            ("homepage", "0003_customuser_class_designation"),
             ("studentside", "0004_studentexamattempt_prediction"),
             ("teacherside", "0003_exam_created_by"),
         ]
         after = [
+            ("homepage", "0005_create_default_admin"),
             (
                 "studentside",
                 "0005_exampreparation_studentexamattempt_expires_at_and_more",
