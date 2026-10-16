@@ -1,10 +1,16 @@
-import cv2
-import time
-import threading
-import csv
 import collections
+import csv
+import logging
 import os
+import shutil
+import subprocess
+import threading
+import time
 from datetime import datetime
+
+import cv2
+
+logger = logging.getLogger(__name__)
 
 class SuspicionScoringProcessor:
     def __init__(self, side_threshold=3.0, down_threshold=5.0, off_screen_threshold=1.5, freq_threshold=6, screen_width=1920, screen_height=1080, output_dir=None):
@@ -247,36 +253,110 @@ class SuspicionScoringProcessor:
     def _save_video_async(self, pre_frames, post_frames, reason, filename):
         if not pre_frames and not post_frames:
             return
-            
+
         all_frames = pre_frames + post_frames
-        
+
         # Dynamically extract resolution from the first frame
         first_frame = all_frames[0]
         height, width = first_frame.shape[:2]
-        
+
         # Force dimensions to be even numbers to prevent "green tinge" / alignment issues with H.264 codec
         width = width if width % 2 == 0 else width - 1
         height = height if height % 2 == 0 else height - 1
-        
-        # Use cv2.VideoWriter with H.264 codec
+
         # The CSV stores the bare filename for readability; resolve it against the
         # session's output folder here.
-        filename = os.path.join(self.output_dir, filename)
+        full_path = os.path.join(self.output_dir, filename)
 
-        fourcc = cv2.VideoWriter_fourcc(*'avc1')
-        out = cv2.VideoWriter(filename, fourcc, 10.0, (width, height))
-        
+        # Ensure all frames match the exact dimensions
+        normalized_frames = []
         for f in all_frames:
-            # Ensure frame matches the exact even dimensions
             if f.shape[1] != width or f.shape[0] != height:
                 f = cv2.resize(f, (width, height))
-            out.write(f)
-            
-        out.release()
-        
-        abs_path = os.path.abspath(filename)
-        print(f"[SuspicionScoring] Video evidence saved successfully to: {abs_path}")
-        
+            normalized_frames.append(f)
+
+        saved = False
+
+        # Preferred path on Linux / Cloud Run: system ffmpeg with libx264
+        ffmpeg_bin = shutil.which("ffmpeg")
+        if ffmpeg_bin:
+            try:
+                cmd = [
+                    ffmpeg_bin,
+                    "-y",
+                    "-loglevel",
+                    "error",
+                    "-f",
+                    "rawvideo",
+                    "-vcodec",
+                    "rawvideo",
+                    "-pix_fmt",
+                    "bgr24",
+                    "-s",
+                    f"{width}x{height}",
+                    "-r",
+                    "10",
+                    "-i",
+                    "-",
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "ultrafast",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-movflags",
+                    "+faststart",
+                    full_path,
+                ]
+                proc = subprocess.Popen(
+                    cmd,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                raw_bytes = b"".join(f.tobytes() for f in normalized_frames)
+                _, stderr_data = proc.communicate(input=raw_bytes)
+                if (
+                    proc.returncode == 0
+                    and os.path.exists(full_path)
+                    and os.path.getsize(full_path) > 0
+                ):
+                    saved = True
+                else:
+                    logger.warning(
+                        "[SuspicionScoring] ffmpeg failed with code %s: %s",
+                        proc.returncode,
+                        stderr_data.decode(errors="ignore"),
+                    )
+            except Exception as e:
+                logger.warning("[SuspicionScoring] ffmpeg execution error: %s", e)
+
+        # Fallback to OpenCV VideoWriter if ffmpeg was not present or failed
+        if not saved:
+            for fourcc_tag in ("avc1", "mp4v"):
+                try:
+                    fourcc = cv2.VideoWriter_fourcc(*fourcc_tag)
+                    out = cv2.VideoWriter(full_path, fourcc, 10.0, (width, height))
+                    if not out.isOpened():
+                        continue
+                    for f in normalized_frames:
+                        out.write(f)
+                    out.release()
+                    if os.path.exists(full_path) and os.path.getsize(full_path) > 0:
+                        saved = True
+                        break
+                except Exception as e:
+                    logger.warning(
+                        "[SuspicionScoring] VideoWriter %s error: %s", fourcc_tag, e
+                    )
+
+        if saved:
+            abs_path = os.path.abspath(full_path)
+            logger.info("[SuspicionScoring] Video evidence saved successfully to: %s", abs_path)
+            print(f"[SuspicionScoring] Video evidence saved successfully to: {abs_path}")
+        else:
+            logger.error("[SuspicionScoring] Failed to save video evidence to: %s", full_path)
+
         # Thread cleanup
         with self._threads_lock:
             current_thread = threading.current_thread()
@@ -284,6 +364,20 @@ class SuspicionScoringProcessor:
                 self.active_threads.remove(current_thread)
 
     def cleanup(self):
+        # Flush any in-progress violation recording so pre-roll and partial post-roll
+        # frames are not discarded when the exam closes.
+        if self.is_recording and (self.pre_roll_copy or self.post_roll):
+            pre_copy = self.pre_roll_copy
+            post_copy = self.post_roll
+            reason = self.recording_reason
+            rec_file = self.recording_filename
+            self.is_recording = False
+            self.post_roll = []
+            self.pre_roll_copy = []
+            self.recording_reason = ""
+            self.recording_filename = ""
+            self._save_video_async(pre_copy, post_copy, reason, rec_file)
+
         # Log the final state
         self._log_state_to_csv(
             self.current_state_direction,
@@ -291,9 +385,9 @@ class SuspicionScoringProcessor:
             time.time(),
             self.current_violation_label,
             self.current_score,
-            self.current_video_file
+            self.current_video_file,
         )
-        
+
         # Graceful Shutdown
         with self._threads_lock:
             threads_copy = list(self.active_threads)

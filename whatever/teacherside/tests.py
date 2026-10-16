@@ -261,3 +261,61 @@ class TeacherAccessAndEditingTests(TestCase):
         self.client.post(url, {"class_designation": "10-B"})
         self.student.refresh_from_db()
         self.assertEqual(self.student.class_designation, "10-B")
+
+    def test_student_attempt_detail_renders_and_streams_violation_video_clips(self):
+        attempt = StudentExamAttempt.objects.create(
+            student=self.student,
+            exam=self.exam,
+            attempt_number=1,
+            proctoring_session_id="clip-session",
+            completed_at=timezone.now(),
+        )
+        with TemporaryDirectory() as media_root:
+            session_dir = Path(media_root) / "sessions" / "clip-session"
+            session_dir.mkdir(parents=True)
+            video_file = session_dir / "20261016_120000_violation_alt_tab.mp4"
+            video_file.write_bytes(b"fake-mp4-data-0123456789")
+
+            with self.settings(MEDIA_ROOT=media_root):
+                # 1. Detail page renders video element and download link
+                response = self.client.get(
+                    reverse(
+                        "student_attempt_detail", args=[self.exam.pk, self.student.pk]
+                    )
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "Recorded Event Clips")
+                self.assertContains(response, "20261016_120000_violation_alt_tab.mp4")
+                self.assertContains(response, "<video controls")
+                self.assertContains(response, "Download Clip")
+
+                view_url = reverse(
+                    "view_session_file_indexed",
+                    args=["clip-session", "video", 0],
+                )
+                download_url = reverse(
+                    "download_session_file_indexed",
+                    args=["clip-session", "video", 0],
+                )
+
+                # 2. Standard video view returns 200 with Accept-Ranges
+                res_view = self.client.get(view_url)
+                self.assertEqual(res_view.status_code, 200)
+                self.assertEqual(res_view.headers.get("Accept-Ranges"), "bytes")
+                self.assertEqual(res_view.headers.get("Content-Type"), "video/mp4")
+                res_view.close()
+
+                # 3. HTTP Range request returns 206 Partial Content
+                res_range = self.client.get(view_url, HTTP_RANGE="bytes=0-9")
+                self.assertEqual(res_range.status_code, 206)
+                self.assertEqual(
+                    res_range.headers.get("Content-Range"), "bytes 0-9/24"
+                )
+                self.assertEqual(res_range.content, b"fake-mp4-d")
+                res_range.close()
+
+                # 4. Download returns attachment
+                res_dl = self.client.get(download_url)
+                self.assertEqual(res_dl.status_code, 200)
+                self.assertIn("attachment;", res_dl.headers.get("Content-Disposition", ""))
+                res_dl.close()

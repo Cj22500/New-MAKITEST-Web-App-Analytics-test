@@ -265,3 +265,55 @@ class FreshCalibrationTests(SimpleTestCase):
         ]
         self.assertLess(face_ts[0], face_ts[1])
         self.assertLess(eye_ts[0], eye_ts[1])
+
+    def test_violation_clip_saved_when_post_roll_completes(self):
+        import glob
+        import os
+        from tempfile import TemporaryDirectory
+        import numpy as np
+        import suspicion_scoringprocessor as ssp
+
+        with TemporaryDirectory() as temp_dir:
+            scorer = ssp.SuspicionScoringProcessor(output_dir=temp_dir)
+            frame = np.zeros((120, 160, 3), dtype=np.uint8)
+
+            scorer.update(frame, "Center", (500, 500), (500, 500), [])
+            res = scorer.update(frame, "Center", (500, 500), (500, 500), ["alt+tab"])
+            self.assertTrue(res["is_recording"])
+
+            for _ in range(30):
+                scorer.update(frame, "Center", (500, 500), (500, 500), [])
+
+            scorer.cleanup()
+
+            clips = glob.glob(os.path.join(temp_dir, "*_violation_*.mp4"))
+            self.assertEqual(len(clips), 1)
+            self.assertGreater(os.path.getsize(clips[0]), 0)
+
+    def test_violation_clip_flushed_on_cleanup_before_thirty_post_roll_frames(self):
+        import glob
+        import os
+        from tempfile import TemporaryDirectory
+        import numpy as np
+        import suspicion_scoringprocessor as ssp
+
+        with TemporaryDirectory() as temp_dir:
+            scorer = ssp.SuspicionScoringProcessor(output_dir=temp_dir)
+            frame = np.zeros((120, 160, 3), dtype=np.uint8)
+
+            for _ in range(5):
+                scorer.update(frame, "Center", (500, 500), (500, 500), [])
+
+            res = scorer.update(
+                frame, "Center", (500, 500), (500, 500), ["window_focus_lost"]
+            )
+            self.assertTrue(res["is_recording"])
+
+            for _ in range(5):
+                scorer.update(frame, "Center", (500, 500), (500, 500), [])
+
+            scorer.cleanup()
+
+            clips = glob.glob(os.path.join(temp_dir, "*_violation_*.mp4"))
+            self.assertEqual(len(clips), 1)
+            self.assertGreater(os.path.getsize(clips[0]), 0)
