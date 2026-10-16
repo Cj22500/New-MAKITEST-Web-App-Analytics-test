@@ -376,6 +376,10 @@ def student_attempt_detail(request, exam_id, student_id):
         attempt.files = ProctoringSessionFiles.objects.filter(
             exam_attempt=attempt
         ).first()
+        if not attempt.files and attempt.proctoring_session_id:
+            attempt.files = ProctoringSessionFiles.create_or_update_from_session(
+                attempt.proctoring_session_id, attempt
+            )
         attempt.violation_type_counts = violation_counts_for_session(attempt.files)
         attempt.video_filenames = (
             [os.path.basename(path) for path in attempt.files.violation_videos]
@@ -528,13 +532,40 @@ def view_session_file(request, session_id, file_type, index=None):
         raise Http404("File not found on server")
 
     try:
+        http_range = request.META.get("HTTP_RANGE")
+        file_size = os.path.getsize(file_path)
+
+        if file_type == "video" and http_range and http_range.startswith("bytes="):
+            range_spec = http_range[6:].strip()
+            parts = range_spec.split("-", 1)
+            start = int(parts[0]) if parts[0] else 0
+            end = int(parts[1]) if len(parts) > 1 and parts[1] else file_size - 1
+            start = max(0, min(start, file_size - 1))
+            end = max(start, min(end, file_size - 1))
+            length = end - start + 1
+
+            file_handle = open(file_path, "rb")
+            file_handle.seek(start)
+            chunk = file_handle.read(length)
+            file_handle.close()
+
+            response = HttpResponse(chunk, status=206, content_type=content_type)
+            response["Content-Range"] = f"bytes {start}-{end}/{file_size}"
+            response["Content-Length"] = str(length)
+            response["Accept-Ranges"] = "bytes"
+            response["Content-Disposition"] = (
+                f'inline; filename="{os.path.basename(file_path)}"'
+            )
+            return response
+
         file_handle = open(file_path, "rb")
         response = FileResponse(file_handle, content_type=content_type)
+        response["Accept-Ranges"] = "bytes"
         response["Content-Disposition"] = (
             f'inline; filename="{os.path.basename(file_path)}"'
         )
         return response
-    except IOError:
+    except (IOError, ValueError):
         raise Http404("Error reading file")
 
 
